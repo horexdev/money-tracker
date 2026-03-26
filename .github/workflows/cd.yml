@@ -12,6 +12,10 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment: production
 
+    env:
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,20 +40,20 @@ jobs:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
       - name: Add server to known_hosts
-        run: ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
       - name: Copy artifacts to server
         run: |
           scp bin/bot \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/bot.new
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/bot.new"
           scp bin/goose \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/goose
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/goose"
           scp -r db/migrations \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/"
           scp deployments/moneytracker.service \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/moneytracker.service
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/moneytracker.service"
           scp deployments/docker-compose.yml \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/docker-compose.yml
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/docker-compose.yml"
 
       - name: Deploy on server
         env:
@@ -57,26 +61,28 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           REDIS_URL: ${{ secrets.REDIS_URL }}
         run: |
-          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "BOT_TOKEN='${BOT_TOKEN}' DATABASE_URL='${DATABASE_URL}' REDIS_URL='${REDIS_URL}' bash -s" \
             < deployments/deploy.sh
 
       - name: Verify service is running
         run: |
-          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            'bash -s' < deployments/smoke-test.sh
+          ssh "${DEPLOY_USER}@${DEPLOY_HOST}" 'bash -s' < deployments/smoke-test.sh
 
       - name: Write deployment summary
         if: always()
+        env:
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+          COMMIT_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          JOB_STATUS: ${{ job.status }}
         run: |
-          STATUS="${{ job.status }}"
           BINARY_SIZE=$(stat -c%s bin/bot 2>/dev/null || echo "unknown")
           echo "## Deployment Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Status | ${STATUS} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Commit | \`${{ github.event.workflow_run.head_sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Branch | \`${{ github.event.workflow_run.head_branch }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Status | ${JOB_STATUS} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | \`${COMMIT_SHA}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Branch | \`${COMMIT_BRANCH}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Binary size | ${BINARY_SIZE} bytes |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Deployed at | $(date -u '+%Y-%m-%d %H:%M UTC') |" >> "$GITHUB_STEP_SUMMARY"
