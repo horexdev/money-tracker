@@ -38,23 +38,23 @@ echo "[deploy] ensuring postgres and redis are running..."
 docker compose -f "$DEPLOY_DIR/docker-compose.yml" up -d --remove-orphans
 
 echo "[deploy] waiting for postgres to be healthy..."
-ready=0
-for i in $(seq 1 20); do
+i=0
+while [ "$i" -lt 20 ]; do
+  i=$((i + 1))
   if docker compose -f "$DEPLOY_DIR/docker-compose.yml" \
        exec -T postgres pg_isready -U moneytracker -d moneytracker; then
     echo "[deploy] postgres is ready (attempt ${i}/20)"
-    ready=1
-    break
+    i=99
+  else
+    if [ "$i" -ge 20 ]; then
+      echo "[deploy] ERROR: postgres did not become ready in time"
+      sudo systemctl start "$SERVICE" || true
+      exit 1
+    fi
+    echo "[deploy] postgres not ready yet (attempt ${i}/20), waiting 2s..."
+    sleep 2
   fi
-  echo "[deploy] postgres not ready yet (attempt ${i}/20), waiting 2s..."
-  sleep 2
 done
-
-if [ "$ready" -eq 0 ]; then
-  echo "[deploy] ERROR: postgres did not become ready in time"
-  sudo systemctl start "$SERVICE" || true
-  exit 1
-fi
 
 echo "[deploy] running migrations..."
 if "$DEPLOY_DIR/goose" -dir "$DEPLOY_DIR/migrations" postgres "${DATABASE_URL}" up; then
