@@ -35,25 +35,26 @@ jobs:
             github.com/pressly/goose/v3/cmd/goose
 
       - name: Configure SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
       - name: Add server to known_hosts
-        run: ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Copy artifacts to server
         run: |
-          scp bin/bot \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/bot.new"
-          scp bin/goose \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/goose"
-          scp -r db/migrations \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/"
-          scp deployments/moneytracker.service \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/moneytracker.service"
-          scp deployments/docker-compose.yml \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/moneytracker/docker-compose.yml"
+          tar czf - \
+            --transform 's|^bin/bot$|bot.new|' \
+            --transform 's|^bin/goose$|goose|' \
+            --transform 's|^db/migrations|migrations|' \
+            --transform 's|^deployments/moneytracker\.service$|moneytracker.service|' \
+            --transform 's|^deployments/docker-compose\.yml$|docker-compose.yml|' \
+            bin/bot bin/goose db/migrations \
+            deployments/moneytracker.service deployments/docker-compose.yml \
+            | ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
+                'tar xzf - -C /opt/moneytracker \
+                 && mv /opt/moneytracker/moneytracker.service /tmp/'
 
       - name: Deploy on server
         env:
