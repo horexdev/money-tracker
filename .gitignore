@@ -1,0 +1,18 @@
+# Environment variables — never commit secrets
+.env
+
+# Build output
+bin/
+
+# Go test cache and coverage
+*.test
+*.out
+coverage.html
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp

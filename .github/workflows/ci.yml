@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: moneytracker_test
+          POSTGRES_USER: moneytracker
+          POSTGRES_PASSWORD: moneytracker
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - "6379:6379"
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install goose
+        run: go install github.com/pressly/goose/v3/cmd/goose@latest
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgres://moneytracker:moneytracker@localhost:5432/moneytracker_test?sslmode=disable
+        run: |
+          goose -dir db/migrations postgres "$DATABASE_URL" up
+
+      - name: Run tests
+        env:
+          BOT_TOKEN: test_token_placeholder
+          DATABASE_URL: postgres://moneytracker:moneytracker@localhost:5432/moneytracker_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          LOG_LEVEL: warn
+          MIGRATIONS_DIR: db/migrations
+        # -p 2 limits parallel test packages to avoid resource contention
+        run: go test -v -race -timeout 120s -p 2 ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout 5m

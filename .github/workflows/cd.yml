@@ -1,0 +1,56 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build Linux binary
+        # -s -w strips debug symbols for a smaller binary
+        run: GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/bot ./cmd/bot
+
+      - name: Write SSH key
+        run: |
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+      - name: Copy binary and migrations to server
+        run: |
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            bin/bot \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/bot.new
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r \
+            db/migrations \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/
+
+      - name: Deploy on server
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "set -e
+             cd /opt/moneytracker
+             mv bot.new bot
+             chmod +x bot
+             export DATABASE_URL='$DATABASE_URL'
+             goose -dir migrations postgres \"\$DATABASE_URL\" up
+             sudo systemctl restart moneytracker"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f /tmp/deploy_key
