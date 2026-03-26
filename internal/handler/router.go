@@ -25,8 +25,8 @@ func RegisterAll(
 	log *slog.Logger,
 ) {
 	// Commands
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, StartHandler())
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, StartHandler())
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, StartHandler(log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, StartHandler(log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/cancel", bot.MatchTypeExact, CancelHandler(store, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/balance", bot.MatchTypeExact, BalanceHandler(txSvc, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/history", bot.MatchTypeExact, HistoryHandler(txSvc, log))
