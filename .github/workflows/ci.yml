@@ -6,27 +6,85 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v1.64.x
           args: --timeout 5m
 
-  test:
+  vuln:
     runs-on: ubuntu-latest
-    needs: [lint]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+
+  build-check:
+    runs-on: ubuntu-latest
+    needs: [lint, vuln]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify build compiles
+        run: go build ./...
+
+      - name: Run go vet
+        run: go vet ./...
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: [build-check]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run unit tests
+        env:
+          BOT_TOKEN: test_token_placeholder
+          LOG_LEVEL: warn
+          MIGRATIONS_DIR: db/migrations
+        run: go test -v -race -short -timeout 60s ./...
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
 
     services:
       postgres:
@@ -41,7 +99,7 @@ jobs:
           --health-cmd "pg_isready -U moneytracker -d moneytracker_test"
           --health-interval 5s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
       redis:
         image: redis:7-alpine
@@ -54,9 +112,9 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
@@ -66,11 +124,11 @@ jobs:
           DATABASE_URL: postgres://moneytracker:moneytracker@localhost:5432/moneytracker_test?sslmode=disable
         run: go run github.com/pressly/goose/v3/cmd/goose -dir db/migrations postgres "$DATABASE_URL" up
 
-      - name: Run tests
+      - name: Run integration tests
         env:
           BOT_TOKEN: test_token_placeholder
           DATABASE_URL: postgres://moneytracker:moneytracker@localhost:5432/moneytracker_test?sslmode=disable
           REDIS_URL: redis://localhost:6379
           LOG_LEVEL: warn
           MIGRATIONS_DIR: db/migrations
-        run: go test -v -race -timeout 120s -p 2 ./...
+        run: go test -v -race -tags integration -timeout 120s -p 2 ./...
