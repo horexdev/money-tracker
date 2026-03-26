@@ -1,14 +1,19 @@
 package config
 
-import "github.com/caarlos0/env/v11"
+import (
+	"time"
+
+	"github.com/caarlos0/env/v11"
+)
 
 // Config holds all runtime configuration loaded from environment variables.
 type Config struct {
-	BotToken      string `env:"BOT_TOKEN,required"`
-	DatabaseURL   string `env:"DATABASE_URL,required"`
-	RedisURL      string `env:"REDIS_URL,required"`
-	LogLevel      string `env:"LOG_LEVEL"      envDefault:"info"`
-	MigrationsDir string `env:"MIGRATIONS_DIR" envDefault:"db/migrations"`
+	BotToken        string        `env:"BOT_TOKEN,required"`
+	DatabaseURL     string        `env:"DATABASE_URL,required"`
+	RedisURL        string        `env:"REDIS_URL,required"`
+	LogLevel        string        `env:"LOG_LEVEL"          envDefault:"info"`
+	MigrationsDir   string        `env:"MIGRATIONS_DIR"     envDefault:"db/migrations"`
+	ExchangeRateTTL time.Duration `env:"EXCHANGE_RATE_TTL"  envDefault:"1h"`
 }
 
 // Load parses environment variables into Config.

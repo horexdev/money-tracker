@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -48,14 +49,43 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*domain.User, e
 	return rowToUser(row), nil
 }
 
+// UpdateCurrency changes the user's preferred currency code.
+func (r *UserRepository) UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error) {
+	row, err := r.q.UpdateUserCurrency(ctx, sqlcgen.UpdateUserCurrencyParams{
+		ID:           id,
+		CurrencyCode: code,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
+// UpdateDisplayCurrencies changes the user's display currencies (comma-separated in DB).
+func (r *UserRepository) UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error) {
+	row, err := r.q.UpdateDisplayCurrencies(ctx, sqlcgen.UpdateDisplayCurrenciesParams{
+		ID:                id,
+		DisplayCurrencies: codes,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
 func rowToUser(row sqlcgen.User) *domain.User {
+	var dc []string
+	if row.DisplayCurrencies != "" {
+		dc = strings.Split(row.DisplayCurrencies, ",")
+	}
 	return &domain.User{
-		ID:           row.ID,
-		Username:     row.Username,
-		FirstName:    row.FirstName,
-		LastName:     row.LastName,
-		CurrencyCode: row.CurrencyCode,
-		CreatedAt:    row.CreatedAt,
-		UpdatedAt:    row.UpdatedAt,
+		ID:                row.ID,
+		Username:          row.Username,
+		FirstName:         row.FirstName,
+		LastName:          row.LastName,
+		CurrencyCode:      row.CurrencyCode,
+		DisplayCurrencies: dc,
+		CreatedAt:         row.CreatedAt,
+		UpdatedAt:         row.UpdatedAt,
 	}
 }

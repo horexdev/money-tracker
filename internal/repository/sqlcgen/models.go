@@ -12,13 +12,14 @@ import (
 )
 
 type User struct {
-	ID           int64        `json:"id"`
-	Username     string       `json:"username"`
-	FirstName    string       `json:"first_name"`
-	LastName     string       `json:"last_name"`
-	CurrencyCode string       `json:"currency_code"`
-	CreatedAt    time.Time    `json:"created_at"`
-	UpdatedAt    time.Time    `json:"updated_at"`
+	ID                int64     `json:"id"`
+	Username          string    `json:"username"`
+	FirstName         string    `json:"first_name"`
+	LastName          string    `json:"last_name"`
+	CurrencyCode      string    `json:"currency_code"`
+	DisplayCurrencies string    `json:"display_currencies"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 type Category struct {
@@ -29,11 +30,12 @@ type Category struct {
 }
 
 type Transaction struct {
-	ID          int64                  `json:"id"`
-	UserID      int64                  `json:"user_id"`
-	Type        domain.TransactionType `json:"type"`
-	AmountCents int64                  `json:"amount_cents"`
-	CategoryID  int64                  `json:"category_id"`
-	Note        string                 `json:"note"`
-	CreatedAt   time.Time              `json:"created_at"`
+	ID           int64                  `json:"id"`
+	UserID       int64                  `json:"user_id"`
+	Type         domain.TransactionType `json:"type"`
+	AmountCents  int64                  `json:"amount_cents"`
+	CategoryID   int64                  `json:"category_id"`
+	Note         string                 `json:"note"`
+	CurrencyCode string                 `json:"currency_code"`
+	CreatedAt    time.Time              `json:"created_at"`
 }

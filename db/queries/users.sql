@@ -17,3 +17,10 @@ SET currency_code = $2,
     updated_at    = NOW()
 WHERE id = $1
 RETURNING *;
+
+-- name: UpdateDisplayCurrencies :one
+UPDATE users
+SET display_currencies = $2,
+    updated_at         = NOW()
+WHERE id = $1
+RETURNING *;

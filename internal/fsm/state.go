@@ -21,8 +21,16 @@ const (
 	StateIncomeWaitCategory State = "income:wait_category"
 	StateIncomeWaitNote     State = "income:wait_note"
 
+	// Confirmation step
+	StateExpenseWaitConfirm State = "expense:wait_confirm"
+	StateIncomeWaitConfirm  State = "income:wait_confirm"
+
 	// Stats flow
 	StateStatsWaitPeriod State = "stats:wait_period"
+
+	// Settings: currency search flows
+	StateCurrencySearch        State = "settings:currency_search"
+	StateDisplayCurrencySearch State = "settings:display_currency_search"
 )
 
 // stateKey returns the Redis key for storing a user's current FSM state.

@@ -4,13 +4,14 @@ import "time"
 
 // User represents a registered Telegram user.
 type User struct {
-	ID           int64
-	Username     string
-	FirstName    string
-	LastName     string
-	CurrencyCode string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID                int64
+	Username          string
+	FirstName         string
+	LastName          string
+	CurrencyCode      string
+	DisplayCurrencies []string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 // DisplayName returns the best available name for the user.

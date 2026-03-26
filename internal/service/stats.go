@@ -48,10 +48,22 @@ func PeriodRange(period string) (from, to time.Time, err error) {
 		start := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 		end := start.AddDate(0, 1, 0)
 		return start, end, nil
+	case "lastweek":
+		weekday := int(today.Weekday())
+		if weekday == 0 {
+			weekday = 7
+		}
+		monday := today.AddDate(0, 0, -(weekday - 1))
+		start := monday.AddDate(0, 0, -7)
+		return start, monday, nil
 	case "lastmonth":
 		firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 		start := firstOfMonth.AddDate(0, -1, 0)
 		end := firstOfMonth
+		return start, end, nil
+	case "3months":
+		start := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location()).AddDate(0, -2, 0)
+		end := today.Add(24 * time.Hour)
 		return start, end, nil
 	default:
 		return time.Time{}, time.Time{}, domain.ErrInvalidPeriod

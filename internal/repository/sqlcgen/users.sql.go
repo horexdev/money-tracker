@@ -17,7 +17,7 @@ ON CONFLICT (id) DO UPDATE
         first_name = EXCLUDED.first_name,
         last_name  = EXCLUDED.last_name,
         updated_at = NOW()
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at
+RETURNING id, username, first_name, last_name, currency_code, display_currencies, created_at, updated_at
 `
 
 type UpsertUserParams struct {
@@ -39,13 +39,13 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 	var u User
 	err := row.Scan(
 		&u.ID, &u.Username, &u.FirstName, &u.LastName,
-		&u.CurrencyCode, &u.CreatedAt, &u.UpdatedAt,
+		&u.CurrencyCode, &u.DisplayCurrencies, &u.CreatedAt, &u.UpdatedAt,
 	)
 	return u, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, first_name, last_name, currency_code, created_at, updated_at
+SELECT id, username, first_name, last_name, currency_code, display_currencies, created_at, updated_at
 FROM users WHERE id = $1
 `
 
@@ -54,7 +54,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	var u User
 	err := row.Scan(
 		&u.ID, &u.Username, &u.FirstName, &u.LastName,
-		&u.CurrencyCode, &u.CreatedAt, &u.UpdatedAt,
+		&u.CurrencyCode, &u.DisplayCurrencies, &u.CreatedAt, &u.UpdatedAt,
 	)
 	return u, err
 }
@@ -62,7 +62,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 const updateUserCurrency = `-- name: UpdateUserCurrency :one
 UPDATE users SET currency_code = $2, updated_at = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at
+RETURNING id, username, first_name, last_name, currency_code, display_currencies, created_at, updated_at
 `
 
 type UpdateUserCurrencyParams struct {
@@ -75,7 +75,28 @@ func (q *Queries) UpdateUserCurrency(ctx context.Context, arg UpdateUserCurrency
 	var u User
 	err := row.Scan(
 		&u.ID, &u.Username, &u.FirstName, &u.LastName,
-		&u.CurrencyCode, &u.CreatedAt, &u.UpdatedAt,
+		&u.CurrencyCode, &u.DisplayCurrencies, &u.CreatedAt, &u.UpdatedAt,
+	)
+	return u, err
+}
+
+const updateDisplayCurrencies = `-- name: UpdateDisplayCurrencies :one
+UPDATE users SET display_currencies = $2, updated_at = NOW()
+WHERE id = $1
+RETURNING id, username, first_name, last_name, currency_code, display_currencies, created_at, updated_at
+`
+
+type UpdateDisplayCurrenciesParams struct {
+	ID                int64  `json:"id"`
+	DisplayCurrencies string `json:"display_currencies"`
+}
+
+func (q *Queries) UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplayCurrenciesParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateDisplayCurrencies, arg.ID, arg.DisplayCurrencies)
+	var u User
+	err := row.Scan(
+		&u.ID, &u.Username, &u.FirstName, &u.LastName,
+		&u.CurrencyCode, &u.DisplayCurrencies, &u.CreatedAt, &u.UpdatedAt,
 	)
 	return u, err
 }

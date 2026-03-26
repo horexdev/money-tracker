@@ -11,13 +11,17 @@ import (
 type UserStorer interface {
 	Upsert(ctx context.Context, u *domain.User) (*domain.User, error)
 	GetByID(ctx context.Context, id int64) (*domain.User, error)
+	UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error)
+	UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error)
 }
 
 // TransactionStorer is the repository interface consumed by TransactionService and StatsService.
 type TransactionStorer interface {
 	Create(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
 	GetBalance(ctx context.Context, userID int64) (incomeCents, expenseCents int64, err error)
+	GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error)
 	List(ctx context.Context, userID int64, limit, offset int) ([]*domain.Transaction, error)
+	Count(ctx context.Context, userID int64) (int64, error)
 	StatsByCategory(ctx context.Context, userID int64, from, to time.Time) ([]domain.CategoryStat, error)
 }
 

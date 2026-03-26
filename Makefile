@@ -1,6 +1,6 @@
 BINARY     := bin/bot
 CMD        := ./cmd/bot
-COMPOSE    := docker compose -f deployments/docker-compose.yml
+COMPOSE    := docker compose --env-file .env -f deployments/docker-compose.yml
 GOOSE      := goose -dir db/migrations postgres "$(DATABASE_URL)"
 SQLC       := cd db && sqlc generate
 

@@ -24,18 +24,21 @@ func NewTransactionService(
 }
 
 // AddExpense records a new expense transaction.
-func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note string) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note)
+func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note, currencyCode)
 }
 
 // AddIncome records a new income transaction.
-func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note string) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note)
+func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note, currencyCode)
 }
 
-func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note string) (*domain.Transaction, error) {
+func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note, currencyCode string) (*domain.Transaction, error) {
 	if amountCents <= 0 {
 		return nil, domain.ErrInvalidAmount
+	}
+	if currencyCode == "" {
+		currencyCode = "USD"
 	}
 
 	// Verify category exists and belongs to this user or is a system category.
@@ -48,11 +51,12 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 	}
 
 	tx, err := s.txRepo.Create(ctx, &domain.Transaction{
-		UserID:      userID,
-		Type:        txType,
-		AmountCents: amountCents,
-		CategoryID:  categoryID,
-		Note:        note,
+		UserID:       userID,
+		Type:         txType,
+		AmountCents:  amountCents,
+		CategoryID:   categoryID,
+		Note:         note,
+		CurrencyCode: currencyCode,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create transaction: %w", err)
@@ -66,8 +70,18 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		slog.String("type", string(txType)),
 		slog.Int64("amount_cents", amountCents),
 		slog.Int64("category_id", categoryID),
+		slog.String("currency", currencyCode),
 	)
 	return tx, nil
+}
+
+// GetBalanceByCurrency returns per-currency income/expense totals for a user.
+func (s *TransactionService) GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error) {
+	balances, err := s.txRepo.GetBalanceByCurrency(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get balance by currency for user %d: %w", userID, err)
+	}
+	return balances, nil
 }
 
 // GetBalance returns net balance (income - expense) for a user.
@@ -86,6 +100,36 @@ func (s *TransactionService) ListRecent(ctx context.Context, userID int64, n int
 		return nil, fmt.Errorf("list transactions for user %d: %w", userID, err)
 	}
 	return txs, nil
+}
+
+// ListPaged returns a page of transactions and the total page count.
+func (s *TransactionService) ListPaged(ctx context.Context, userID int64, page, pageSize int) ([]*domain.Transaction, int, error) {
+	total, err := s.txRepo.Count(ctx, userID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count transactions for user %d: %w", userID, err)
+	}
+
+	totalPages := int(total) / pageSize
+	if int(total)%pageSize != 0 {
+		totalPages++
+	}
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if page > totalPages {
+		page = totalPages
+	}
+
+	offset := (page - 1) * pageSize
+	txs, err := s.txRepo.List(ctx, userID, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list transactions for user %d: %w", userID, err)
+	}
+	return txs, totalPages, nil
 }
 
 // ListCategories returns all categories available to a user.

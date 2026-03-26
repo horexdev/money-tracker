@@ -22,21 +22,40 @@ func RegisterAll(
 	userSvc *service.UserService,
 	txSvc *service.TransactionService,
 	statsSvc *service.StatsService,
+	exchangeSvc *service.ExchangeService,
 	log *slog.Logger,
 ) {
-	// Commands
+	// Slash commands (backward compatible)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, StartHandler(log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, StartHandler(log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/cancel", bot.MatchTypeExact, CancelHandler(store, log))
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/balance", bot.MatchTypeExact, BalanceHandler(txSvc, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/balance", bot.MatchTypeExact, BalanceHandler(txSvc, userSvc, exchangeSvc, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/history", bot.MatchTypeExact, HistoryHandler(txSvc, log))
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/addexpense", bot.MatchTypeExact, ExpenseStartHandler(store, txSvc, log))
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/addincome", bot.MatchTypeExact, IncomeStartHandler(store, txSvc, log))
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/stats", bot.MatchTypeExact, StatsStartHandler(store, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/addexpense", bot.MatchTypeExact, TransactionStartHandler(store, txSvc, userSvc, "expense", log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/addincome", bot.MatchTypeExact, TransactionStartHandler(store, txSvc, userSvc, "income", log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/stats", bot.MatchTypeExact, StatsStartHandler(log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/settings", bot.MatchTypeExact, SettingsHandler(userSvc, log))
+
+	// Reply keyboard button text handlers
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnExpense, bot.MatchTypeExact, TransactionStartHandler(store, txSvc, userSvc, "expense", log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnIncome, bot.MatchTypeExact, TransactionStartHandler(store, txSvc, userSvc, "income", log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnBalance, bot.MatchTypeExact, BalanceHandler(txSvc, userSvc, exchangeSvc, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnHistory, bot.MatchTypeExact, HistoryHandler(txSvc, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnStats, bot.MatchTypeExact, StatsStartHandler(log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnSettings, bot.MatchTypeExact, SettingsHandler(userSvc, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnCancel, bot.MatchTypeExact, CancelHandler(store, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, btnDevblog, bot.MatchTypeExact, DevblogHandler(log))
 
 	// Callback queries
-	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "cat:", bot.MatchTypePrefix, dispatchCategoryCallback(store, txSvc, log))
-	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "period:", bot.MatchTypePrefix, StatsPeriodHandler(store, statsSvc, log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "cat:", bot.MatchTypePrefix, TransactionCategoryHandler(store, txSvc, log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "period:", bot.MatchTypePrefix, StatsPeriodHandler(statsSvc, log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "flow:", bot.MatchTypePrefix, FlowCallbackHandler(store, txSvc, log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "hist:", bot.MatchTypePrefix, HistoryPageHandler(txSvc, log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "nav:", bot.MatchTypePrefix, NavHandler(store, txSvc, userSvc, statsSvc, exchangeSvc, log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "settings:", bot.MatchTypePrefix, SettingsCallbackHandler(userSvc, store, log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "stats:", bot.MatchTypePrefix, StatsReselectHandler(log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "noop", bot.MatchTypeExact, NoopHandler(log))
+	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "dlog:", bot.MatchTypePrefix, DevblogCallbackHandler(log))
 }
 
 // DefaultHandler is the fallback for non-command text messages.
@@ -44,6 +63,7 @@ func RegisterAll(
 func DefaultHandler(
 	store *fsm.Store,
 	txSvc *service.TransactionService,
+	userSvc *service.UserService,
 	log *slog.Logger,
 ) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
@@ -55,60 +75,25 @@ func DefaultHandler(
 		state, err := store.GetState(ctx, userID)
 		if err != nil {
 			log.ErrorContext(ctx, "get FSM state failed", slog.String("error", err.Error()))
-			sendError(ctx, b, update.Message.Chat.ID)
+			sendErrorWithMenu(ctx, b, update.Message.Chat.ID, log)
 			return
 		}
 
 		switch state {
-		case fsm.StateExpenseWaitAmount:
-			ExpenseAmountHandler(store, txSvc, log)(ctx, b, update)
-		case fsm.StateExpenseWaitNote:
-			ExpenseNoteHandler(store, txSvc, log)(ctx, b, update)
-		case fsm.StateIncomeWaitAmount:
-			IncomeAmountHandler(store, txSvc, log)(ctx, b, update)
-		case fsm.StateIncomeWaitNote:
-			IncomeNoteHandler(store, txSvc, log)(ctx, b, update)
+		case fsm.StateExpenseWaitAmount, fsm.StateIncomeWaitAmount:
+			TransactionAmountHandler(store, txSvc, log)(ctx, b, update)
+		case fsm.StateExpenseWaitNote, fsm.StateIncomeWaitNote:
+			TransactionNoteHandler(store, txSvc, log)(ctx, b, update)
+		case fsm.StateCurrencySearch, fsm.StateDisplayCurrencySearch:
+			CurrencySearchHandler(store, userSvc, log)(ctx, b, update)
 		default:
-			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
-				ChatID: update.Message.Chat.ID,
-				Text:   "Use /help to see available commands.",
-			}); err != nil {
-				log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
-			}
+			sendWithMainMenu(ctx, b, update.Message.Chat.ID,
+				"I'm not sure what to do with that. Tap a button below or use /help.", log)
 		}
 	}
 }
 
-// dispatchCategoryCallback routes category callbacks to the correct flow handler.
-func dispatchCategoryCallback(store *fsm.Store, txSvc *service.TransactionService, log *slog.Logger) bot.HandlerFunc {
-	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
-		if update.CallbackQuery == nil {
-			return
-		}
-		userID := update.CallbackQuery.From.ID
-
-		state, err := store.GetState(ctx, userID)
-		if err != nil {
-			return
-		}
-
-		switch state {
-		case fsm.StateExpenseWaitCategory:
-			ExpenseCategoryHandler(store, log)(ctx, b, update)
-		case fsm.StateIncomeWaitCategory:
-			IncomeCategoryHandler(store, log)(ctx, b, update)
-		default:
-			if _, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
-				CallbackQueryID: update.CallbackQuery.ID,
-				Text:            "No active flow. Use /addexpense or /addincome.",
-			}); err != nil {
-				log.ErrorContext(ctx, "failed to answer callback", slog.String("error", err.Error()))
-			}
-		}
-	}
-}
-
-// buildCategoryKeyboard creates an inline keyboard from a list of categories.
+// buildCategoryKeyboard creates an inline keyboard from a list of categories (3 per row).
 func buildCategoryKeyboard(cats []*domain.Category) *models.InlineKeyboardMarkup {
 	var rows [][]models.InlineKeyboardButton
 	var row []models.InlineKeyboardButton
@@ -122,8 +107,8 @@ func buildCategoryKeyboard(cats []*domain.Category) *models.InlineKeyboardMarkup
 			Text:         label,
 			CallbackData: fmt.Sprintf("cat:%d", cat.ID),
 		})
-		// 2 buttons per row
-		if (i+1)%2 == 0 || i == len(cats)-1 {
+		// 3 buttons per row
+		if (i+1)%3 == 0 || i == len(cats)-1 {
 			rows = append(rows, row)
 			row = nil
 		}
@@ -139,10 +124,12 @@ func buildPeriodKeyboard() *models.InlineKeyboardMarkup {
 			{
 				{Text: "Today", CallbackData: "period:today"},
 				{Text: "This Week", CallbackData: "period:week"},
+				{Text: "This Month", CallbackData: "period:month"},
 			},
 			{
-				{Text: "This Month", CallbackData: "period:month"},
+				{Text: "Last Week", CallbackData: "period:lastweek"},
 				{Text: "Last Month", CallbackData: "period:lastmonth"},
+				{Text: "Last 3 Months", CallbackData: "period:3months"},
 			},
 		},
 	}
@@ -161,12 +148,4 @@ func parseCategoryCallback(data string) (int64, error) {
 // parsePeriodCallback extracts the period name from a "period:{name}" callback.
 func parsePeriodCallback(data string) string {
 	return strings.TrimPrefix(data, "period:")
-}
-
-// sendError sends a generic error message to the chat.
-func sendError(ctx context.Context, b *bot.Bot, chatID int64) {
-	_, _ = b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: chatID,
-		Text:   "❌ Something went wrong. Please try again or use /cancel.",
-	})
 }

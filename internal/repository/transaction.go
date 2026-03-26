@@ -22,23 +22,25 @@ func NewTransactionRepository(pool *pgxpool.Pool) *TransactionRepository {
 // Create inserts a new transaction and returns the persisted record.
 func (r *TransactionRepository) Create(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error) {
 	row, err := r.q.CreateTransaction(ctx, sqlcgen.CreateTransactionParams{
-		UserID:      t.UserID,
-		Type:        t.Type,
-		AmountCents: t.AmountCents,
-		CategoryID:  t.CategoryID,
-		Note:        t.Note,
+		UserID:       t.UserID,
+		Type:         t.Type,
+		AmountCents:  t.AmountCents,
+		CategoryID:   t.CategoryID,
+		Note:         t.Note,
+		CurrencyCode: t.CurrencyCode,
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &domain.Transaction{
-		ID:          row.ID,
-		UserID:      row.UserID,
-		Type:        row.Type,
-		AmountCents: row.AmountCents,
-		CategoryID:  row.CategoryID,
-		Note:        row.Note,
-		CreatedAt:   row.CreatedAt,
+		ID:           row.ID,
+		UserID:       row.UserID,
+		Type:         row.Type,
+		AmountCents:  row.AmountCents,
+		CategoryID:   row.CategoryID,
+		Note:         row.Note,
+		CurrencyCode: row.CurrencyCode,
+		CreatedAt:    row.CreatedAt,
 	}, nil
 }
 
@@ -73,10 +75,33 @@ func (r *TransactionRepository) List(ctx context.Context, userID int64, limit, o
 			CategoryName:  row.CategoryName,
 			CategoryEmoji: row.CategoryEmoji,
 			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
 			CreatedAt:     row.CreatedAt,
 		})
 	}
 	return txs, nil
+}
+
+// Count returns the total number of transactions for a user.
+func (r *TransactionRepository) Count(ctx context.Context, userID int64) (int64, error) {
+	return r.q.CountUserTransactions(ctx, userID)
+}
+
+// GetBalanceByCurrency returns per-currency income/expense totals for a user.
+func (r *TransactionRepository) GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error) {
+	rows, err := r.q.GetBalanceByCurrency(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]domain.BalanceByCurrency, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, domain.BalanceByCurrency{
+			CurrencyCode: row.CurrencyCode,
+			IncomeCents:  row.TotalIncome,
+			ExpenseCents: row.TotalExpense,
+		})
+	}
+	return result, nil
 }
 
 // StatsByCategory returns aggregated stats per category for the given period.
@@ -96,6 +121,7 @@ func (r *TransactionRepository) StatsByCategory(ctx context.Context, userID int6
 			CategoryName:  row.CategoryName,
 			CategoryEmoji: row.CategoryEmoji,
 			Type:          row.Type,
+			CurrencyCode:  row.CurrencyCode,
 			TotalCents:    row.TotalCents,
 			TxCount:       row.TxCount,
 		})

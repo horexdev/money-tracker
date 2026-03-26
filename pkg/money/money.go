@@ -59,3 +59,12 @@ func FormatCents(cents int64) string {
 	}
 	return fmt.Sprintf("%d.%02d", cents/100, cents%100)
 }
+
+// CurrencySymbol returns the symbol for a given ISO 4217 currency code.
+// Falls back to the code itself if unknown.
+func CurrencySymbol(code string) string {
+	if c, ok := domain.Currencies[code]; ok {
+		return c.Symbol
+	}
+	return code
+}

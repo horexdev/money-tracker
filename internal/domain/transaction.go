@@ -21,7 +21,15 @@ type Transaction struct {
 	CategoryName  string
 	CategoryEmoji string
 	Note          string
+	CurrencyCode  string
 	CreatedAt     time.Time
+}
+
+// BalanceByCurrency holds income and expense totals for a single currency.
+type BalanceByCurrency struct {
+	CurrencyCode string
+	IncomeCents  int64
+	ExpenseCents int64
 }
 
 // CategoryStat aggregates spending or income by category for a given period.
@@ -31,4 +39,5 @@ type CategoryStat struct {
 	Type          TransactionType
 	TotalCents    int64
 	TxCount       int64
+	CurrencyCode  string
 }

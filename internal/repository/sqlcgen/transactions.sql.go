@@ -12,26 +12,38 @@ import (
 	"github.com/horexdev/money-tracker/internal/domain"
 )
 
+const countUserTransactions = `-- name: CountUserTransactions :one
+SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1
+`
+
+func (q *Queries) CountUserTransactions(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserTransactions, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, user_id, type, amount_cents, category_id, note, currency_code, created_at
 `
 
 type CreateTransactionParams struct {
-	UserID      int64                  `json:"user_id"`
-	Type        domain.TransactionType `json:"type"`
-	AmountCents int64                  `json:"amount_cents"`
-	CategoryID  int64                  `json:"category_id"`
-	Note        string                 `json:"note"`
+	UserID       int64                  `json:"user_id"`
+	Type         domain.TransactionType `json:"type"`
+	AmountCents  int64                  `json:"amount_cents"`
+	CategoryID   int64                  `json:"category_id"`
+	Note         string                 `json:"note"`
+	CurrencyCode string                 `json:"currency_code"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
 	row := q.db.QueryRow(ctx, createTransaction,
-		arg.UserID, arg.Type, arg.AmountCents, arg.CategoryID, arg.Note,
+		arg.UserID, arg.Type, arg.AmountCents, arg.CategoryID, arg.Note, arg.CurrencyCode,
 	)
 	var t Transaction
-	err := row.Scan(&t.ID, &t.UserID, &t.Type, &t.AmountCents, &t.CategoryID, &t.Note, &t.CreatedAt)
+	err := row.Scan(&t.ID, &t.UserID, &t.Type, &t.AmountCents, &t.CategoryID, &t.Note, &t.CurrencyCode, &t.CreatedAt)
 	return t, err
 }
 
@@ -57,7 +69,7 @@ func (q *Queries) GetBalance(ctx context.Context, userID int64) (GetBalanceRow, 
 
 const listTransactions = `-- name: ListTransactions :many
 SELECT
-    t.id, t.user_id, t.type, t.amount_cents, t.category_id, t.note, t.created_at,
+    t.id, t.user_id, t.type, t.amount_cents, t.category_id, t.note, t.created_at, t.currency_code,
     c.name AS category_name, c.emoji AS category_emoji
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
@@ -74,6 +86,7 @@ type ListTransactionsRow struct {
 	CategoryID    int64                  `json:"category_id"`
 	Note          string                 `json:"note"`
 	CreatedAt     time.Time              `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
 	CategoryName  string                 `json:"category_name"`
 	CategoryEmoji string                 `json:"category_emoji"`
 }
@@ -96,7 +109,7 @@ func (q *Queries) ListTransactions(ctx context.Context, arg ListTransactionsPara
 		var r ListTransactionsRow
 		if err := rows.Scan(
 			&r.ID, &r.UserID, &r.Type, &r.AmountCents,
-			&r.CategoryID, &r.Note, &r.CreatedAt,
+			&r.CategoryID, &r.Note, &r.CreatedAt, &r.CurrencyCode,
 			&r.CategoryName, &r.CategoryEmoji,
 		); err != nil {
 			return nil, err
@@ -111,6 +124,7 @@ SELECT
     c.name              AS category_name,
     c.emoji             AS category_emoji,
     t.type,
+    t.currency_code,
     SUM(t.amount_cents)::BIGINT AS total_cents,
     COUNT(*)::BIGINT    AS tx_count
 FROM transactions t
@@ -118,7 +132,7 @@ JOIN categories c ON c.id = t.category_id
 WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
-GROUP BY c.name, c.emoji, t.type
+GROUP BY c.name, c.emoji, t.type, t.currency_code
 ORDER BY total_cents DESC
 `
 
@@ -126,6 +140,7 @@ type GetStatsByCategoryRow struct {
 	CategoryName  string                 `json:"category_name"`
 	CategoryEmoji string                 `json:"category_emoji"`
 	Type          domain.TransactionType `json:"type"`
+	CurrencyCode  string                 `json:"currency_code"`
 	TotalCents    int64                  `json:"total_cents"`
 	TxCount       int64                  `json:"tx_count"`
 }
@@ -147,8 +162,42 @@ func (q *Queries) GetStatsByCategory(ctx context.Context, arg GetStatsByCategory
 	for rows.Next() {
 		var r GetStatsByCategoryRow
 		if err := rows.Scan(
-			&r.CategoryName, &r.CategoryEmoji, &r.Type, &r.TotalCents, &r.TxCount,
+			&r.CategoryName, &r.CategoryEmoji, &r.Type, &r.CurrencyCode, &r.TotalCents, &r.TxCount,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, r)
+	}
+	return items, rows.Err()
+}
+
+const getBalanceByCurrency = `-- name: GetBalanceByCurrency :many
+SELECT
+    currency_code,
+    COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
+    COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
+FROM transactions
+WHERE user_id = $1
+GROUP BY currency_code
+`
+
+type GetBalanceByCurrencyRow struct {
+	CurrencyCode string `json:"currency_code"`
+	TotalIncome  int64  `json:"total_income"`
+	TotalExpense int64  `json:"total_expense"`
+}
+
+func (q *Queries) GetBalanceByCurrency(ctx context.Context, userID int64) ([]GetBalanceByCurrencyRow, error) {
+	rows, err := q.db.Query(ctx, getBalanceByCurrency, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []GetBalanceByCurrencyRow
+	for rows.Next() {
+		var r GetBalanceByCurrencyRow
+		if err := rows.Scan(&r.CurrencyCode, &r.TotalIncome, &r.TotalExpense); err != nil {
 			return nil, err
 		}
 		items = append(items, r)
