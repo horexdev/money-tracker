@@ -54,7 +54,9 @@ for i in $(seq 1 20); do
 done
 
 echo "[deploy] running migrations..."
-if ! "$DEPLOY_DIR/goose" -dir "$DEPLOY_DIR/migrations" postgres "${DATABASE_URL}" up; then
+if "$DEPLOY_DIR/goose" -dir "$DEPLOY_DIR/migrations" postgres "${DATABASE_URL}" up; then
+  echo "[deploy] migrations succeeded"
+else
   echo "[deploy] ERROR: migrations failed — restoring previous binary"
   if [ -f "$DEPLOY_DIR/bot.prev" ]; then
     cp "$DEPLOY_DIR/bot.prev" "$DEPLOY_DIR/bot"
