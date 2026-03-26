@@ -19,9 +19,11 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Build Linux binary
+      - name: Build Linux binaries
         # -s -w strips debug symbols for a smaller binary
-        run: GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/bot ./cmd/bot
+        run: |
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/bot ./cmd/bot
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/goose github.com/pressly/goose/v3/cmd/goose
 
       - name: Write SSH key
         run: |
@@ -33,6 +35,9 @@ jobs:
           scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
             bin/bot \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/bot.new
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            bin/goose \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/goose
           scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r \
             db/migrations \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/
@@ -62,8 +67,9 @@ ENVEOF
              sudo mv /tmp/moneytracker.service /etc/systemd/system/moneytracker.service
              sudo systemctl daemon-reload
              sudo systemctl enable moneytracker
+             chmod +x goose
              sudo docker compose -f docker-compose.yml up -d --remove-orphans
-             goose -dir migrations postgres '${{ secrets.DATABASE_URL }}' up
+             ./goose -dir migrations postgres '${{ secrets.DATABASE_URL }}' up
              sudo systemctl restart moneytracker"
 
       - name: Cleanup SSH key
