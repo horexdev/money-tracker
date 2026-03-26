@@ -10,13 +10,12 @@ import (
 	"github.com/go-telegram/bot/models"
 
 	"github.com/horexdev/money-tracker/internal/fsm"
-	"github.com/horexdev/money-tracker/internal/repository"
 	"github.com/horexdev/money-tracker/internal/service"
 	"github.com/horexdev/money-tracker/pkg/money"
 )
 
 // IncomeStartHandler initiates the add-income flow.
-func IncomeStartHandler(store *fsm.Store, catRepo *repository.CategoryRepository, log *slog.Logger) bot.HandlerFunc {
+func IncomeStartHandler(store *fsm.Store, txSvc *service.TransactionService, log *slog.Logger) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
 		userID := update.Message.From.ID
 		if err := store.SetState(ctx, userID, fsm.StateIncomeWaitAmount); err != nil {
@@ -33,7 +32,7 @@ func IncomeStartHandler(store *fsm.Store, catRepo *repository.CategoryRepository
 }
 
 // IncomeAmountHandler processes the amount step of the income flow.
-func IncomeAmountHandler(store *fsm.Store, catRepo *repository.CategoryRepository, log *slog.Logger) bot.HandlerFunc {
+func IncomeAmountHandler(store *fsm.Store, txSvc *service.TransactionService, log *slog.Logger) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
 		userID := update.Message.From.ID
 		text := update.Message.Text
@@ -58,8 +57,9 @@ func IncomeAmountHandler(store *fsm.Store, catRepo *repository.CategoryRepositor
 			return
 		}
 
-		cats, err := catRepo.ListForUser(ctx, userID)
+		cats, err := txSvc.ListCategories(ctx, userID)
 		if err != nil {
+			log.ErrorContext(ctx, "list categories failed", slog.String("error", err.Error()))
 			sendError(ctx, b, update.Message.Chat.ID)
 			return
 		}
@@ -79,18 +79,24 @@ func IncomeCategoryHandler(store *fsm.Store, log *slog.Logger) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
 		query := update.CallbackQuery
 		userID := query.From.ID
-		categoryID := parseCategoryCallback(query.Data)
+
+		categoryID, err := parseCategoryCallback(query.Data)
+		if err != nil {
+			log.WarnContext(ctx, "invalid category callback", slog.Any("error", err))
+			sendError(ctx, b, query.Message.Message.Chat.ID)
+			return
+		}
 
 		if _, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: query.ID}); err != nil {
 			log.ErrorContext(ctx, "failed to answer callback", slog.String("error", err.Error()))
 		}
 
 		if err := store.SetData(ctx, userID, "category", strconv.FormatInt(categoryID, 10)); err != nil {
-			sendErrorCallback(ctx, b, query.Message.Message.Chat.ID)
+			sendError(ctx, b, query.Message.Message.Chat.ID)
 			return
 		}
 		if err := store.SetState(ctx, userID, fsm.StateIncomeWaitNote); err != nil {
-			sendErrorCallback(ctx, b, query.Message.Message.Chat.ID)
+			sendError(ctx, b, query.Message.Message.Chat.ID)
 			return
 		}
 
@@ -112,11 +118,33 @@ func IncomeNoteHandler(store *fsm.Store, txSvc *service.TransactionService, log 
 			note = ""
 		}
 
-		amountStr, _ := store.GetData(ctx, userID, "amount")
-		categoryStr, _ := store.GetData(ctx, userID, "category")
+		amountStr, err := store.GetData(ctx, userID, "amount")
+		if err != nil {
+			log.ErrorContext(ctx, "get fsm amount failed", slog.Int64("user_id", userID), slog.Any("error", err))
+			_ = store.Clear(ctx, userID)
+			sendError(ctx, b, update.Message.Chat.ID)
+			return
+		}
+		categoryStr, err := store.GetData(ctx, userID, "category")
+		if err != nil {
+			log.ErrorContext(ctx, "get fsm category failed", slog.Int64("user_id", userID), slog.Any("error", err))
+			_ = store.Clear(ctx, userID)
+			sendError(ctx, b, update.Message.Chat.ID)
+			return
+		}
 
-		cents, _ := strconv.ParseInt(amountStr, 10, 64)
-		catID, _ := strconv.ParseInt(categoryStr, 10, 64)
+		cents, err := strconv.ParseInt(amountStr, 10, 64)
+		if err != nil || cents <= 0 {
+			_ = store.Clear(ctx, userID)
+			sendError(ctx, b, update.Message.Chat.ID)
+			return
+		}
+		catID, err := strconv.ParseInt(categoryStr, 10, 64)
+		if err != nil || catID <= 0 {
+			_ = store.Clear(ctx, userID)
+			sendError(ctx, b, update.Message.Chat.ID)
+			return
+		}
 
 		tx, err := txSvc.AddIncome(ctx, userID, cents, catID, note)
 		if err != nil {

@@ -78,7 +78,7 @@ func main() {
 
 	// 10. Build and configure the Telegram bot.
 	b, err := bot.New(cfg.BotToken,
-		bot.WithDefaultHandler(handler.DefaultHandler(fsmStore, txSvc, catRepo, log)),
+		bot.WithDefaultHandler(handler.DefaultHandler(fsmStore, txSvc, log)),
 		bot.WithMiddlewares(
 			handler.LoggingMiddleware(log),
 			handler.AutoRegisterMiddleware(userSvc, log),
@@ -90,7 +90,7 @@ func main() {
 	}
 
 	// 11. Register all command and callback handlers.
-	handler.RegisterAll(b, fsmStore, userSvc, txSvc, statsSvc, catRepo, log)
+	handler.RegisterAll(b, fsmStore, userSvc, txSvc, statsSvc, log)
 
 	log.Info("bot started, waiting for updates")
 

@@ -12,7 +12,6 @@ import (
 
 	"github.com/horexdev/money-tracker/internal/domain"
 	"github.com/horexdev/money-tracker/internal/fsm"
-	"github.com/horexdev/money-tracker/internal/repository"
 	"github.com/horexdev/money-tracker/internal/service"
 )
 
@@ -23,7 +22,6 @@ func RegisterAll(
 	userSvc *service.UserService,
 	txSvc *service.TransactionService,
 	statsSvc *service.StatsService,
-	catRepo *repository.CategoryRepository,
 	log *slog.Logger,
 ) {
 	// Commands
@@ -32,8 +30,8 @@ func RegisterAll(
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/cancel", bot.MatchTypeExact, CancelHandler(store, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/balance", bot.MatchTypeExact, BalanceHandler(txSvc, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/history", bot.MatchTypeExact, HistoryHandler(txSvc, log))
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/addexpense", bot.MatchTypeExact, ExpenseStartHandler(store, catRepo, log))
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/addincome", bot.MatchTypeExact, IncomeStartHandler(store, catRepo, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/addexpense", bot.MatchTypeExact, ExpenseStartHandler(store, txSvc, log))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/addincome", bot.MatchTypeExact, IncomeStartHandler(store, txSvc, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/stats", bot.MatchTypeExact, StatsStartHandler(store, log))
 
 	// Callback queries
@@ -46,7 +44,6 @@ func RegisterAll(
 func DefaultHandler(
 	store *fsm.Store,
 	txSvc *service.TransactionService,
-	catRepo *repository.CategoryRepository,
 	log *slog.Logger,
 ) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
@@ -64,11 +61,11 @@ func DefaultHandler(
 
 		switch state {
 		case fsm.StateExpenseWaitAmount:
-			ExpenseAmountHandler(store, catRepo, log)(ctx, b, update)
+			ExpenseAmountHandler(store, txSvc, log)(ctx, b, update)
 		case fsm.StateExpenseWaitNote:
 			ExpenseNoteHandler(store, txSvc, log)(ctx, b, update)
 		case fsm.StateIncomeWaitAmount:
-			IncomeAmountHandler(store, catRepo, log)(ctx, b, update)
+			IncomeAmountHandler(store, txSvc, log)(ctx, b, update)
 		case fsm.StateIncomeWaitNote:
 			IncomeNoteHandler(store, txSvc, log)(ctx, b, update)
 		default:
@@ -152,9 +149,13 @@ func buildPeriodKeyboard() *models.InlineKeyboardMarkup {
 }
 
 // parseCategoryCallback extracts the category ID from a "cat:{id}" callback.
-func parseCategoryCallback(data string) int64 {
-	id, _ := strconv.ParseInt(strings.TrimPrefix(data, "cat:"), 10, 64)
-	return id
+// Returns an error if the data is malformed or the ID is not positive.
+func parseCategoryCallback(data string) (int64, error) {
+	id, err := strconv.ParseInt(strings.TrimPrefix(data, "cat:"), 10, 64)
+	if err != nil || id <= 0 {
+		return 0, fmt.Errorf("invalid category callback data %q", data)
+	}
+	return id, nil
 }
 
 // parsePeriodCallback extracts the period name from a "period:{name}" callback.
@@ -168,9 +169,4 @@ func sendError(ctx context.Context, b *bot.Bot, chatID int64) {
 		ChatID: chatID,
 		Text:   "❌ Something went wrong. Please try again or use /cancel.",
 	})
-}
-
-// sendErrorCallback sends a generic error message in a callback context.
-func sendErrorCallback(ctx context.Context, b *bot.Bot, chatID int64) {
-	sendError(ctx, b, chatID)
 }

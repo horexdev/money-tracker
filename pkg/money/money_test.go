@@ -1,6 +1,7 @@
 package money_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/horexdev/money-tracker/internal/domain"
@@ -56,7 +57,7 @@ func TestFormatCents(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.want, func(t *testing.T) {
+		t.Run(fmt.Sprintf("%d", tt.cents), func(t *testing.T) {
 			got := money.FormatCents(tt.cents)
 			assert.Equal(t, tt.want, got)
 		})

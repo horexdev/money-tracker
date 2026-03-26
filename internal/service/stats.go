@@ -2,20 +2,20 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/horexdev/money-tracker/internal/domain"
-	"github.com/horexdev/money-tracker/internal/repository"
 )
 
 // StatsService provides aggregated financial statistics.
 type StatsService struct {
-	txRepo *repository.TransactionRepository
+	txRepo TransactionStorer
 	log    *slog.Logger
 }
 
-func NewStatsService(txRepo *repository.TransactionRepository, log *slog.Logger) *StatsService {
+func NewStatsService(txRepo TransactionStorer, log *slog.Logger) *StatsService {
 	return &StatsService{txRepo: txRepo, log: log}
 }
 
@@ -23,11 +23,7 @@ func NewStatsService(txRepo *repository.TransactionRepository, log *slog.Logger)
 func (s *StatsService) ByCategory(ctx context.Context, userID int64, from, to time.Time) ([]domain.CategoryStat, error) {
 	stats, err := s.txRepo.StatsByCategory(ctx, userID, from, to)
 	if err != nil {
-		s.log.ErrorContext(ctx, "failed to get stats by category",
-			slog.Int64("user_id", userID),
-			slog.String("error", err.Error()),
-		)
-		return nil, err
+		return nil, fmt.Errorf("stats by category for user %d: %w", userID, err)
 	}
 	return stats, nil
 }
@@ -53,8 +49,9 @@ func PeriodRange(period string) (from, to time.Time, err error) {
 		end := start.AddDate(0, 1, 0)
 		return start, end, nil
 	case "lastmonth":
-		start := time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, now.Location())
-		end := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+		firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+		start := firstOfMonth.AddDate(0, -1, 0)
+		end := firstOfMonth
 		return start, end, nil
 	default:
 		return time.Time{}, time.Time{}, domain.ErrInvalidPeriod

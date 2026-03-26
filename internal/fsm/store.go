@@ -3,6 +3,7 @@ package fsm
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -63,9 +64,19 @@ func (s *Store) GetData(ctx context.Context, userID int64, field string) (string
 
 // ClearData removes all intermediate data keys for a user.
 func (s *Store) ClearData(ctx context.Context, userID int64) error {
-	keys, err := s.rdb.Keys(ctx, dataPattern(userID)).Result()
-	if err != nil {
-		return err
+	var keys []string
+	var cursor uint64
+	for {
+		var batch []string
+		var err error
+		batch, cursor, err = s.rdb.Scan(ctx, cursor, dataPattern(userID), 100).Result()
+		if err != nil {
+			return fmt.Errorf("scan fsm data keys: %w", err)
+		}
+		keys = append(keys, batch...)
+		if cursor == 0 {
+			break
+		}
 	}
 	if len(keys) == 0 {
 		return nil

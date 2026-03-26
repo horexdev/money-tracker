@@ -2,22 +2,22 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/horexdev/money-tracker/internal/domain"
-	"github.com/horexdev/money-tracker/internal/repository"
 )
 
 // TransactionService handles business logic for recording and querying transactions.
 type TransactionService struct {
-	txRepo  *repository.TransactionRepository
-	catRepo *repository.CategoryRepository
+	txRepo  TransactionStorer
+	catRepo CategoryStorer
 	log     *slog.Logger
 }
 
 func NewTransactionService(
-	txRepo *repository.TransactionRepository,
-	catRepo *repository.CategoryRepository,
+	txRepo TransactionStorer,
+	catRepo CategoryStorer,
 	log *slog.Logger,
 ) *TransactionService {
 	return &TransactionService{txRepo: txRepo, catRepo: catRepo, log: log}
@@ -41,7 +41,7 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 	// Verify category exists and belongs to this user or is a system category.
 	cat, err := s.catRepo.GetByID(ctx, categoryID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get category %d: %w", categoryID, err)
 	}
 	if !cat.IsSystem() && cat.UserID != userID {
 		return nil, domain.ErrCategoryNotFound
@@ -55,12 +55,7 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		Note:        note,
 	})
 	if err != nil {
-		s.log.ErrorContext(ctx, "failed to create transaction",
-			slog.Int64("user_id", userID),
-			slog.String("type", string(txType)),
-			slog.String("error", err.Error()),
-		)
-		return nil, err
+		return nil, fmt.Errorf("create transaction: %w", err)
 	}
 
 	tx.CategoryName = cat.Name
@@ -77,10 +72,27 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 
 // GetBalance returns net balance (income - expense) for a user.
 func (s *TransactionService) GetBalance(ctx context.Context, userID int64) (incomeCents, expenseCents int64, err error) {
-	return s.txRepo.GetBalance(ctx, userID)
+	income, expense, err := s.txRepo.GetBalance(ctx, userID)
+	if err != nil {
+		return 0, 0, fmt.Errorf("get balance for user %d: %w", userID, err)
+	}
+	return income, expense, nil
 }
 
 // ListRecent returns the n most recent transactions for a user.
 func (s *TransactionService) ListRecent(ctx context.Context, userID int64, n int) ([]*domain.Transaction, error) {
-	return s.txRepo.List(ctx, userID, n, 0)
+	txs, err := s.txRepo.List(ctx, userID, n, 0)
+	if err != nil {
+		return nil, fmt.Errorf("list transactions for user %d: %w", userID, err)
+	}
+	return txs, nil
+}
+
+// ListCategories returns all categories available to a user.
+func (s *TransactionService) ListCategories(ctx context.Context, userID int64) ([]*domain.Category, error) {
+	cats, err := s.catRepo.ListForUser(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list categories for user %d: %w", userID, err)
+	}
+	return cats, nil
 }

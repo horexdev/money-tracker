@@ -62,7 +62,7 @@ func StatsPeriodHandler(store *fsm.Store, statsSvc *service.StatsService, log *s
 		stats, err := statsSvc.ByCategory(ctx, userID, from, to)
 		if err != nil {
 			log.ErrorContext(ctx, "stats query failed", slog.String("error", err.Error()))
-			sendErrorCallback(ctx, b, query.Message.Message.Chat.ID)
+			sendError(ctx, b, query.Message.Message.Chat.ID)
 			if err := store.Clear(ctx, userID); err != nil {
 				log.ErrorContext(ctx, "failed to clear FSM state", slog.String("error", err.Error()))
 			}
