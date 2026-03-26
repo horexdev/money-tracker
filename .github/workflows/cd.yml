@@ -6,6 +6,9 @@ on:
     types: [completed]
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -68,6 +71,7 @@ ENVEOF
              sudo systemctl daemon-reload
              sudo systemctl enable moneytracker
              chmod +x goose
+             sudo docker compose -f docker-compose.yml pull --quiet
              sudo docker compose -f docker-compose.yml up -d --remove-orphans
              ./goose -dir migrations postgres '${{ secrets.DATABASE_URL }}' up
              sudo systemctl restart moneytracker"
