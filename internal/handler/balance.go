@@ -39,11 +39,13 @@ func BalanceHandler(txSvc *service.TransactionService, log *slog.Logger) bot.Han
 			formatNet(net),
 		)
 
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    update.Message.Chat.ID,
 			Text:      text,
 			ParseMode: models.ParseModeMarkdown,
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send balance", slog.String("error", err.Error()))
+		}
 	}
 }
 

@@ -16,16 +16,21 @@ import (
 )
 
 // StatsStartHandler begins the stats flow by asking the user to pick a period.
-func StatsStartHandler(store *fsm.Store) bot.HandlerFunc {
+func StatsStartHandler(store *fsm.Store, log *slog.Logger) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
 		userID := update.Message.From.ID
-		store.SetState(ctx, userID, fsm.StateStatsWaitPeriod)
+		if err := store.SetState(ctx, userID, fsm.StateStatsWaitPeriod); err != nil {
+			sendError(ctx, b, update.Message.Chat.ID)
+			return
+		}
 
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
 			Text:        "📊 Choose a period:",
 			ReplyMarkup: buildPeriodKeyboard(),
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+		}
 	}
 }
 
@@ -35,16 +40,22 @@ func StatsPeriodHandler(store *fsm.Store, statsSvc *service.StatsService, log *s
 		query := update.CallbackQuery
 		userID := query.From.ID
 
-		b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: query.ID})
+		if _, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: query.ID}); err != nil {
+			log.ErrorContext(ctx, "failed to answer callback", slog.String("error", err.Error()))
+		}
 
 		period := parsePeriodCallback(query.Data)
 		from, to, err := service.PeriodRange(period)
 		if err != nil {
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: query.Message.Message.Chat.ID,
 				Text:   "❌ Unknown period.",
-			})
-			store.Clear(ctx, userID)
+			}); err != nil {
+				log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+			}
+			if err := store.Clear(ctx, userID); err != nil {
+				log.ErrorContext(ctx, "failed to clear FSM state", slog.String("error", err.Error()))
+			}
 			return
 		}
 
@@ -52,25 +63,33 @@ func StatsPeriodHandler(store *fsm.Store, statsSvc *service.StatsService, log *s
 		if err != nil {
 			log.ErrorContext(ctx, "stats query failed", slog.String("error", err.Error()))
 			sendErrorCallback(ctx, b, query.Message.Message.Chat.ID)
-			store.Clear(ctx, userID)
+			if err := store.Clear(ctx, userID); err != nil {
+				log.ErrorContext(ctx, "failed to clear FSM state", slog.String("error", err.Error()))
+			}
 			return
 		}
 
-		store.Clear(ctx, userID)
+		if err := store.Clear(ctx, userID); err != nil {
+			log.ErrorContext(ctx, "failed to clear FSM state", slog.String("error", err.Error()))
+		}
 
 		if len(stats) == 0 {
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: query.Message.Message.Chat.ID,
 				Text:   "No transactions found for this period.",
-			})
+			}); err != nil {
+				log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+			}
 			return
 		}
 
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    query.Message.Message.Chat.ID,
 			Text:      formatStats(stats, period),
 			ParseMode: models.ParseModeMarkdown,
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send stats", slog.String("error", err.Error()))
+		}
 	}
 }
 

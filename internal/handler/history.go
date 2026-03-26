@@ -32,10 +32,12 @@ func HistoryHandler(txSvc *service.TransactionService, log *slog.Logger) bot.Han
 		}
 
 		if len(txs) == 0 {
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
 				Text:   "No transactions yet. Use /addexpense or /addincome to get started.",
-			})
+			}); err != nil {
+				log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+			}
 			return
 		}
 
@@ -60,10 +62,12 @@ func HistoryHandler(txSvc *service.TransactionService, log *slog.Logger) bot.Han
 			)
 		}
 
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    update.Message.Chat.ID,
 			Text:      sb.String(),
 			ParseMode: models.ParseModeMarkdown,
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send history", slog.String("error", err.Error()))
+		}
 	}
 }

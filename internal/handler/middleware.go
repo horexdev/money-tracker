@@ -21,14 +21,14 @@ func LoggingMiddleware(log *slog.Logger) bot.Middleware {
 
 			log.InfoContext(ctx, "update received",
 				slog.Int64("user_id", userID),
-				slog.Int("update_id", update.ID),
+				slog.Int64("update_id", update.ID),
 			)
 
 			next(ctx, b, update)
 
 			log.InfoContext(ctx, "update processed",
 				slog.Int64("user_id", userID),
-				slog.Int("update_id", update.ID),
+				slog.Int64("update_id", update.ID),
 				slog.Duration("duration", time.Since(start)),
 			)
 		}

@@ -56,7 +56,7 @@ func main() {
 		redisOpts = &redis.Options{Addr: cfg.RedisURL}
 	}
 	rdb := redis.NewClient(redisOpts)
-	defer rdb.Close()
+	defer func() { _ = rdb.Close() }()
 
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		log.Error("failed to connect to redis", slog.String("error", err.Error()))
@@ -120,7 +120,7 @@ func runMigrations(dsn, dir string, log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	goose.SetLogger(goose.NopLogger())
 	if err := goose.SetDialect("postgres"); err != nil {

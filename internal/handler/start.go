@@ -23,7 +23,7 @@ Track your income and expenses right here in Telegram.
 // StartHandler handles the /start and /help commands.
 func StartHandler() bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		_, _ = b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    update.Message.Chat.ID,
 			Text:      welcomeText,
 			ParseMode: models.ParseModeMarkdown,

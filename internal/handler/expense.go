@@ -24,10 +24,12 @@ func ExpenseStartHandler(store *fsm.Store, catRepo *repository.CategoryRepositor
 			sendError(ctx, b, update.Message.Chat.ID)
 			return
 		}
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   "💸 Enter expense amount (e.g. 12.50):",
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+		}
 	}
 }
 
@@ -39,10 +41,12 @@ func ExpenseAmountHandler(store *fsm.Store, catRepo *repository.CategoryReposito
 
 		cents, err := money.ParseCents(text)
 		if err != nil {
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
 				Text:   "❌ Invalid amount. Please enter a positive number like 12.50:",
-			})
+			}); err != nil {
+				log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+			}
 			return
 		}
 
@@ -61,11 +65,13 @@ func ExpenseAmountHandler(store *fsm.Store, catRepo *repository.CategoryReposito
 			return
 		}
 
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:      update.Message.Chat.ID,
 			Text:        "📂 Choose a category:",
 			ReplyMarkup: buildCategoryKeyboard(cats),
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+		}
 	}
 }
 
@@ -76,7 +82,9 @@ func ExpenseCategoryHandler(store *fsm.Store, log *slog.Logger) bot.HandlerFunc 
 		userID := query.From.ID
 		categoryID := parseCategoryCallback(query.Data)
 
-		b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: query.ID})
+		if _, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{CallbackQueryID: query.ID}); err != nil {
+			log.ErrorContext(ctx, "failed to answer callback", slog.String("error", err.Error()))
+		}
 
 		if err := store.SetData(ctx, userID, "category", strconv.FormatInt(categoryID, 10)); err != nil {
 			sendErrorCallback(ctx, b, query.Message.Message.Chat.ID)
@@ -87,10 +95,12 @@ func ExpenseCategoryHandler(store *fsm.Store, log *slog.Logger) bot.HandlerFunc 
 			return
 		}
 
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: query.Message.Message.Chat.ID,
 			Text:   "📝 Add a note (or send /skip):",
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+		}
 	}
 }
 
@@ -118,13 +128,17 @@ func ExpenseNoteHandler(store *fsm.Store, txSvc *service.TransactionService, log
 			if emoji == "" {
 				emoji = "📦"
 			}
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
 				Text: fmt.Sprintf("✅ Expense recorded: -%s %s %s",
 					money.FormatCents(tx.AmountCents), emoji, tx.CategoryName),
-			})
+			}); err != nil {
+				log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+			}
 		}
 
-		store.Clear(ctx, userID)
+		if err := store.Clear(ctx, userID); err != nil {
+			log.ErrorContext(ctx, "failed to clear FSM state", slog.String("error", err.Error()))
+		}
 	}
 }

@@ -34,7 +34,7 @@ func RegisterAll(
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/history", bot.MatchTypeExact, HistoryHandler(txSvc, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/addexpense", bot.MatchTypeExact, ExpenseStartHandler(store, catRepo, log))
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/addincome", bot.MatchTypeExact, IncomeStartHandler(store, catRepo, log))
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/stats", bot.MatchTypeExact, StatsStartHandler(store))
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/stats", bot.MatchTypeExact, StatsStartHandler(store, log))
 
 	// Callback queries
 	b.RegisterHandler(bot.HandlerTypeCallbackQueryData, "cat:", bot.MatchTypePrefix, dispatchCategoryCallback(store, txSvc, log))
@@ -72,10 +72,12 @@ func DefaultHandler(
 		case fsm.StateIncomeWaitNote:
 			IncomeNoteHandler(store, txSvc, log)(ctx, b, update)
 		default:
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
 				Text:   "Use /help to see available commands.",
-			})
+			}); err != nil {
+				log.ErrorContext(ctx, "failed to send message", slog.String("error", err.Error()))
+			}
 		}
 	}
 }
@@ -99,10 +101,12 @@ func dispatchCategoryCallback(store *fsm.Store, txSvc *service.TransactionServic
 		case fsm.StateIncomeWaitCategory:
 			IncomeCategoryHandler(store, log)(ctx, b, update)
 		default:
-			b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+			if _, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
 				CallbackQueryID: update.CallbackQuery.ID,
 				Text:            "No active flow. Use /addexpense or /addincome.",
-			})
+			}); err != nil {
+				log.ErrorContext(ctx, "failed to answer callback", slog.String("error", err.Error()))
+			}
 		}
 	}
 }
@@ -160,7 +164,7 @@ func parsePeriodCallback(data string) string {
 
 // sendError sends a generic error message to the chat.
 func sendError(ctx context.Context, b *bot.Bot, chatID int64) {
-	b.SendMessage(ctx, &bot.SendMessageParams{
+	_, _ = b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatID,
 		Text:   "❌ Something went wrong. Please try again or use /cancel.",
 	})

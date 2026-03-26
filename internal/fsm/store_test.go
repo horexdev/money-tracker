@@ -19,7 +19,7 @@ func newTestStore(t *testing.T) *fsm.Store {
 	t.Cleanup(mr.Close)
 
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { rdb.Close() })
+	t.Cleanup(func() { _ = rdb.Close() })
 
 	return fsm.NewStore(rdb)
 }

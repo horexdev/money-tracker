@@ -22,9 +22,11 @@ func CancelHandler(store *fsm.Store, log *slog.Logger) bot.HandlerFunc {
 			)
 		}
 
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   "Cancelled. Use /help to see available commands.",
-		})
+		}); err != nil {
+			log.ErrorContext(ctx, "failed to send cancel message", slog.String("error", err.Error()))
+		}
 	}
 }
