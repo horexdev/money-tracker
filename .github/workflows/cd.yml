@@ -36,10 +36,14 @@ jobs:
           scp -i /tmp/deploy_key -o StrictHostKeyChecking=no -r \
             db/migrations \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            deployments/moneytracker.service \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/moneytracker.service
+          scp -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            deployments/docker-compose.yml \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/moneytracker/docker-compose.yml
 
       - name: Deploy on server
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
@@ -47,8 +51,19 @@ jobs:
              cd /opt/moneytracker
              mv bot.new bot
              chmod +x bot
-             export DATABASE_URL='$DATABASE_URL'
-             goose -dir migrations postgres \"\$DATABASE_URL\" up
+             cat > .env << 'ENVEOF'
+BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+DATABASE_URL=${{ secrets.DATABASE_URL }}
+REDIS_URL=${{ secrets.REDIS_URL }}
+LOG_LEVEL=info
+MIGRATIONS_DIR=/opt/moneytracker/migrations
+ENVEOF
+             chmod 600 .env
+             sudo mv /tmp/moneytracker.service /etc/systemd/system/moneytracker.service
+             sudo systemctl daemon-reload
+             sudo systemctl enable moneytracker
+             sudo docker compose -f docker-compose.yml up -d --remove-orphans
+             goose -dir migrations postgres '${{ secrets.DATABASE_URL }}' up
              sudo systemctl restart moneytracker"
 
       - name: Cleanup SSH key
