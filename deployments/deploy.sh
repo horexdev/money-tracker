@@ -35,11 +35,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable "$SERVICE"
 
 echo "[deploy] ensuring postgres and redis are running..."
-sudo docker compose -f "$DEPLOY_DIR/docker-compose.yml" up -d --remove-orphans
+docker compose -f "$DEPLOY_DIR/docker-compose.yml" up -d --remove-orphans
 
 echo "[deploy] waiting for postgres to be healthy..."
 for i in $(seq 1 20); do
-  if sudo docker compose -f "$DEPLOY_DIR/docker-compose.yml" \
+  if docker compose -f "$DEPLOY_DIR/docker-compose.yml" \
        exec -T postgres pg_isready -U moneytracker -d moneytracker > /dev/null 2>&1; then
     echo "[deploy] postgres is ready (attempt ${i}/20)"
     break
