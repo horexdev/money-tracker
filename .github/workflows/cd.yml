@@ -50,11 +50,14 @@ jobs:
             --transform 's|^db/migrations|migrations|' \
             --transform 's|^deployments/moneytracker\.service$|moneytracker.service|' \
             --transform 's|^deployments/docker-compose\.yml$|docker-compose.yml|' \
+            --transform 's|^deployments/deploy\.sh$|deploy.sh|' \
             bin/bot bin/goose db/migrations \
             deployments/moneytracker.service deployments/docker-compose.yml \
+            deployments/deploy.sh \
             | ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
                 'tar xzf - -C /opt/moneytracker \
-                 && mv /opt/moneytracker/moneytracker.service /tmp/'
+                 && mv /opt/moneytracker/moneytracker.service /tmp/ \
+                 && chmod +x /opt/moneytracker/deploy.sh'
 
       - name: Deploy on server
         env:
@@ -63,8 +66,8 @@ jobs:
           REDIS_URL: ${{ secrets.REDIS_URL }}
         run: |
           ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "BOT_TOKEN='${BOT_TOKEN}' DATABASE_URL='${DATABASE_URL}' REDIS_URL='${REDIS_URL}' bash -s" \
-            < deployments/deploy.sh
+            "BOT_TOKEN='${BOT_TOKEN}' DATABASE_URL='${DATABASE_URL}' REDIS_URL='${REDIS_URL}' \
+             /opt/moneytracker/deploy.sh"
 
       - name: Verify service is running
         run: |
