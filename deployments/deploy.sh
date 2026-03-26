@@ -56,7 +56,9 @@ postgres_ready() {
   done
 }
 if ! postgres_ready; then
+  echo "[deploy] starting service..."
   sudo systemctl start "$SERVICE" || true
+  echo "[deploy] done"
   exit 1
 fi
 
