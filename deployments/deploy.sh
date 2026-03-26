@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Deploy script for moneytracker. Runs on the server via:
 #   ssh user@host "BOT_TOKEN='...' DATABASE_URL='...' REDIS_URL='...' bash -s" < deploy.sh
-set -euo pipefail
+set -euxo pipefail
 
 DEPLOY_DIR=/opt/moneytracker
 SERVICE=moneytracker
