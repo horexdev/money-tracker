@@ -14,6 +14,10 @@ type Config struct {
 	LogLevel        string        `env:"LOG_LEVEL"          envDefault:"info"`
 	MigrationsDir   string        `env:"MIGRATIONS_DIR"     envDefault:"db/migrations"`
 	ExchangeRateTTL time.Duration `env:"EXCHANGE_RATE_TTL"  envDefault:"1h"`
+	// API server configuration (used by cmd/api).
+	APIPort        string `env:"API_PORT"        envDefault:"8080"`
+	AllowedOrigins string `env:"ALLOWED_ORIGINS" envDefault:"*"`
+	MiniAppURL     string `env:"MINI_APP_URL"    envDefault:""`
 }
 
 // Load parses environment variables into Config.

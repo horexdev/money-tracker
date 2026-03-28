@@ -37,7 +37,6 @@ func (r *UserRepository) Upsert(ctx context.Context, u *domain.User) (*domain.Us
 }
 
 // GetByID returns the user with the given Telegram ID.
-// Returns domain.ErrUserNotFound if no such user exists.
 func (r *UserRepository) GetByID(ctx context.Context, id int64) (*domain.User, error) {
 	row, err := r.q.GetUserByID(ctx, id)
 	if err != nil {
@@ -73,6 +72,18 @@ func (r *UserRepository) UpdateDisplayCurrencies(ctx context.Context, id int64, 
 	return rowToUser(row), nil
 }
 
+// UpdateLanguage changes the user's preferred language.
+func (r *UserRepository) UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error) {
+	row, err := r.q.UpdateUserLanguage(ctx, sqlcgen.UpdateUserLanguageParams{
+		ID:       id,
+		Language: lang,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
 func rowToUser(row sqlcgen.User) *domain.User {
 	var dc []string
 	if row.DisplayCurrencies != "" {
@@ -84,8 +95,9 @@ func rowToUser(row sqlcgen.User) *domain.User {
 		FirstName:         row.FirstName,
 		LastName:          row.LastName,
 		CurrencyCode:      row.CurrencyCode,
+		Language:          domain.Language(row.Language),
 		DisplayCurrencies: dc,
-		CreatedAt:         row.CreatedAt,
-		UpdatedAt:         row.UpdatedAt,
+		CreatedAt:         goTime(row.CreatedAt),
+		UpdatedAt:         goTime(row.UpdatedAt),
 	}
 }

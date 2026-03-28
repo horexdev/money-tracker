@@ -1,0 +1,8 @@
+import { api } from './client'
+import type { StatsResponse } from '../types'
+
+export const statsApi = {
+  get(period: 'month' | 'week' | 'today' | 'lastmonth' = 'month'): Promise<StatsResponse> {
+    return api.get(`/v1/stats?period=${period}`)
+  },
+}

@@ -40,8 +40,13 @@ func (r *TransactionRepository) Create(ctx context.Context, t *domain.Transactio
 		CategoryID:   row.CategoryID,
 		Note:         row.Note,
 		CurrencyCode: row.CurrencyCode,
-		CreatedAt:    row.CreatedAt,
+		CreatedAt:    goTime(row.CreatedAt),
 	}, nil
+}
+
+// Delete removes a transaction by ID, scoped to the owning user.
+func (r *TransactionRepository) Delete(ctx context.Context, id, userID int64) error {
+	return r.q.DeleteTransaction(ctx, sqlcgen.DeleteTransactionParams{ID: id, UserID: userID})
 }
 
 // GetBalance returns total income and total expense for a user.
@@ -76,7 +81,7 @@ func (r *TransactionRepository) List(ctx context.Context, userID int64, limit, o
 			CategoryEmoji: row.CategoryEmoji,
 			Note:          row.Note,
 			CurrencyCode:  row.CurrencyCode,
-			CreatedAt:     row.CreatedAt,
+			CreatedAt:     goTime(row.CreatedAt),
 		})
 	}
 	return txs, nil
@@ -107,9 +112,9 @@ func (r *TransactionRepository) GetBalanceByCurrency(ctx context.Context, userID
 // StatsByCategory returns aggregated stats per category for the given period.
 func (r *TransactionRepository) StatsByCategory(ctx context.Context, userID int64, from, to time.Time) ([]domain.CategoryStat, error) {
 	rows, err := r.q.GetStatsByCategory(ctx, sqlcgen.GetStatsByCategoryParams{
-		UserID:    userID,
-		CreatedAt: from,
-		EndAt:     to,
+		UserID:      userID,
+		CreatedAt:   pgTimestamptz(from),
+		CreatedAt_2: pgTimestamptz(to),
 	})
 	if err != nil {
 		return nil, err

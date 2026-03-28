@@ -1,0 +1,167 @@
+package api
+
+import (
+	"context"
+	"encoding/json"
+	"log/slog"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/horexdev/money-tracker/internal/domain"
+)
+
+type transactionResponse struct {
+	ID            int64  `json:"id"`
+	Type          string `json:"type"`
+	AmountCents   int64  `json:"amount_cents"`
+	CurrencyCode  string `json:"currency_code"`
+	CategoryID    int64  `json:"category_id"`
+	CategoryName  string `json:"category_name"`
+	CategoryEmoji string `json:"category_emoji"`
+	Note          string `json:"note"`
+	CreatedAt     string `json:"created_at"`
+}
+
+type listTransactionsResponse struct {
+	Transactions []transactionResponse `json:"transactions"`
+	TotalPages   int                   `json:"total_pages"`
+	CurrentPage  int                   `json:"current_page"`
+}
+
+type createTransactionRequest struct {
+	Type         string `json:"type"`
+	AmountCents  int64  `json:"amount_cents"`
+	CategoryID   int64  `json:"category_id"`
+	Note         string `json:"note"`
+	CurrencyCode string `json:"currency_code"`
+}
+
+type transactionManager interface {
+	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string) (*domain.Transaction, error)
+	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string) (*domain.Transaction, error)
+	ListPaged(ctx context.Context, userID int64, page, pageSize int) ([]*domain.Transaction, int, error)
+	Delete(ctx context.Context, id, userID int64) error
+}
+
+const defaultPageSize = 20
+
+// transactionHandler routes GET/POST/DELETE for /api/v1/transactions[/{id}]
+func transactionHandler(txSvc transactionManager, log *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		userID := userIDFromContext(ctx)
+
+		// /api/v1/transactions/{id}  → DELETE
+		suffix := strings.TrimPrefix(r.URL.Path, "/api/v1/transactions")
+		suffix = strings.TrimPrefix(suffix, "/")
+
+		if suffix != "" {
+			if r.Method != http.MethodDelete {
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			id, err := strconv.ParseInt(suffix, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid transaction id"})
+				return
+			}
+			if err := txSvc.Delete(ctx, id, userID); err != nil {
+				writeError(w, log, err)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			listTransactions(w, r, userID, txSvc, log)
+		case http.MethodPost:
+			createTransaction(w, r, userID, txSvc, log)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	}
+}
+
+func listTransactions(w http.ResponseWriter, r *http.Request, userID int64, txSvc transactionManager, log *slog.Logger) {
+	q := r.URL.Query()
+	page, _ := strconv.Atoi(q.Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	pageSize, _ := strconv.Atoi(q.Get("page_size"))
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = defaultPageSize
+	}
+
+	txs, totalPages, err := txSvc.ListPaged(r.Context(), userID, page, pageSize)
+	if err != nil {
+		writeError(w, log, err)
+		return
+	}
+
+	items := make([]transactionResponse, 0, len(txs))
+	for _, tx := range txs {
+		items = append(items, txToResponse(tx))
+	}
+
+	writeJSON(w, http.StatusOK, listTransactionsResponse{
+		Transactions: items,
+		TotalPages:   totalPages,
+		CurrentPage:  page,
+	})
+}
+
+func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txSvc transactionManager, log *slog.Logger) {
+	var req createTransactionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
+		return
+	}
+
+	if req.AmountCents <= 0 {
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "amount_cents must be positive"})
+		return
+	}
+	if req.CategoryID <= 0 {
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "category_id is required"})
+		return
+	}
+
+	ctx := r.Context()
+	var (
+		tx  *domain.Transaction
+		err error
+	)
+	switch req.Type {
+	case "expense":
+		tx, err = txSvc.AddExpense(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode)
+	case "income":
+		tx, err = txSvc.AddIncome(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode)
+	default:
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "type must be 'expense' or 'income'"})
+		return
+	}
+	if err != nil {
+		writeError(w, log, err)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, txToResponse(tx))
+}
+
+func txToResponse(tx *domain.Transaction) transactionResponse {
+	return transactionResponse{
+		ID:            tx.ID,
+		Type:          string(tx.Type),
+		AmountCents:   tx.AmountCents,
+		CurrencyCode:  tx.CurrencyCode,
+		CategoryID:    tx.CategoryID,
+		CategoryName:  tx.CategoryName,
+		CategoryEmoji: tx.CategoryEmoji,
+		Note:          tx.Note,
+		CreatedAt:     tx.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}
+}

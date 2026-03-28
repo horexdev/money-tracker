@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/jackc/pgx/v5"
@@ -23,7 +22,23 @@ func NewCategoryRepository(pool *pgxpool.Pool) *CategoryRepository {
 
 // ListForUser returns all system categories plus user-specific ones.
 func (r *CategoryRepository) ListForUser(ctx context.Context, userID int64) ([]*domain.Category, error) {
-	rows, err := r.q.ListUserCategories(ctx, userID)
+	rows, err := r.q.ListUserCategories(ctx, pgInt8(userID))
+	if err != nil {
+		return nil, err
+	}
+	cats := make([]*domain.Category, 0, len(rows))
+	for _, row := range rows {
+		cats = append(cats, rowToCategory(row))
+	}
+	return cats, nil
+}
+
+// ListForUserByType returns categories filtered by type (expense/income/both).
+func (r *CategoryRepository) ListForUserByType(ctx context.Context, userID int64, catType string) ([]*domain.Category, error) {
+	rows, err := r.q.ListUserCategoriesByType(ctx, sqlcgen.ListUserCategoriesByTypeParams{
+		UserID: pgInt8(userID),
+		Type:   catType,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +50,6 @@ func (r *CategoryRepository) ListForUser(ctx context.Context, userID int64) ([]*
 }
 
 // GetByID returns the category with the given ID.
-// Returns domain.ErrCategoryNotFound if not found.
 func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*domain.Category, error) {
 	row, err := r.q.GetCategoryByID(ctx, id)
 	if err != nil {
@@ -47,28 +61,60 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*domain.Cat
 	return rowToCategory(row), nil
 }
 
-func rowToCategory(row sqlcgen.Category) *domain.Category {
-	var userID int64
-	if row.UserID.Valid {
-		userID = row.UserID.Int64
-	}
-	return &domain.Category{
-		ID:     row.ID,
-		UserID: userID,
-		Name:   row.Name,
-		Emoji:  row.Emoji,
-	}
-}
-
 // CreateForUser adds a custom category for a specific user.
-func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, name, emoji string) (*domain.Category, error) {
+func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, name, emoji, catType string) (*domain.Category, error) {
 	row, err := r.q.CreateUserCategory(ctx, sqlcgen.CreateUserCategoryParams{
-		UserID: sql.NullInt64{Int64: userID, Valid: true},
+		UserID: pgInt8(userID),
 		Name:   name,
 		Emoji:  emoji,
+		Type:   catType,
 	})
 	if err != nil {
 		return nil, err
 	}
 	return rowToCategory(row), nil
+}
+
+// Update modifies an existing category (must be user-owned).
+func (r *CategoryRepository) Update(ctx context.Context, userID, id int64, name, emoji, catType string) (*domain.Category, error) {
+	row, err := r.q.UpdateCategory(ctx, sqlcgen.UpdateCategoryParams{
+		ID:     id,
+		UserID: pgInt8(userID),
+		Name:   name,
+		Emoji:  emoji,
+		Type:   catType,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrCategoryNotFound
+		}
+		return nil, err
+	}
+	return rowToCategory(row), nil
+}
+
+// SoftDelete marks a category as deleted (must be user-owned).
+func (r *CategoryRepository) SoftDelete(ctx context.Context, id, userID int64) error {
+	return r.q.SoftDeleteCategory(ctx, sqlcgen.SoftDeleteCategoryParams{
+		ID:     id,
+		UserID: pgInt8(userID),
+	})
+}
+
+// CountTransactions returns the number of transactions referencing a category.
+func (r *CategoryRepository) CountTransactions(ctx context.Context, categoryID int64) (int64, error) {
+	return r.q.CountTransactionsByCategory(ctx, categoryID)
+}
+
+func rowToCategory(row sqlcgen.Category) *domain.Category {
+	cat := &domain.Category{
+		ID:        row.ID,
+		UserID:    goInt64(row.UserID),
+		Name:      row.Name,
+		Emoji:     row.Emoji,
+		Type:      domain.CategoryType(row.Type),
+		UpdatedAt: goTime(row.UpdatedAt),
+		DeletedAt: goTimePtr(row.DeletedAt),
+	}
+	return cat
 }

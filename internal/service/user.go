@@ -54,6 +54,19 @@ func (s *UserService) UpdateCurrency(ctx context.Context, id int64, code string)
 	return u, nil
 }
 
+// UpdateLanguage changes the user's preferred language.
+func (s *UserService) UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error) {
+	if !domain.ValidLanguage(lang) {
+		return nil, domain.ErrInvalidLanguage
+	}
+	u, err := s.repo.UpdateLanguage(ctx, id, lang)
+	if err != nil {
+		return nil, fmt.Errorf("update language for user %d: %w", id, err)
+	}
+	s.log.InfoContext(ctx, "language updated", slog.Int64("user_id", id), slog.String("language", lang))
+	return u, nil
+}
+
 // UpdateDisplayCurrencies sets the user's display currencies (max 3).
 func (s *UserService) UpdateDisplayCurrencies(ctx context.Context, id int64, codes []string) (*domain.User, error) {
 	if len(codes) > 3 {

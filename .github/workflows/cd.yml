@@ -26,13 +26,25 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
       - name: Build Linux amd64 binaries
         run: |
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 \
             go build -ldflags="-s -w" -o bin/bot ./cmd/bot
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 \
+            go build -ldflags="-s -w" -o bin/api ./cmd/api
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 \
             go build -ldflags="-s -w" -o bin/goose \
             github.com/pressly/goose/v3/cmd/goose
+
+      - name: Build Mini App
+        working-directory: web
+        run: npm ci && npm run build
 
       - name: Configure SSH agent
         uses: webfactory/ssh-agent@v0.9.1
@@ -46,17 +58,22 @@ jobs:
         run: |
           tar czf - \
             --transform 's|^bin/bot$|bot.new|' \
+            --transform 's|^bin/api$|api.new|' \
             --transform 's|^bin/goose$|goose|' \
             --transform 's|^db/migrations|migrations|' \
+            --transform 's|^web/dist|web-dist|' \
             --transform 's|^deployments/moneytracker\.service$|moneytracker.service|' \
+            --transform 's|^deployments/moneytracker-api\.service$|moneytracker-api.service|' \
             --transform 's|^deployments/docker-compose\.yml$|docker-compose.yml|' \
+            --transform 's|^deployments/nginx\.conf$|nginx.conf|' \
             --transform 's|^deployments/deploy\.sh$|deploy.sh|' \
-            bin/bot bin/goose db/migrations \
-            deployments/moneytracker.service deployments/docker-compose.yml \
-            deployments/deploy.sh \
+            bin/bot bin/api bin/goose db/migrations web/dist \
+            deployments/moneytracker.service deployments/moneytracker-api.service \
+            deployments/docker-compose.yml deployments/nginx.conf deployments/deploy.sh \
             | ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
                 'tar xzf - -C /opt/moneytracker \
                  && mv /opt/moneytracker/moneytracker.service /tmp/ \
+                 && mv /opt/moneytracker/moneytracker-api.service /tmp/ \
                  && chmod +x /opt/moneytracker/deploy.sh'
 
       - name: Deploy on server
@@ -64,9 +81,13 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           REDIS_URL: ${{ secrets.REDIS_URL }}
+          MINI_APP_URL: ${{ secrets.MINI_APP_URL }}
+          API_PORT: ${{ secrets.API_PORT }}
+          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
         run: |
           ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "BOT_TOKEN='${BOT_TOKEN}' DATABASE_URL='${DATABASE_URL}' REDIS_URL='${REDIS_URL}' \
+             MINI_APP_URL='${MINI_APP_URL}' API_PORT='${API_PORT}' ALLOWED_ORIGINS='${ALLOWED_ORIGINS}' \
              /opt/moneytracker/deploy.sh"
 
       - name: Verify service is running

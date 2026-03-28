@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  /* Telegram-mapped colors — resolved at runtime via CSS vars */
+  --color-bg: var(--tg-bg);
+  --color-surface: var(--tg-secondary-bg);
+  --color-text: var(--tg-text);
+  --color-muted: var(--tg-hint);
+  --color-accent: var(--tg-button);
+  --color-accent-text: var(--tg-button-text);
+  --color-destructive: var(--tg-destructive);
+  --color-link: var(--tg-link);
+  --color-section-bg: var(--tg-section-bg);
+  --color-section-header: var(--tg-section-header);
+
+  /* Brand palette from logo */
+  --color-brand-navy: #0f172a;
+  --color-brand-navy-light: #1e293b;
+  --color-brand-green: #22c55e;
+  --color-brand-gold: #f59e0b;
+  --color-brand-cyan: #06b6d4;
+  --color-income: #22c55e;
+  --color-expense: #ef4444;
+
+  /* Semantic surface modifiers */
+  --color-border: color-mix(in srgb, var(--tg-text) 8%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--tg-text) 14%, transparent);
+  --color-accent-subtle: color-mix(in srgb, var(--tg-button) 12%, var(--tg-secondary-bg));
+  --color-income-subtle: color-mix(in srgb, #22c55e 10%, var(--tg-secondary-bg));
+  --color-expense-subtle: color-mix(in srgb, #ef4444 10%, var(--tg-secondary-bg));
+
+  /* Radii */
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-sm: 8px;
+}
+
+/* Telegram WebApp CSS variable fallbacks */
+:root {
+  --tg-bg:              var(--tg-theme-bg-color, #ffffff);
+  --tg-secondary-bg:    var(--tg-theme-secondary-bg-color, #f4f4f5);
+  --tg-text:            var(--tg-theme-text-color, #111111);
+  --tg-hint:            var(--tg-theme-hint-color, #999999);
+  --tg-link:            var(--tg-theme-link-color, #2481cc);
+  --tg-button:          var(--tg-theme-button-color, #2481cc);
+  --tg-button-text:     var(--tg-theme-button-text-color, #ffffff);
+  --tg-header-bg:       var(--tg-theme-header-bg-color, #ffffff);
+  --tg-accent:          var(--tg-theme-accent-text-color, #2481cc);
+  --tg-section-bg:      var(--tg-theme-section-bg-color, #ffffff);
+  --tg-section-header:  var(--tg-theme-section-header-text-color, #6d6d72);
+  --tg-subtitle:        var(--tg-theme-subtitle-text-color, #999999);
+  --tg-destructive:     var(--tg-theme-destructive-text-color, #ff3b30);
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tab-bar-h: calc(56px + var(--safe-bottom));
+}
+
+/* Reset & base */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Utility: visually hide scrollbars but keep scrollability */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Tab bar safe area spacer */
+.tab-spacer { height: var(--tab-bar-h); flex-shrink: 0; }

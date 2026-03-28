@@ -36,7 +36,6 @@ func LoggingMiddleware(log *slog.Logger) bot.Middleware {
 }
 
 // AutoRegisterMiddleware upserts the Telegram user into the DB on every update.
-// This ensures users are registered without requiring an explicit /start.
 func AutoRegisterMiddleware(userSvc *service.UserService, log *slog.Logger) bot.Middleware {
 	return func(next bot.HandlerFunc) bot.HandlerFunc {
 		return func(ctx context.Context, b *bot.Bot, update *models.Update) {

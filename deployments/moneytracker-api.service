@@ -1,0 +1,23 @@
+# systemd unit file for the MoneyTracker API server.
+# Install on the server:
+#   sudo cp deployments/moneytracker-api.service /etc/systemd/system/moneytracker-api.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now moneytracker-api
+
+[Unit]
+Description=Money Tracker API Server
+After=network.target
+
+[Service]
+Type=simple
+User=moneytracker
+WorkingDirectory=/opt/moneytracker
+ExecStart=/opt/moneytracker/api
+EnvironmentFile=/opt/moneytracker/.env
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

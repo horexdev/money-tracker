@@ -47,6 +47,9 @@ WHERE t.user_id   = $1
 GROUP BY c.name, c.emoji, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
+-- name: DeleteTransaction :exec
+DELETE FROM transactions WHERE id = $1 AND user_id = $2;
+
 -- name: GetBalanceByCurrency :many
 SELECT
     currency_code,

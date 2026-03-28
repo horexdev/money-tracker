@@ -1,10 +1,14 @@
 BINARY     := bin/bot
+API_BINARY := bin/api
 CMD        := ./cmd/bot
+API_CMD    := ./cmd/api
 COMPOSE    := docker compose --env-file .env -f deployments/docker-compose.yml
-GOOSE      := goose -dir db/migrations postgres "$(DATABASE_URL)"
+GOOSE_BIN  := $(shell which goose 2>/dev/null || echo "$(shell go env GOPATH)/bin/goose")
+DATABASE_URL := $(shell grep -v '^\#' .env | grep '^DATABASE_URL=' | cut -d'=' -f2-)
+GOOSE      := $(GOOSE_BIN) -dir db/migrations postgres "$(DATABASE_URL)"
 SQLC       := cd db && sqlc generate
 
-.PHONY: help up down migrate migrate-down migrate-status sqlc build build-check run test test-unit test-integration lint vet vuln tidy clean smoke-test rollback
+.PHONY: help up down migrate migrate-down migrate-status sqlc build build-api build-check run run-api web-dev web-build test test-unit test-integration lint vet vuln tidy clean smoke-test rollback
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
@@ -32,12 +36,25 @@ build: ## Build the bot binary to bin/bot
 	@mkdir -p bin
 	go build -o $(BINARY) $(CMD)
 
+build-api: ## Build the API server binary to bin/api
+	@mkdir -p bin
+	go build -o $(API_BINARY) $(API_CMD)
+
 build-check: ## Verify all packages compile and pass go vet
 	go build ./...
 	go vet ./...
 
-run: ## Run the bot locally (requires .env to be sourced)
-	go run $(CMD)
+run: ## Run the bot locally
+	@set -a && . ./.env && set +a && go run $(CMD)
+
+run-api: ## Run the API server locally
+	@set -a && . ./.env && set +a && go run $(API_CMD)
+
+web-dev: ## Start Mini App dev server (proxies /api → localhost:8080)
+	cd web && npm run dev
+
+web-build: ## Build Mini App for production into web/dist/
+	cd web && npm run build
 
 test: ## Run all tests (unit + integration)
 	go test -v -race -timeout 120s -p 2 ./...

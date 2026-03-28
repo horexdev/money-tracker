@@ -75,6 +75,18 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 	return tx, nil
 }
 
+// Delete removes a transaction by ID, ensuring it belongs to the given user.
+func (s *TransactionService) Delete(ctx context.Context, id, userID int64) error {
+	if err := s.txRepo.Delete(ctx, id, userID); err != nil {
+		return fmt.Errorf("delete transaction %d: %w", id, err)
+	}
+	s.log.InfoContext(ctx, "transaction deleted",
+		slog.Int64("user_id", userID),
+		slog.Int64("transaction_id", id),
+	)
+	return nil
+}
+
 // GetBalanceByCurrency returns per-currency income/expense totals for a user.
 func (s *TransactionService) GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error) {
 	balances, err := s.txRepo.GetBalanceByCurrency(ctx, userID)

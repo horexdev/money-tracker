@@ -2,6 +2,19 @@ package domain
 
 import "time"
 
+// Language represents supported UI languages.
+type Language string
+
+const (
+	LangEN Language = "en"
+	LangRU Language = "ru"
+)
+
+// ValidLanguage checks if the given string is a supported language code.
+func ValidLanguage(code string) bool {
+	return code == string(LangEN) || code == string(LangRU)
+}
+
 // User represents a registered Telegram user.
 type User struct {
 	ID                int64
@@ -9,6 +22,7 @@ type User struct {
 	FirstName         string
 	LastName          string
 	CurrencyCode      string
+	Language          Language
 	DisplayCurrencies []string
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
