@@ -11,25 +11,30 @@ interface Options {
 /** Controls the Telegram native Main Button (bottom blue button). */
 export function useTgMainButton({ text, onClick, enabled = true, loading = false }: Options) {
   useEffect(() => {
-    mainButton.setText(text)
+    if (!mainButton.isAvailable()) return
+    try {
+      mainButton.setText(text)
 
-    if (loading) {
-      mainButton.showLoader()
-      mainButton.enable()
-    } else if (enabled) {
-      mainButton.hideLoader()
-      mainButton.enable()
-    } else {
-      mainButton.hideLoader()
-      mainButton.disable()
-    }
+      if (loading) {
+        mainButton.showLoader()
+        mainButton.enable()
+      } else if (enabled) {
+        mainButton.hideLoader()
+        mainButton.enable()
+      } else {
+        mainButton.hideLoader()
+        mainButton.disable()
+      }
 
-    mainButton.show()
-    const off = mainButton.onClick(onClick)
+      mainButton.show()
+      const off = mainButton.onClick(onClick)
 
-    return () => {
-      off()
-      mainButton.hide()
+      return () => {
+        off()
+        mainButton.hide()
+      }
+    } catch {
+      // mainButton not supported in this Telegram client
     }
   }, [text, onClick, enabled, loading])
 }
