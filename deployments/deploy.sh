@@ -61,43 +61,26 @@ sudo systemctl enable "$API_SERVICE"
 DOMAIN=money-tracker.hrxdev.cc
 CERT_PATH=/etc/letsencrypt/live/${DOMAIN}/fullchain.pem
 
-echo "[deploy] starting postgres, redis, certbot..."
+echo "[deploy] starting postgres and redis..."
 docker compose -f "$DEPLOY_DIR/docker-compose.yml" --env-file "$DEPLOY_DIR/.env" \
-  up -d --remove-orphans postgres redis certbot
+  up -d --remove-orphans postgres redis
 
 if [ ! -f "$CERT_PATH" ]; then
-  echo "[deploy] no SSL cert found — starting nginx in HTTP-only mode for ACME challenge..."
-  cat > "$DEPLOY_DIR/nginx.conf" <<'NGINXEOF'
-server {
-    listen 80;
-    server_name money-tracker.hrxdev.cc;
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-    location / {
-        return 200 'ok';
-        add_header Content-Type text/plain;
-    }
-}
-NGINXEOF
-  docker compose -f "$DEPLOY_DIR/docker-compose.yml" --env-file "$DEPLOY_DIR/.env" up -d nginx
-
-  echo "[deploy] requesting certificate for ${DOMAIN}..."
-  docker compose -f "$DEPLOY_DIR/docker-compose.yml" run --rm certbot \
-    certonly --webroot -w /var/www/certbot \
+  echo "[deploy] no SSL cert found — obtaining via certbot standalone..."
+  docker run --rm \
+    -p 80:80 \
+    -v /etc/letsencrypt:/etc/letsencrypt \
+    certbot/certbot certonly \
+    --standalone \
     --non-interactive --agree-tos \
     --email "${CERTBOT_EMAIL:-admin@hrxdev.cc}" \
     -d "$DOMAIN"
   echo "[deploy] certificate issued"
-
-  echo "[deploy] switching nginx to full HTTPS config..."
-  cp "$DEPLOY_DIR/nginx.conf.active" "$DEPLOY_DIR/nginx.conf"
-  docker compose -f "$DEPLOY_DIR/docker-compose.yml" --env-file "$DEPLOY_DIR/.env" restart nginx
-else
-  echo "[deploy] certificate already exists — starting nginx with full config..."
-  cp "$DEPLOY_DIR/nginx.conf.active" "$DEPLOY_DIR/nginx.conf"
-  docker compose -f "$DEPLOY_DIR/docker-compose.yml" --env-file "$DEPLOY_DIR/.env" up -d nginx
 fi
+
+echo "[deploy] starting nginx with full HTTPS config..."
+cp "$DEPLOY_DIR/nginx.conf.active" "$DEPLOY_DIR/nginx.conf"
+docker compose -f "$DEPLOY_DIR/docker-compose.yml" --env-file "$DEPLOY_DIR/.env" up -d --remove-orphans nginx certbot
 
 echo "[deploy] waiting for postgres to be healthy..."
 postgres_ready() {
