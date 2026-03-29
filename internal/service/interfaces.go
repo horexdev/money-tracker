@@ -20,6 +20,7 @@ type UserStorer interface {
 // TransactionStorer is the repository interface consumed by TransactionService and StatsService.
 type TransactionStorer interface {
 	Create(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
+	CreateWithDate(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
 	Delete(ctx context.Context, id, userID int64) error
 	GetBalance(ctx context.Context, userID int64) (incomeCents, expenseCents int64, err error)
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error)
@@ -27,6 +28,8 @@ type TransactionStorer interface {
 	List(ctx context.Context, userID int64, limit, offset int) ([]*domain.Transaction, error)
 	Count(ctx context.Context, userID int64) (int64, error)
 	StatsByCategory(ctx context.Context, userID int64, from, to time.Time) ([]domain.CategoryStat, error)
+	ListByCategoryPeriod(ctx context.Context, userID, categoryID int64, from, to time.Time) ([]*domain.Transaction, error)
+	Update(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
 }
 
 // CategoryStorer is the repository interface for category operations.
@@ -34,8 +37,8 @@ type CategoryStorer interface {
 	GetByID(ctx context.Context, id int64) (*domain.Category, error)
 	ListForUser(ctx context.Context, userID int64) ([]*domain.Category, error)
 	ListForUserByType(ctx context.Context, userID int64, catType string) ([]*domain.Category, error)
-	CreateForUser(ctx context.Context, userID int64, name, emoji, catType string) (*domain.Category, error)
-	Update(ctx context.Context, userID, id int64, name, emoji, catType string) (*domain.Category, error)
+	CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error)
+	Update(ctx context.Context, userID, id int64, name, emoji, catType, color string) (*domain.Category, error)
 	SoftDelete(ctx context.Context, id, userID int64) error
 	CountTransactions(ctx context.Context, categoryID int64) (int64, error)
 }
@@ -49,6 +52,8 @@ type BudgetStorer interface {
 	Delete(ctx context.Context, id, userID int64) error
 	GetByUserCategoryPeriod(ctx context.Context, userID, categoryID int64, period string) (*domain.Budget, error)
 	GetSpentInPeriod(ctx context.Context, userID, categoryID int64, currency string, from, to time.Time) (int64, error)
+	UpdateLastNotified(ctx context.Context, id int64) error
+	ListDistinctUserIDs(ctx context.Context) ([]int64, error)
 }
 
 // RecurringStorer is the repository interface for recurring transaction operations.
@@ -72,4 +77,5 @@ type SavingsGoalStorer interface {
 	Deposit(ctx context.Context, id, userID, amountCents int64) (*domain.SavingsGoal, error)
 	Withdraw(ctx context.Context, id, userID, amountCents int64) (*domain.SavingsGoal, error)
 	Delete(ctx context.Context, id, userID int64) error
+	ListHistory(ctx context.Context, goalID, userID int64) ([]*domain.GoalTransaction, error)
 }

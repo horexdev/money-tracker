@@ -10,7 +10,8 @@ SELECT * FROM recurring_transactions WHERE id = $1 AND user_id = $2;
 SELECT
     r.*,
     c.name  AS category_name,
-    c.emoji AS category_emoji
+    c.emoji AS category_emoji,
+    c.color AS category_color
 FROM recurring_transactions r
 JOIN categories c ON c.id = r.category_id
 WHERE r.user_id = $1

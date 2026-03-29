@@ -103,3 +103,12 @@ func (s *SavingsGoalService) Delete(ctx context.Context, id, userID int64) error
 	}
 	return nil
 }
+
+// ListHistory returns the deposit/withdraw history for a savings goal.
+func (s *SavingsGoalService) ListHistory(ctx context.Context, goalID, userID int64) ([]*domain.GoalTransaction, error) {
+	history, err := s.repo.ListHistory(ctx, goalID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list history for goal %d: %w", goalID, err)
+	}
+	return history, nil
+}

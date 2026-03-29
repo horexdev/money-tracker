@@ -21,10 +21,12 @@ type Budget struct {
 	NotifyAtPercent int
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	LastNotifiedAt  *time.Time
 
 	// Joined fields for display.
 	CategoryName  string
 	CategoryEmoji string
+	CategoryColor string
 	SpentCents    int64
 }
 

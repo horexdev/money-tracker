@@ -10,14 +10,26 @@ import (
 	"github.com/horexdev/money-tracker/internal/domain"
 )
 
-// BudgetService handles business logic for budgets.
-type BudgetService struct {
-	repo BudgetStorer
-	log  *slog.Logger
+// BudgetNotifier sends budget threshold alerts to users.
+type BudgetNotifier interface {
+	SendBudgetAlert(ctx context.Context, chatID int64, categoryName string, spentPercent int, limitCents, spentCents int64) error
 }
 
-func NewBudgetService(repo BudgetStorer, log *slog.Logger) *BudgetService {
-	return &BudgetService{repo: repo, log: log}
+// BudgetService handles business logic for budgets.
+type BudgetService struct {
+	repo     BudgetStorer
+	txRepo   TransactionStorer
+	notifier BudgetNotifier
+	log      *slog.Logger
+}
+
+func NewBudgetService(repo BudgetStorer, txRepo TransactionStorer, log *slog.Logger) *BudgetService {
+	return &BudgetService{repo: repo, txRepo: txRepo, log: log}
+}
+
+// WithNotifier sets the notifier used by CheckAndNotify.
+func (s *BudgetService) WithNotifier(n BudgetNotifier) {
+	s.notifier = n
 }
 
 // Create adds a new budget for a category.
@@ -92,6 +104,70 @@ func (s *BudgetService) Update(ctx context.Context, b *domain.Budget) (*domain.B
 func (s *BudgetService) Delete(ctx context.Context, id, userID int64) error {
 	if err := s.repo.Delete(ctx, id, userID); err != nil {
 		return fmt.Errorf("delete budget %d: %w", id, err)
+	}
+	return nil
+}
+
+// ListForBudget returns expense transactions that contributed to a budget's spending.
+func (s *BudgetService) ListForBudget(ctx context.Context, budgetID, userID int64) ([]*domain.Transaction, error) {
+	budget, err := s.repo.GetByID(ctx, budgetID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get budget %d: %w", budgetID, err)
+	}
+
+	from, to := periodBounds(budget.Period, time.Now())
+	txs, err := s.txRepo.ListByCategoryPeriod(ctx, userID, budget.CategoryID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("list transactions for budget %d: %w", budgetID, err)
+	}
+	return txs, nil
+}
+
+// ListDistinctUserIDs returns all user IDs that have at least one budget.
+func (s *BudgetService) ListDistinctUserIDs(ctx context.Context) ([]int64, error) {
+	return s.repo.ListDistinctUserIDs(ctx)
+}
+
+// CheckAndNotify sends Telegram alerts for budgets that have crossed their threshold
+// and have not yet been notified in the current period.
+func (s *BudgetService) CheckAndNotify(ctx context.Context, userID int64) error {
+	if s.notifier == nil {
+		return nil
+	}
+
+	budgets, err := s.ListWithProgress(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("list budgets: %w", err)
+	}
+
+	now := time.Now()
+	for _, b := range budgets {
+		if !b.ShouldNotify() {
+			continue
+		}
+
+		from, _ := periodBounds(b.Period, now)
+
+		// Only notify once per period.
+		if b.LastNotifiedAt != nil && !b.LastNotifiedAt.Before(from) {
+			continue
+		}
+
+		if err := s.notifier.SendBudgetAlert(ctx, userID, b.CategoryName, int(b.UsagePercent()), b.LimitCents, b.SpentCents); err != nil {
+			s.log.WarnContext(ctx, "failed to send budget alert",
+				slog.Int64("user_id", userID),
+				slog.Int64("budget_id", b.ID),
+				slog.String("error", err.Error()),
+			)
+			continue
+		}
+
+		if err := s.repo.UpdateLastNotified(ctx, b.ID); err != nil {
+			s.log.WarnContext(ctx, "failed to update last_notified_at",
+				slog.Int64("budget_id", b.ID),
+				slog.String("error", err.Error()),
+			)
+		}
 	}
 	return nil
 }

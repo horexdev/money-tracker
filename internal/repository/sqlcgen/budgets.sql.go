@@ -14,7 +14,7 @@ import (
 const createBudget = `-- name: CreateBudget :one
 INSERT INTO budgets (user_id, category_id, limit_cents, period, currency_code, notify_at_percent)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at
+RETURNING id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at, last_notified_at
 `
 
 type CreateBudgetParams struct {
@@ -46,6 +46,7 @@ func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (Bud
 		&i.NotifyAtPercent,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastNotifiedAt,
 	)
 	return i, err
 }
@@ -65,7 +66,7 @@ func (q *Queries) DeleteBudget(ctx context.Context, arg DeleteBudgetParams) erro
 }
 
 const getBudgetByID = `-- name: GetBudgetByID :one
-SELECT id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at FROM budgets WHERE id = $1 AND user_id = $2
+SELECT id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at, last_notified_at FROM budgets WHERE id = $1 AND user_id = $2
 `
 
 type GetBudgetByIDParams struct {
@@ -86,12 +87,13 @@ func (q *Queries) GetBudgetByID(ctx context.Context, arg GetBudgetByIDParams) (B
 		&i.NotifyAtPercent,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastNotifiedAt,
 	)
 	return i, err
 }
 
 const getBudgetByUserCategoryPeriod = `-- name: GetBudgetByUserCategoryPeriod :one
-SELECT id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at FROM budgets
+SELECT id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at, last_notified_at FROM budgets
 WHERE user_id = $1 AND category_id = $2 AND period = $3
 `
 
@@ -114,6 +116,7 @@ func (q *Queries) GetBudgetByUserCategoryPeriod(ctx context.Context, arg GetBudg
 		&i.NotifyAtPercent,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastNotifiedAt,
 	)
 	return i, err
 }
@@ -152,9 +155,10 @@ func (q *Queries) GetSpentInPeriod(ctx context.Context, arg GetSpentInPeriodPara
 
 const listBudgetsByUser = `-- name: ListBudgetsByUser :many
 SELECT
-    b.id, b.user_id, b.category_id, b.limit_cents, b.period, b.currency_code, b.notify_at_percent, b.created_at, b.updated_at,
+    b.id, b.user_id, b.category_id, b.limit_cents, b.period, b.currency_code, b.notify_at_percent, b.created_at, b.updated_at, b.last_notified_at,
     c.name  AS category_name,
-    c.emoji AS category_emoji
+    c.emoji AS category_emoji,
+    c.color AS category_color
 FROM budgets b
 JOIN categories c ON c.id = b.category_id
 WHERE b.user_id = $1
@@ -171,8 +175,10 @@ type ListBudgetsByUserRow struct {
 	NotifyAtPercent int32              `json:"notify_at_percent"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	LastNotifiedAt  pgtype.Timestamptz `json:"last_notified_at"`
 	CategoryName    string             `json:"category_name"`
 	CategoryEmoji   string             `json:"category_emoji"`
+	CategoryColor   string             `json:"category_color"`
 }
 
 func (q *Queries) ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error) {
@@ -194,12 +200,38 @@ func (q *Queries) ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBu
 			&i.NotifyAtPercent,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastNotifiedAt,
 			&i.CategoryName,
 			&i.CategoryEmoji,
+			&i.CategoryColor,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDistinctUsersWithBudgets = `-- name: ListDistinctUsersWithBudgets :many
+SELECT DISTINCT user_id FROM budgets
+`
+
+func (q *Queries) ListDistinctUsersWithBudgets(ctx context.Context) ([]int64, error) {
+	rows, err := q.db.Query(ctx, listDistinctUsersWithBudgets)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var user_id int64
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -215,7 +247,7 @@ SET limit_cents       = $3,
     notify_at_percent = $6,
     updated_at        = now()
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at
+RETURNING id, user_id, category_id, limit_cents, period, currency_code, notify_at_percent, created_at, updated_at, last_notified_at
 `
 
 type UpdateBudgetParams struct {
@@ -247,6 +279,16 @@ func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Bud
 		&i.NotifyAtPercent,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastNotifiedAt,
 	)
 	return i, err
+}
+
+const updateBudgetLastNotified = `-- name: UpdateBudgetLastNotified :exec
+UPDATE budgets SET last_notified_at = now() WHERE id = $1
+`
+
+func (q *Queries) UpdateBudgetLastNotified(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, updateBudgetLastNotified, id)
+	return err
 }

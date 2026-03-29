@@ -23,9 +23,9 @@ func (q *Queries) CountTransactionsByCategory(ctx context.Context, categoryID in
 }
 
 const createUserCategory = `-- name: CreateUserCategory :one
-INSERT INTO categories (user_id, name, emoji, type)
-VALUES ($1, $2, $3, $4)
-RETURNING id, user_id, name, emoji, type, updated_at, deleted_at
+INSERT INTO categories (user_id, name, emoji, type, color)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color
 `
 
 type CreateUserCategoryParams struct {
@@ -33,6 +33,7 @@ type CreateUserCategoryParams struct {
 	Name   string      `json:"name"`
 	Emoji  string      `json:"emoji"`
 	Type   string      `json:"type"`
+	Color  string      `json:"color"`
 }
 
 func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategoryParams) (Category, error) {
@@ -41,6 +42,7 @@ func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategory
 		arg.Name,
 		arg.Emoji,
 		arg.Type,
+		arg.Color,
 	)
 	var i Category
 	err := row.Scan(
@@ -51,12 +53,13 @@ func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategory
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Color,
 	)
 	return i, err
 }
 
 const getCategoryByID = `-- name: GetCategoryByID :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at FROM categories WHERE id = $1
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories WHERE id = $1
 `
 
 func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, error) {
@@ -70,12 +73,13 @@ func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, erro
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Color,
 	)
 	return i, err
 }
 
 const getCategoryByName = `-- name: GetCategoryByName :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at FROM categories
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories
 WHERE (user_id IS NULL OR user_id = $1)
   AND LOWER(name) = LOWER($2)
   AND deleted_at IS NULL
@@ -98,12 +102,13 @@ func (q *Queries) GetCategoryByName(ctx context.Context, arg GetCategoryByNamePa
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Color,
 	)
 	return i, err
 }
 
 const listUserCategories = `-- name: ListUserCategories :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at FROM categories
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories
 WHERE (user_id IS NULL OR user_id = $1) AND deleted_at IS NULL
 ORDER BY user_id NULLS FIRST, name
 `
@@ -125,6 +130,7 @@ func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.Color,
 		); err != nil {
 			return nil, err
 		}
@@ -137,7 +143,7 @@ func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([
 }
 
 const listUserCategoriesByType = `-- name: ListUserCategoriesByType :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at FROM categories
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories
 WHERE (user_id IS NULL OR user_id = $1)
   AND deleted_at IS NULL
   AND (type = $2 OR type = 'both')
@@ -166,6 +172,7 @@ func (q *Queries) ListUserCategoriesByType(ctx context.Context, arg ListUserCate
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.Color,
 		); err != nil {
 			return nil, err
 		}
@@ -199,9 +206,10 @@ UPDATE categories
 SET name       = $3,
     emoji      = $4,
     type       = $5,
+    color      = $6,
     updated_at = now()
 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
-RETURNING id, user_id, name, emoji, type, updated_at, deleted_at
+RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color
 `
 
 type UpdateCategoryParams struct {
@@ -210,6 +218,7 @@ type UpdateCategoryParams struct {
 	Name   string      `json:"name"`
 	Emoji  string      `json:"emoji"`
 	Type   string      `json:"type"`
+	Color  string      `json:"color"`
 }
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error) {
@@ -219,6 +228,7 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 		arg.Name,
 		arg.Emoji,
 		arg.Type,
+		arg.Color,
 	)
 	var i Category
 	err := row.Scan(
@@ -229,6 +239,7 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Color,
 	)
 	return i, err
 }

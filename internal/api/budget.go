@@ -16,6 +16,7 @@ type budgetResponse struct {
 	CategoryID      int64   `json:"category_id"`
 	CategoryName    string  `json:"category_name"`
 	CategoryEmoji   string  `json:"category_emoji"`
+	CategoryColor   string  `json:"category_color"`
 	LimitCents      int64   `json:"limit_cents"`
 	SpentCents      int64   `json:"spent_cents"`
 	Period          string  `json:"period"`
@@ -39,7 +40,7 @@ type updateBudgetRequest struct {
 	NotifyAtPercent *int   `json:"notify_at_percent"`
 }
 
-// budgetHandler routes requests for /api/v1/budgets[/{id}].
+// budgetHandler routes requests for /api/v1/budgets[/{id}[/transactions]].
 func budgetHandler(svc *service.BudgetService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -49,9 +50,24 @@ func budgetHandler(svc *service.BudgetService, log *slog.Logger) http.HandlerFun
 		suffix = strings.TrimPrefix(suffix, "/")
 
 		if suffix != "" {
-			id, err := strconv.ParseInt(suffix, 10, 64)
+			parts := strings.SplitN(suffix, "/", 2)
+			id, err := strconv.ParseInt(parts[0], 10, 64)
 			if err != nil {
 				writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid budget id"})
+				return
+			}
+
+			if len(parts) == 2 {
+				switch parts[1] {
+				case "transactions":
+					if r.Method != http.MethodGet {
+						w.WriteHeader(http.StatusMethodNotAllowed)
+						return
+					}
+					listBudgetTransactions(w, r, userID, id, svc, log)
+				default:
+					w.WriteHeader(http.StatusNotFound)
+				}
 				return
 			}
 
@@ -154,12 +170,47 @@ func updateBudget(w http.ResponseWriter, r *http.Request, userID, id int64, svc 
 	writeJSON(w, http.StatusOK, budgetToResponse(budget))
 }
 
+func listBudgetTransactions(w http.ResponseWriter, r *http.Request, userID, id int64, svc *service.BudgetService, log *slog.Logger) {
+	txs, err := svc.ListForBudget(r.Context(), id, userID)
+	if err != nil {
+		writeError(w, log, err)
+		return
+	}
+
+	items := make([]budgetTransactionResponse, 0, len(txs))
+	for _, tx := range txs {
+		items = append(items, budgetTransactionResponse{
+			ID:            tx.ID,
+			AmountCents:   tx.AmountCents,
+			CategoryName:  tx.CategoryName,
+			CategoryEmoji: tx.CategoryEmoji,
+			CategoryColor: tx.CategoryColor,
+			Note:          tx.Note,
+			CurrencyCode:  tx.CurrencyCode,
+			CreatedAt:     tx.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		})
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"transactions": items})
+}
+
+type budgetTransactionResponse struct {
+	ID            int64  `json:"id"`
+	AmountCents   int64  `json:"amount_cents"`
+	CategoryName  string `json:"category_name"`
+	CategoryEmoji string `json:"category_emoji"`
+	CategoryColor string `json:"category_color"`
+	Note          string `json:"note"`
+	CurrencyCode  string `json:"currency_code"`
+	CreatedAt     string `json:"created_at"`
+}
+
 func budgetToResponse(b *domain.Budget) budgetResponse {
 	return budgetResponse{
 		ID:              b.ID,
 		CategoryID:      b.CategoryID,
 		CategoryName:    b.CategoryName,
 		CategoryEmoji:   b.CategoryEmoji,
+		CategoryColor:   b.CategoryColor,
 		LimitCents:      b.LimitCents,
 		SpentCents:      b.SpentCents,
 		Period:          string(b.Period),

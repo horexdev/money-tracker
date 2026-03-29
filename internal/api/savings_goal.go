@@ -60,15 +60,25 @@ func goalsHandler(svc *service.SavingsGoalService, log *slog.Logger) http.Handle
 			}
 
 			if len(parts) == 2 {
-				if r.Method != http.MethodPost {
-					w.WriteHeader(http.StatusMethodNotAllowed)
-					return
-				}
 				switch parts[1] {
 				case "deposit":
+					if r.Method != http.MethodPost {
+						w.WriteHeader(http.StatusMethodNotAllowed)
+						return
+					}
 					goalDeposit(w, r, userID, id, svc, log)
 				case "withdraw":
+					if r.Method != http.MethodPost {
+						w.WriteHeader(http.StatusMethodNotAllowed)
+						return
+					}
 					goalWithdraw(w, r, userID, id, svc, log)
+				case "history":
+					if r.Method != http.MethodGet {
+						w.WriteHeader(http.StatusMethodNotAllowed)
+						return
+					}
+					goalHistory(w, r, userID, id, svc, log)
 				default:
 					w.WriteHeader(http.StatusNotFound)
 				}
@@ -211,6 +221,32 @@ func goalWithdraw(w http.ResponseWriter, r *http.Request, userID, id int64, svc 
 		return
 	}
 	writeJSON(w, http.StatusOK, goalToResponse(goal))
+}
+
+type goalTransactionResponse struct {
+	ID          int64  `json:"id"`
+	Type        string `json:"type"`
+	AmountCents int64  `json:"amount_cents"`
+	CreatedAt   string `json:"created_at"`
+}
+
+func goalHistory(w http.ResponseWriter, r *http.Request, userID, id int64, svc *service.SavingsGoalService, log *slog.Logger) {
+	history, err := svc.ListHistory(r.Context(), id, userID)
+	if err != nil {
+		writeError(w, log, err)
+		return
+	}
+
+	items := make([]goalTransactionResponse, 0, len(history))
+	for _, tx := range history {
+		items = append(items, goalTransactionResponse{
+			ID:          tx.ID,
+			Type:        tx.Type,
+			AmountCents: tx.AmountCents,
+			CreatedAt:   tx.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		})
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"history": items})
 }
 
 func goalToResponse(g *domain.SavingsGoal) goalResponse {

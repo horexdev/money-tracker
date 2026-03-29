@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/horexdev/money-tracker/internal/domain"
 )
@@ -25,17 +26,19 @@ func NewTransactionService(
 
 // AddExpense records a new expense transaction.
 // exchangeRate is the rate from currencyCode to baseCurrency at creation time (1.0 if same currency).
-func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate)
+// createdAt is optional; when nil the DB defaults to NOW().
+func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, createdAt)
 }
 
 // AddIncome records a new income transaction.
 // exchangeRate is the rate from currencyCode to baseCurrency at creation time (1.0 if same currency).
-func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate)
+// createdAt is optional; when nil the DB defaults to NOW().
+func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, createdAt)
 }
 
-func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64) (*domain.Transaction, error) {
+func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error) {
 	if amountCents <= 0 {
 		return nil, domain.ErrInvalidAmount
 	}
@@ -58,7 +61,7 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		return nil, domain.ErrCategoryNotFound
 	}
 
-	tx, err := s.txRepo.Create(ctx, &domain.Transaction{
+	t := &domain.Transaction{
 		UserID:                 userID,
 		Type:                   txType,
 		AmountCents:            amountCents,
@@ -67,13 +70,22 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		CurrencyCode:           currencyCode,
 		ExchangeRateSnapshot:   exchangeRate,
 		BaseCurrencyAtCreation: baseCurrency,
-	})
+	}
+
+	var tx *domain.Transaction
+	if createdAt != nil {
+		t.CreatedAt = *createdAt
+		tx, err = s.txRepo.CreateWithDate(ctx, t)
+	} else {
+		tx, err = s.txRepo.Create(ctx, t)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("create transaction: %w", err)
 	}
 
 	tx.CategoryName = cat.Name
 	tx.CategoryEmoji = cat.Emoji
+	tx.CategoryColor = cat.Color
 
 	s.log.InfoContext(ctx, "transaction recorded",
 		slog.Int64("user_id", userID),
@@ -83,6 +95,39 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		slog.String("currency", currencyCode),
 		slog.String("base_currency", baseCurrency),
 		slog.Float64("exchange_rate_snapshot", exchangeRate),
+	)
+	return tx, nil
+}
+
+// UpdateTransaction modifies amount_cents, category, note, and created_at of an existing transaction.
+func (s *TransactionService) UpdateTransaction(ctx context.Context, userID, id, amountCents, categoryID int64, note string, createdAt time.Time) (*domain.Transaction, error) {
+	if amountCents <= 0 {
+		return nil, domain.ErrInvalidAmount
+	}
+	cat, err := s.catRepo.GetByID(ctx, categoryID)
+	if err != nil {
+		return nil, fmt.Errorf("get category %d: %w", categoryID, err)
+	}
+	if !cat.IsSystem() && cat.UserID != userID {
+		return nil, domain.ErrCategoryNotFound
+	}
+	tx, err := s.txRepo.Update(ctx, &domain.Transaction{
+		ID:          id,
+		UserID:      userID,
+		AmountCents: amountCents,
+		CategoryID:  categoryID,
+		Note:        note,
+		CreatedAt:   createdAt,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("update transaction %d: %w", id, err)
+	}
+	tx.CategoryName = cat.Name
+	tx.CategoryEmoji = cat.Emoji
+	tx.CategoryColor = cat.Color
+	s.log.InfoContext(ctx, "transaction updated",
+		slog.Int64("user_id", userID),
+		slog.Int64("transaction_id", id),
 	)
 	return tx, nil
 }

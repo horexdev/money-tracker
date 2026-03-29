@@ -13,11 +13,12 @@ import (
 
 // SavingsGoalRepository handles persistence of SavingsGoal entities.
 type SavingsGoalRepository struct {
-	q *sqlcgen.Queries
+	pool *pgxpool.Pool
+	q    *sqlcgen.Queries
 }
 
 func NewSavingsGoalRepository(pool *pgxpool.Pool) *SavingsGoalRepository {
-	return &SavingsGoalRepository{q: sqlcgen.New(pool)}
+	return &SavingsGoalRepository{pool: pool, q: sqlcgen.New(pool)}
 }
 
 // Create inserts a new savings goal.
@@ -82,9 +83,17 @@ func (r *SavingsGoalRepository) Update(ctx context.Context, g *domain.SavingsGoa
 	return rowToGoal(row), nil
 }
 
-// Deposit adds funds to a savings goal.
+// Deposit adds funds to a savings goal and records a goal_transaction entry.
 func (r *SavingsGoalRepository) Deposit(ctx context.Context, id, userID, amountCents int64) (*domain.SavingsGoal, error) {
-	row, err := r.q.DepositToGoal(ctx, sqlcgen.DepositToGoalParams{
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck
+
+	q := r.q.WithTx(tx)
+
+	row, err := q.DepositToGoal(ctx, sqlcgen.DepositToGoalParams{
 		ID:           id,
 		UserID:       userID,
 		CurrentCents: amountCents,
@@ -95,12 +104,33 @@ func (r *SavingsGoalRepository) Deposit(ctx context.Context, id, userID, amountC
 		}
 		return nil, err
 	}
+
+	if err := q.InsertGoalTransaction(ctx, sqlcgen.InsertGoalTransactionParams{
+		GoalID:      id,
+		UserID:      userID,
+		Type:        "deposit",
+		AmountCents: amountCents,
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
 	return rowToGoal(row), nil
 }
 
-// Withdraw removes funds from a savings goal.
+// Withdraw removes funds from a savings goal and records a goal_transaction entry.
 func (r *SavingsGoalRepository) Withdraw(ctx context.Context, id, userID, amountCents int64) (*domain.SavingsGoal, error) {
-	row, err := r.q.WithdrawFromGoal(ctx, sqlcgen.WithdrawFromGoalParams{
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck
+
+	q := r.q.WithTx(tx)
+
+	row, err := q.WithdrawFromGoal(ctx, sqlcgen.WithdrawFromGoalParams{
 		ID:           id,
 		UserID:       userID,
 		CurrentCents: amountCents,
@@ -111,12 +141,48 @@ func (r *SavingsGoalRepository) Withdraw(ctx context.Context, id, userID, amount
 		}
 		return nil, err
 	}
+
+	if err := q.InsertGoalTransaction(ctx, sqlcgen.InsertGoalTransactionParams{
+		GoalID:      id,
+		UserID:      userID,
+		Type:        "withdraw",
+		AmountCents: amountCents,
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
 	return rowToGoal(row), nil
 }
 
 // Delete removes a savings goal.
 func (r *SavingsGoalRepository) Delete(ctx context.Context, id, userID int64) error {
 	return r.q.DeleteSavingsGoal(ctx, sqlcgen.DeleteSavingsGoalParams{ID: id, UserID: userID})
+}
+
+// ListHistory returns the deposit/withdraw history for a savings goal.
+func (r *SavingsGoalRepository) ListHistory(ctx context.Context, goalID, userID int64) ([]*domain.GoalTransaction, error) {
+	rows, err := r.q.ListGoalTransactions(ctx, sqlcgen.ListGoalTransactionsParams{
+		GoalID: goalID,
+		UserID: userID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*domain.GoalTransaction, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, &domain.GoalTransaction{
+			ID:          row.ID,
+			GoalID:      row.GoalID,
+			UserID:      row.UserID,
+			Type:        row.Type,
+			AmountCents: row.AmountCents,
+			CreatedAt:   goTime(row.CreatedAt),
+		})
+	}
+	return result, nil
 }
 
 func rowToGoal(row sqlcgen.SavingsGoal) *domain.SavingsGoal {

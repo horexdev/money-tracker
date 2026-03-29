@@ -60,7 +60,7 @@ func (r *BudgetRepository) ListByUser(ctx context.Context, userID int64) ([]*dom
 	}
 	budgets := make([]*domain.Budget, 0, len(rows))
 	for _, row := range rows {
-		budgets = append(budgets, &domain.Budget{
+		b := &domain.Budget{
 			ID:              row.ID,
 			UserID:          row.UserID,
 			CategoryID:      row.CategoryID,
@@ -72,7 +72,13 @@ func (r *BudgetRepository) ListByUser(ctx context.Context, userID int64) ([]*dom
 			UpdatedAt:       goTime(row.UpdatedAt),
 			CategoryName:    row.CategoryName,
 			CategoryEmoji:   row.CategoryEmoji,
-		})
+			CategoryColor:   row.CategoryColor,
+		}
+		if row.LastNotifiedAt.Valid {
+			t := row.LastNotifiedAt.Time
+			b.LastNotifiedAt = &t
+		}
+		budgets = append(budgets, b)
 	}
 	return budgets, nil
 }
@@ -128,8 +134,26 @@ func (r *BudgetRepository) GetSpentInPeriod(ctx context.Context, userID, categor
 	})
 }
 
+// UpdateLastNotified sets last_notified_at = now() for the given budget.
+func (r *BudgetRepository) UpdateLastNotified(ctx context.Context, id int64) error {
+	return r.q.UpdateBudgetLastNotified(ctx, id)
+}
+
+// ListDistinctUserIDs returns all user IDs that have at least one budget.
+func (r *BudgetRepository) ListDistinctUserIDs(ctx context.Context) ([]int64, error) {
+	rows, err := r.q.ListDistinctUsersWithBudgets(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]int64, 0, len(rows))
+	for _, id := range rows {
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
 func rowToBudget(row sqlcgen.Budget) *domain.Budget {
-	return &domain.Budget{
+	b := &domain.Budget{
 		ID:              row.ID,
 		UserID:          row.UserID,
 		CategoryID:      row.CategoryID,
@@ -140,4 +164,9 @@ func rowToBudget(row sqlcgen.Budget) *domain.Budget {
 		CreatedAt:       goTime(row.CreatedAt),
 		UpdatedAt:       goTime(row.UpdatedAt),
 	}
+	if row.LastNotifiedAt.Valid {
+		t := row.LastNotifiedAt.Time
+		b.LastNotifiedAt = &t
+	}
+	return b
 }

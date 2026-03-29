@@ -77,6 +77,7 @@ func (r *RecurringRepository) ListByUser(ctx context.Context, userID int64) ([]*
 			UpdatedAt:     goTime(row.UpdatedAt),
 			CategoryName:  row.CategoryName,
 			CategoryEmoji: row.CategoryEmoji,
+			CategoryColor: row.CategoryColor,
 		})
 	}
 	return result, nil

@@ -19,6 +19,7 @@ type Category struct {
 	Name      string
 	Emoji     string
 	Type      CategoryType
+	Color     string
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 }

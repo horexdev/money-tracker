@@ -64,6 +64,7 @@ type Budget struct {
 	NotifyAtPercent int32              `json:"notify_at_percent"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	LastNotifiedAt  pgtype.Timestamptz `json:"last_notified_at"`
 }
 
 type Category struct {
@@ -74,6 +75,16 @@ type Category struct {
 	Type      string             `json:"type"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt pgtype.Timestamptz `json:"deleted_at"`
+	Color     string             `json:"color"`
+}
+
+type GoalTransaction struct {
+	ID          int64              `json:"id"`
+	GoalID      int64              `json:"goal_id"`
+	UserID      int64              `json:"user_id"`
+	Type        string             `json:"type"`
+	AmountCents int64              `json:"amount_cents"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 type RecurringTransaction struct {

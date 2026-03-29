@@ -145,7 +145,8 @@ const listRecurringByUser = `-- name: ListRecurringByUser :many
 SELECT
     r.id, r.user_id, r.category_id, r.type, r.amount_cents, r.currency_code, r.note, r.frequency, r.next_run_at, r.is_active, r.created_at, r.updated_at,
     c.name  AS category_name,
-    c.emoji AS category_emoji
+    c.emoji AS category_emoji,
+    c.color AS category_color
 FROM recurring_transactions r
 JOIN categories c ON c.id = r.category_id
 WHERE r.user_id = $1
@@ -167,6 +168,7 @@ type ListRecurringByUserRow struct {
 	UpdatedAt     pgtype.Timestamptz     `json:"updated_at"`
 	CategoryName  string                 `json:"category_name"`
 	CategoryEmoji string                 `json:"category_emoji"`
+	CategoryColor string                 `json:"category_color"`
 }
 
 func (q *Queries) ListRecurringByUser(ctx context.Context, userID int64) ([]ListRecurringByUserRow, error) {
@@ -193,6 +195,7 @@ func (q *Queries) ListRecurringByUser(ctx context.Context, userID int64) ([]List
 			&i.UpdatedAt,
 			&i.CategoryName,
 			&i.CategoryEmoji,
+			&i.CategoryColor,
 		); err != nil {
 			return nil, err
 		}

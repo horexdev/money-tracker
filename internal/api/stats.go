@@ -10,6 +10,7 @@ import (
 type categoryStatResponse struct {
 	CategoryName  string `json:"category_name"`
 	CategoryEmoji string `json:"category_emoji"`
+	CategoryColor string `json:"category_color"`
 	Type          string `json:"type"`
 	TotalCents    int64  `json:"total_cents"`
 	TxCount       int64  `json:"tx_count"`
@@ -53,6 +54,7 @@ func statsHandler(statsSvc *service.StatsService, log *slog.Logger) http.Handler
 			items = append(items, categoryStatResponse{
 				CategoryName:  s.CategoryName,
 				CategoryEmoji: s.CategoryEmoji,
+				CategoryColor: s.CategoryColor,
 				Type:          string(s.Type),
 				TotalCents:    s.TotalCents,
 				TxCount:       s.TxCount,

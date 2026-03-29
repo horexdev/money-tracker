@@ -21,6 +21,7 @@ type Transaction struct {
 	CategoryID            int64
 	CategoryName          string
 	CategoryEmoji         string
+	CategoryColor         string
 	Note                  string
 	CurrencyCode          string
 	ExchangeRateSnapshot  float64
@@ -39,6 +40,7 @@ type BalanceByCurrency struct {
 type CategoryStat struct {
 	CategoryName  string
 	CategoryEmoji string
+	CategoryColor string
 	Type          TransactionType
 	TotalCents    int64
 	TxCount       int64

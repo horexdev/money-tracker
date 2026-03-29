@@ -10,7 +10,8 @@ SELECT * FROM budgets WHERE id = $1 AND user_id = $2;
 SELECT
     b.*,
     c.name  AS category_name,
-    c.emoji AS category_emoji
+    c.emoji AS category_emoji,
+    c.color AS category_color
 FROM budgets b
 JOIN categories c ON c.id = b.category_id
 WHERE b.user_id = $1
@@ -28,6 +29,12 @@ RETURNING *;
 
 -- name: DeleteBudget :exec
 DELETE FROM budgets WHERE id = $1 AND user_id = $2;
+
+-- name: UpdateBudgetLastNotified :exec
+UPDATE budgets SET last_notified_at = now() WHERE id = $1;
+
+-- name: ListDistinctUsersWithBudgets :many
+SELECT DISTINCT user_id FROM budgets;
 
 -- name: GetBudgetByUserCategoryPeriod :one
 SELECT * FROM budgets

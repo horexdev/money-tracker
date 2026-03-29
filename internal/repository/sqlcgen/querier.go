@@ -17,6 +17,7 @@ type Querier interface {
 	CreateRecurring(ctx context.Context, arg CreateRecurringParams) (RecurringTransaction, error)
 	CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalParams) (SavingsGoal, error)
 	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
+	CreateTransactionWithDate(ctx context.Context, arg CreateTransactionWithDateParams) (Transaction, error)
 	CreateUserCategory(ctx context.Context, arg CreateUserCategoryParams) (Category, error)
 	DeleteAllUserBudgets(ctx context.Context, userID int64) error
 	DeleteAllUserCategories(ctx context.Context, userID pgtype.Int8) error
@@ -43,20 +44,26 @@ type Querier interface {
 	// base currency using the exchange_rate_snapshot stored at the time each transaction was created.
 	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
+	InsertGoalTransaction(ctx context.Context, arg InsertGoalTransactionParams) error
 	ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error)
+	ListDistinctUsersWithBudgets(ctx context.Context) ([]int64, error)
+	ListGoalTransactions(ctx context.Context, arg ListGoalTransactionsParams) ([]GoalTransaction, error)
 	ListRecurringByUser(ctx context.Context, userID int64) ([]ListRecurringByUserRow, error)
 	ListSavingsGoalsByUser(ctx context.Context, userID int64) ([]SavingsGoal, error)
 	ListTransactions(ctx context.Context, arg ListTransactionsParams) ([]ListTransactionsRow, error)
+	ListTransactionsByCategoryPeriod(ctx context.Context, arg ListTransactionsByCategoryPeriodParams) ([]ListTransactionsByCategoryPeriodRow, error)
 	ListUserCategories(ctx context.Context, userID pgtype.Int8) ([]Category, error)
 	ListUserCategoriesByType(ctx context.Context, arg ListUserCategoriesByTypeParams) ([]Category, error)
 	SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategoryParams) error
 	ToggleRecurringActive(ctx context.Context, arg ToggleRecurringActiveParams) (RecurringTransaction, error)
 	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
+	UpdateBudgetLastNotified(ctx context.Context, id int64) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplayCurrenciesParams) (User, error)
 	UpdateRecurring(ctx context.Context, arg UpdateRecurringParams) (RecurringTransaction, error)
 	UpdateRecurringNextRun(ctx context.Context, arg UpdateRecurringNextRunParams) error
 	UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalParams) (SavingsGoal, error)
+	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
 	UpdateUserCurrency(ctx context.Context, arg UpdateUserCurrencyParams) (User, error)
 	UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguageParams) (User, error)
 	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)

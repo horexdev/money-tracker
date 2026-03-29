@@ -62,12 +62,13 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*domain.Cat
 }
 
 // CreateForUser adds a custom category for a specific user.
-func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, name, emoji, catType string) (*domain.Category, error) {
+func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error) {
 	row, err := r.q.CreateUserCategory(ctx, sqlcgen.CreateUserCategoryParams{
 		UserID: pgInt8(userID),
 		Name:   name,
 		Emoji:  emoji,
 		Type:   catType,
+		Color:  color,
 	})
 	if err != nil {
 		return nil, err
@@ -76,13 +77,14 @@ func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, na
 }
 
 // Update modifies an existing category (must be user-owned).
-func (r *CategoryRepository) Update(ctx context.Context, userID, id int64, name, emoji, catType string) (*domain.Category, error) {
+func (r *CategoryRepository) Update(ctx context.Context, userID, id int64, name, emoji, catType, color string) (*domain.Category, error) {
 	row, err := r.q.UpdateCategory(ctx, sqlcgen.UpdateCategoryParams{
 		ID:     id,
 		UserID: pgInt8(userID),
 		Name:   name,
 		Emoji:  emoji,
 		Type:   catType,
+		Color:  color,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -113,6 +115,7 @@ func rowToCategory(row sqlcgen.Category) *domain.Category {
 		Name:      row.Name,
 		Emoji:     row.Emoji,
 		Type:      domain.CategoryType(row.Type),
+		Color:     row.Color,
 		UpdatedAt: goTime(row.UpdatedAt),
 		DeletedAt: goTimePtr(row.DeletedAt),
 	}

@@ -16,6 +16,7 @@ import (
 
 	"github.com/horexdev/money-tracker/internal/api"
 	"github.com/horexdev/money-tracker/internal/config"
+	"github.com/horexdev/money-tracker/internal/notify"
 	"github.com/horexdev/money-tracker/internal/repository"
 	"github.com/horexdev/money-tracker/internal/scheduler"
 	"github.com/horexdev/money-tracker/internal/service"
@@ -71,13 +72,19 @@ func main() {
 	statsSvc := service.NewStatsService(txRepo, log)
 	exchangeSvc := service.NewExchangeService(service.NewRateAPIProvider(), rdb, cfg.ExchangeRateTTL, log)
 	categorySvc := service.NewCategoryService(catRepo, log)
-	budgetSvc := service.NewBudgetService(budgetRepo, log)
+	budgetSvc := service.NewBudgetService(budgetRepo, txRepo, log)
 	recurringSvc := service.NewRecurringService(recurringRepo, txRepo, log)
 	goalSvc := service.NewSavingsGoalService(goalRepo, log)
 	exportSvc := service.NewExportService(txRepo, log)
 
-	// Background scheduler for recurring transactions.
-	sched := scheduler.New(recurringSvc, log, 1*time.Minute)
+	// Wire budget notifier if a bot token is configured.
+	if cfg.BotToken != "" {
+		notifier := notify.NewTelegramNotifier(cfg.BotToken, log)
+		budgetSvc.WithNotifier(notifier)
+	}
+
+	// Background scheduler for recurring transactions and budget alerts.
+	sched := scheduler.New(recurringSvc, budgetSvc, log, 1*time.Minute)
 	go sched.Run(ctx)
 
 	handler := api.NewServer(api.Deps{

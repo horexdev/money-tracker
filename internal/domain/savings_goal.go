@@ -2,6 +2,16 @@ package domain
 
 import "time"
 
+// GoalTransaction records a single deposit or withdrawal on a savings goal.
+type GoalTransaction struct {
+	ID          int64
+	GoalID      int64
+	UserID      int64
+	Type        string // "deposit" or "withdraw"
+	AmountCents int64
+	CreatedAt   time.Time
+}
+
 // SavingsGoal represents a financial target the user is saving towards.
 type SavingsGoal struct {
 	ID           int64

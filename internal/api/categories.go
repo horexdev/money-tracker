@@ -15,6 +15,7 @@ type categoryResponse struct {
 	Name     string `json:"name"`
 	Emoji    string `json:"emoji"`
 	Type     string `json:"type"`
+	Color    string `json:"color"`
 	IsSystem bool   `json:"is_system"`
 }
 
@@ -26,12 +27,14 @@ type createCategoryRequest struct {
 	Name  string `json:"name"`
 	Emoji string `json:"emoji"`
 	Type  string `json:"type"`
+	Color string `json:"color"`
 }
 
 type updateCategoryRequest struct {
 	Name  string `json:"name"`
 	Emoji string `json:"emoji"`
 	Type  string `json:"type"`
+	Color string `json:"color"`
 }
 
 // categoriesHandler handles CRUD for /api/v1/categories[/{id}].
@@ -57,7 +60,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 					writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
 					return
 				}
-				cat, err := catSvc.Update(ctx, userID, id, req.Name, req.Emoji, req.Type)
+				cat, err := catSvc.Update(ctx, userID, id, req.Name, req.Emoji, req.Type, req.Color)
 				if err != nil {
 					writeError(w, log, err)
 					return
@@ -67,6 +70,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 					Name:     cat.Name,
 					Emoji:    cat.Emoji,
 					Type:     string(cat.Type),
+					Color:    cat.Color,
 					IsSystem: cat.IsSystem(),
 				})
 			case http.MethodDelete:
@@ -84,13 +88,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 		switch r.Method {
 		case http.MethodGet:
 			typeFilter := r.URL.Query().Get("type")
-			var cats []*struct {
-				ID       int64
-				Name     string
-				Emoji    string
-				Type     string
-				IsSystem bool
-			}
+			var items []categoryResponse
 
 			if typeFilter != "" {
 				list, err := catSvc.ListForUserByType(ctx, userID, typeFilter)
@@ -98,14 +96,16 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 					writeError(w, log, err)
 					return
 				}
+				items = make([]categoryResponse, 0, len(list))
 				for _, c := range list {
-					cats = append(cats, &struct {
-						ID       int64
-						Name     string
-						Emoji    string
-						Type     string
-						IsSystem bool
-					}{c.ID, c.Name, c.Emoji, string(c.Type), c.IsSystem()})
+					items = append(items, categoryResponse{
+						ID:       c.ID,
+						Name:     c.Name,
+						Emoji:    c.Emoji,
+						Type:     string(c.Type),
+						Color:    c.Color,
+						IsSystem: c.IsSystem(),
+					})
 				}
 			} else {
 				list, err := catSvc.ListForUser(ctx, userID)
@@ -113,26 +113,17 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 					writeError(w, log, err)
 					return
 				}
+				items = make([]categoryResponse, 0, len(list))
 				for _, c := range list {
-					cats = append(cats, &struct {
-						ID       int64
-						Name     string
-						Emoji    string
-						Type     string
-						IsSystem bool
-					}{c.ID, c.Name, c.Emoji, string(c.Type), c.IsSystem()})
+					items = append(items, categoryResponse{
+						ID:       c.ID,
+						Name:     c.Name,
+						Emoji:    c.Emoji,
+						Type:     string(c.Type),
+						Color:    c.Color,
+						IsSystem: c.IsSystem(),
+					})
 				}
-			}
-
-			items := make([]categoryResponse, 0, len(cats))
-			for _, c := range cats {
-				items = append(items, categoryResponse{
-					ID:       c.ID,
-					Name:     c.Name,
-					Emoji:    c.Emoji,
-					Type:     c.Type,
-					IsSystem: c.IsSystem,
-				})
 			}
 			writeJSON(w, http.StatusOK, categoriesListResponse{Categories: items})
 
@@ -142,7 +133,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 				writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
 				return
 			}
-			cat, err := catSvc.Create(ctx, userID, req.Name, req.Emoji, req.Type)
+			cat, err := catSvc.Create(ctx, userID, req.Name, req.Emoji, req.Type, req.Color)
 			if err != nil {
 				writeError(w, log, err)
 				return
@@ -152,6 +143,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 				Name:     cat.Name,
 				Emoji:    cat.Emoji,
 				Type:     string(cat.Type),
+				Color:    cat.Color,
 				IsSystem: cat.IsSystem(),
 			})
 

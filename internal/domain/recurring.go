@@ -30,6 +30,7 @@ type RecurringTransaction struct {
 	// Joined fields for display.
 	CategoryName  string
 	CategoryEmoji string
+	CategoryColor string
 }
 
 // NextRunAfter calculates the next run time after the given time based on frequency.

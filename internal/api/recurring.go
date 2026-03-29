@@ -19,6 +19,7 @@ type recurringResponse struct {
 	CategoryID    int64  `json:"category_id"`
 	CategoryName  string `json:"category_name"`
 	CategoryEmoji string `json:"category_emoji"`
+	CategoryColor string `json:"category_color"`
 	Note          string `json:"note"`
 	Frequency     string `json:"frequency"`
 	NextRunAt     string `json:"next_run_at"`
@@ -189,6 +190,7 @@ func recurringToResponse(rt *domain.RecurringTransaction) recurringResponse {
 		CategoryID:    rt.CategoryID,
 		CategoryName:  rt.CategoryName,
 		CategoryEmoji: rt.CategoryEmoji,
+		CategoryColor: rt.CategoryColor,
 		Note:          rt.Note,
 		Frequency:     string(rt.Frequency),
 		NextRunAt:     rt.NextRunAt.Format("2006-01-02T15:04:05Z"),
