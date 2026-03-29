@@ -7,7 +7,7 @@ import {
   Bank, PiggyBank, Money, CreditCard, Coins, Star, Plus,
 } from '@phosphor-icons/react'
 import { accountsApi } from '../api/accounts'
-import { CategoryIcon, ICON_CHOICES } from '../lib/categoryIcons'
+
 import { formatCents } from '../lib/money'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
@@ -62,34 +62,6 @@ function ColorPicker({ selected, onSelect }: { selected: string; onSelect: (c: s
   )
 }
 
-/* ─── Icon Picker ─── */
-function IconPicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
-  const { selection } = useHaptic()
-  return (
-    <div className="grid grid-cols-8 gap-1.5">
-      {ICON_CHOICES.map((choice) => {
-        const isActive = selected === choice.id
-        return (
-          <button
-            key={choice.id}
-            type="button"
-            onClick={() => { onSelect(choice.id); selection() }}
-            className={`
-              flex items-center justify-center h-10 rounded-2xl transition-all duration-150 active:scale-90
-              ${isActive
-                ? 'bg-accent text-white shadow-[0_2px_8px_rgba(99,102,241,0.4)]'
-                : 'bg-accent-subtle text-accent'
-              }
-            `}
-          >
-            <choice.Icon size={18} weight="fill" />
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 /* ─── Account Form Sheet ─── */
 function AccountFormSheet({
   onClose,
@@ -108,7 +80,6 @@ function AccountFormSheet({
   const defaultColor = editAccount?.color ?? COLOR_SWATCHES[accountCount % COLOR_SWATCHES.length]
 
   const [name, setName] = useState(editAccount?.name ?? '')
-  const [iconId, setIconId] = useState(editAccount?.icon ?? 'bank')
   const [color, setColor] = useState(defaultColor)
   const [accountType, setAccountType] = useState<AccountType>(editAccount?.type ?? 'checking')
   const [currency, setCurrency] = useState(editAccount?.currency_code ?? 'USD')
@@ -117,7 +88,7 @@ function AccountFormSheet({
   const createMut = useMutation({
     mutationFn: () => accountsApi.create({
       name: name.trim(),
-      icon: iconId,
+      icon: accountType,
       color,
       type: accountType,
       currency_code: currency,
@@ -134,7 +105,7 @@ function AccountFormSheet({
   const updateMut = useMutation({
     mutationFn: () => accountsApi.update(editAccount!.id, {
       name: name.trim(),
-      icon: iconId,
+      icon: accountType,
       color,
       type: accountType,
       currency_code: currency,
@@ -165,7 +136,7 @@ function AccountFormSheet({
             className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: color, boxShadow: `0 2px 8px ${color}66` }}
           >
-            <CategoryIcon emoji={iconId} size={22} weight="fill" className="text-white" />
+            {(() => { const PreviewIcon = ACCOUNT_TYPE_ICONS[accountType]; return <PreviewIcon size={22} weight="fill" className="text-white" /> })()}
           </div>
           <div className="flex-1">
             <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
@@ -236,14 +207,6 @@ function AccountFormSheet({
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Icon picker */}
-        <div>
-          <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
-            {t('categories.icon')}
-          </label>
-          <IconPicker selected={iconId} onSelect={setIconId} />
         </div>
 
         {/* Color picker */}
@@ -319,7 +282,7 @@ function AccountRow({
             className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: account.color || 'var(--color-accent)' }}
           >
-            <CategoryIcon emoji={account.icon} size={20} weight="fill" className="text-white" />
+            <TypeIcon size={20} weight="fill" className="text-white" />
           </div>
 
           {/* Info */}
