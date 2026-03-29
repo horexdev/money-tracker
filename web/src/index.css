@@ -1,63 +1,101 @@
 @import "tailwindcss";
 
 @theme {
-  /* Telegram-mapped colors — resolved at runtime via CSS vars */
-  --color-bg: var(--tg-bg);
-  --color-surface: var(--tg-secondary-bg);
-  --color-text: var(--tg-text);
-  --color-muted: var(--tg-hint);
-  --color-accent: var(--tg-button);
-  --color-accent-text: var(--tg-button-text);
-  --color-destructive: var(--tg-destructive);
-  --color-link: var(--tg-link);
-  --color-section-bg: var(--tg-section-bg);
-  --color-section-header: var(--tg-section-header);
+  /* App semantic colors — resolved from our own --app-* vars, not TG vars directly */
+  --color-bg:           var(--app-bg);
+  --color-surface:      var(--app-surface);
+  --color-text:         var(--app-text);
+  --color-muted:        var(--app-muted);
+  --color-accent:       var(--app-accent);
+  --color-accent-text:  var(--app-accent-text);
+  --color-destructive:  var(--app-destructive);
+  --color-link:         var(--app-accent);
+  --color-section-bg:   var(--app-surface);
+  --color-section-header: var(--app-muted);
 
   /* Brand palette */
   --color-hero-start: #1e1b4b;
-  --color-hero-mid: #312e81;
-  --color-hero-end: #4338ca;
+  --color-hero-mid:   #312e81;
+  --color-hero-end:   #4338ca;
   --color-brand-green: #22c55e;
-  --color-brand-gold: #f59e0b;
-  --color-brand-cyan: #06b6d4;
-  --color-card-highlight: color-mix(in srgb, #4338ca 8%, var(--tg-secondary-bg));
-  --color-income: #22c55e;
+  --color-brand-gold:  #f59e0b;
+  --color-brand-cyan:  #06b6d4;
+  --color-income:  #22c55e;
   --color-expense: #ef4444;
 
   /* Semantic surface modifiers */
-  --color-border: color-mix(in srgb, var(--tg-text) 6%, transparent);
-  --color-border-strong: color-mix(in srgb, var(--tg-text) 12%, transparent);
-  --color-accent-subtle: color-mix(in srgb, var(--tg-button) 14%, var(--tg-secondary-bg));
-  --color-income-subtle: color-mix(in srgb, #22c55e 14%, var(--tg-secondary-bg));
-  --color-expense-subtle: color-mix(in srgb, #ef4444 14%, var(--tg-secondary-bg));
+  --color-border:         color-mix(in srgb, var(--app-text) 8%, transparent);
+  --color-border-strong:  color-mix(in srgb, var(--app-text) 15%, transparent);
+  --color-accent-subtle:  color-mix(in srgb, var(--app-accent) 15%, var(--app-surface));
+  --color-income-subtle:  color-mix(in srgb, #22c55e 15%, var(--app-surface));
+  --color-expense-subtle: color-mix(in srgb, #ef4444 15%, var(--app-surface));
+  --color-card-highlight: color-mix(in srgb, var(--app-accent) 6%, var(--app-surface));
 
-  /* Radii — generous for modern rounded look */
-  --radius-card: 24px;
-  --radius-btn: 16px;
-  --radius-sm: 14px;
-  --radius-xs: 10px;
+  /* Radii */
+  --radius-card: 20px;
+  --radius-btn:  16px;
+  --radius-sm:   14px;
+  --radius-xs:   10px;
 
   /* Shadows */
-  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-  --shadow-card-lg: 0 8px 32px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-hero: 0 12px 40px rgba(30, 27, 75, 0.35), 0 4px 12px rgba(30, 27, 75, 0.2);
+  --shadow-card:    0 2px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card-lg: 0 8px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-hero:    0 12px 40px rgba(30, 27, 75, 0.4), 0 4px 12px rgba(30, 27, 75, 0.25);
 }
 
-/* Telegram WebApp CSS variable fallbacks */
+/* ─── Light theme palette ─── */
 :root {
-  --tg-bg:              var(--tg-theme-bg-color, #f0f0f5);
+  --app-bg:           #f2f3f7;
+  --app-surface:      #ffffff;
+  --app-text:         #0f0f1a;
+  --app-muted:        #8a8a9a;
+  --app-accent:       #4f46e5;
+  --app-accent-text:  #ffffff;
+  --app-destructive:  #ef4444;
+}
+
+/* ─── Dark theme palette ───
+   Triggered when Telegram reports dark color scheme.
+   We override --tg-color-scheme via the SDK, but also
+   support prefers-color-scheme as fallback.                */
+:root[data-theme="dark"],
+.dark {
+  --app-bg:           #13141a;
+  --app-surface:      #1e2028;
+  --app-text:         #e8e9f0;
+  --app-muted:        #6b6d7e;
+  --app-accent:       #6366f1;
+  --app-accent-text:  #ffffff;
+  --app-destructive:  #f87171;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --app-bg:           #13141a;
+    --app-surface:      #1e2028;
+    --app-text:         #e8e9f0;
+    --app-muted:        #6b6d7e;
+    --app-accent:       #6366f1;
+    --app-accent-text:  #ffffff;
+    --app-destructive:  #f87171;
+  }
+}
+
+/* ─── Telegram WebApp CSS variable bridge ─── */
+:root {
+  --tg-bg:              var(--tg-theme-bg-color, #f2f3f7);
   --tg-secondary-bg:    var(--tg-theme-secondary-bg-color, #ffffff);
-  --tg-text:            var(--tg-theme-text-color, #1a1a2e);
-  --tg-hint:            var(--tg-theme-hint-color, #8e8ea0);
-  --tg-link:            var(--tg-theme-link-color, #4338ca);
-  --tg-button:          var(--tg-theme-button-color, #4338ca);
+  --tg-text:            var(--tg-theme-text-color, #0f0f1a);
+  --tg-hint:            var(--tg-theme-hint-color, #8a8a9a);
+  --tg-link:            var(--tg-theme-link-color, #4f46e5);
+  --tg-button:          var(--tg-theme-button-color, #4f46e5);
   --tg-button-text:     var(--tg-theme-button-text-color, #ffffff);
   --tg-header-bg:       var(--tg-theme-header-bg-color, #ffffff);
-  --tg-accent:          var(--tg-theme-accent-text-color, #4338ca);
+  --tg-accent:          var(--tg-theme-accent-text-color, #4f46e5);
   --tg-section-bg:      var(--tg-theme-section-bg-color, #ffffff);
-  --tg-section-header:  var(--tg-theme-section-header-text-color, #6d6d72);
-  --tg-subtitle:        var(--tg-theme-subtitle-text-color, #8e8ea0);
-  --tg-destructive:     var(--tg-theme-destructive-text-color, #ff3b30);
+  --tg-section-header:  var(--tg-theme-section-header-text-color, #6b6d7e);
+  --tg-subtitle:        var(--tg-theme-subtitle-text-color, #8a8a9a);
+  --tg-destructive:     var(--tg-theme-destructive-text-color, #ef4444);
 
   /* Set by inline script in index.html before first paint; updated by useTelegramApp hook.
      Fallback 0px is overwritten before React renders via the blocking inline script. */
@@ -121,12 +159,23 @@ body {
   box-shadow: var(--shadow-card);
 }
 
+[data-theme="dark"] .card-elevated {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 /* Glass card — for TabBar */
 .glass {
-  background: color-mix(in srgb, var(--tg-secondary-bg) 85%, transparent);
+  background: color-mix(in srgb, var(--app-surface) 90%, transparent);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--color-border);
   box-shadow: 0 -1px 20px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .glass {
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Input base — shared across all text inputs */
@@ -146,15 +195,18 @@ body {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--tg-button) 15%, transparent);
 }
 
-/* Smooth page background */
+/* Subtle top gradient tint */
 body::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 300px;
-  background: linear-gradient(180deg, color-mix(in srgb, #4338ca 5%, var(--tg-bg)) 0%, var(--tg-bg) 100%);
+  height: 280px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--app-accent) 6%, var(--app-bg)) 0%,
+    var(--app-bg) 100%
+  );
   pointer-events: none;
   z-index: -1;
 }

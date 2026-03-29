@@ -30,10 +30,8 @@ export function useTelegramApp() {
   const tpState = sdkLoaded ? sdkModules!.useSignal(sdkModules!.themeParams.state) : undefined
 
   useEffect(() => {
-    // ready() and expand() are already called in index.html before React boots.
-    // Re-apply safe area in case insets changed after initial render
-    // (e.g. user rotates device or Telegram header appears/disappears).
     type TgWebApp = {
+      colorScheme?: string
       contentSafeAreaInset?: { top?: number }
       safeAreaInset?: { top?: number }
       onEvent?: (event: string, cb: () => void) => void
@@ -42,6 +40,13 @@ export function useTelegramApp() {
     const tg = (((window as unknown) as Record<string, unknown>).Telegram as Record<string, unknown>)
       ?.WebApp as TgWebApp | undefined
 
+    // Apply color scheme from Telegram
+    function applyTheme() {
+      const scheme = tg?.colorScheme ?? 'light'
+      document.documentElement.setAttribute('data-theme', scheme)
+    }
+
+    // Re-apply safe area in case insets changed after initial render
     function applySafeTop() {
       try {
         const top =
@@ -51,10 +56,13 @@ export function useTelegramApp() {
       } catch { /* ignore */ }
     }
 
+    applyTheme()
     applySafeTop()
+    tg?.onEvent?.('themeChanged', applyTheme)
     tg?.onEvent?.('safeAreaChanged', applySafeTop)
     tg?.onEvent?.('contentSafeAreaChanged', applySafeTop)
     return () => {
+      tg?.offEvent?.('themeChanged', applyTheme)
       tg?.offEvent?.('safeAreaChanged', applySafeTop)
       tg?.offEvent?.('contentSafeAreaChanged', applySafeTop)
     }
