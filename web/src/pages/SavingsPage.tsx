@@ -76,6 +76,7 @@ function GoalRow({
   onEdit: (goal: SavingsGoal) => void
 }) {
   const { t, i18n } = useTranslation()
+  const { code: baseCurrency } = useBaseCurrency()
   const pct = Math.min(goal.progress_percent, 100)
   const color = goal.is_completed ? 'var(--color-income)' : 'var(--color-accent)'
 
@@ -113,9 +114,9 @@ function GoalRow({
             {goal.is_completed && <CheckCircle size={14} weight="fill" className="text-income shrink-0" />}
           </div>
           <div className="flex items-center gap-1 text-xs text-muted">
-            <span className="font-semibold text-text tabular-nums">{formatCents(goal.current_cents, goal.currency_code)}</span>
+            <span className="font-semibold text-text tabular-nums">{formatCents(goal.current_cents, baseCurrency)}</span>
             <span className="text-muted/40">·</span>
-            <span className="tabular-nums">{formatCents(goal.target_cents, goal.currency_code)}</span>
+            <span className="tabular-nums">{formatCents(goal.target_cents, baseCurrency)}</span>
             {goal.deadline && (
               <>
                 <span className="text-muted/40">·</span>

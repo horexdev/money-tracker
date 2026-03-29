@@ -83,6 +83,7 @@ function RecurringCard({
 }) {
   const { t, i18n } = useTranslation()
   const tCategory = useCategoryName()
+  const { code: baseCurrency } = useBaseCurrency()
   const nextDate = formatDate(item.next_run_at, i18n.language)
 
   return (
@@ -110,7 +111,7 @@ function RecurringCard({
             )}
           </div>
           <div className="flex items-center gap-1 text-xs text-muted">
-            <span className="font-semibold text-text tabular-nums">{formatCents(item.amount_cents, item.currency_code)}</span>
+            <span className="font-semibold text-text tabular-nums">{formatCents(item.amount_cents, baseCurrency)}</span>
             <span className="text-muted/40">·</span>
             <span className="capitalize">{t(`recurring.${item.frequency}`)}</span>
             <span className="text-muted/40">·</span>

@@ -11,6 +11,7 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { AmountDisplay, EmptyState } from '../components/ui'
 import { useCategoryName } from '../hooks/useCategoryName'
+import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { Transaction, TransactionType } from '../types'
 
 const PAGE_SIZE = 20
@@ -101,11 +102,13 @@ function DateGroup({
   transactions,
   onDelete,
   deletingId,
+  baseCurrency,
 }: {
   label: string
   transactions: Transaction[]
   onDelete: (id: number) => void
   deletingId: number | null
+  baseCurrency: string
 }) {
   const total = transactions.reduce((sum, tx) => {
     return sum + (tx.type === 'income' ? tx.amount_cents : -tx.amount_cents)
@@ -117,7 +120,7 @@ function DateGroup({
       <div className="flex items-center justify-between px-5 mb-1.5">
         <span className="text-[11px] font-bold text-muted uppercase tracking-wider">{label}</span>
         <span className={`text-[11px] font-bold tabular-nums ${total >= 0 ? 'text-income' : 'text-expense'}`}>
-          {total >= 0 ? '+' : '−'}{formatCents(Math.abs(total))}
+          {total >= 0 ? '+' : '−'}{formatCents(Math.abs(total), baseCurrency)}
         </span>
       </div>
       {/* Transaction cards */}
@@ -172,6 +175,7 @@ const FILTER_OPTIONS = [
 /* ─── Main Page ─── */
 export function HistoryPage() {
   const { t, i18n } = useTranslation()
+  const { code: baseCurrency } = useBaseCurrency()
   const qc = useQueryClient()
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [typeFilter, setTypeFilter] = useState<'all' | TransactionType>('all')
@@ -346,6 +350,7 @@ export function HistoryPage() {
                   transactions={txs}
                   onDelete={handleDelete}
                   deletingId={deletingId}
+                  baseCurrency={baseCurrency}
                 />
               ))}
             </div>

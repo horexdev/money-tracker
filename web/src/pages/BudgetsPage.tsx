@@ -74,6 +74,7 @@ function BudgetCard({
 }) {
   const { t } = useTranslation()
   const tCategory = useCategoryName()
+  const { code: baseCurrency } = useBaseCurrency()
   const pct = Math.min(budget.usage_percent, 100)
   const barColor = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#22c55e'
 
@@ -110,8 +111,8 @@ function BudgetCard({
 
         {/* Spent / limit */}
         <div className="flex justify-between text-xs text-muted">
-          <span>{t('budgets.spent')}: <span className="font-semibold text-text">{formatCents(budget.spent_cents, budget.currency_code)}</span></span>
-          <span>{t('budgets.limit')}: <span className="font-semibold text-text">{formatCents(budget.limit_cents, budget.currency_code)}</span></span>
+          <span>{t('budgets.spent')}: <span className="font-semibold text-text">{formatCents(budget.spent_cents, baseCurrency)}</span></span>
+          <span>{t('budgets.limit')}: <span className="font-semibold text-text">{formatCents(budget.limit_cents, baseCurrency)}</span></span>
         </div>
       </button>
     </SwipeToDelete>
