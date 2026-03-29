@@ -288,7 +288,8 @@ export function StatsPage() {
 
         {/* Period pills */}
         <div className="shrink-0 px-4 pt-3 pb-2">
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+          {/* -my-1.5 / py-1.5 give the shadow vertical room without adding visible whitespace */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 -my-1.5 py-1.5">
             {periodOptions.map((opt) => {
               const isActive = opt.value === 'custom' ? isCustom : (!isCustom && opt.value === period)
               return (
