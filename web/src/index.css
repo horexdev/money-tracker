@@ -59,7 +59,13 @@
   --tg-subtitle:        var(--tg-theme-subtitle-text-color, #8e8ea0);
   --tg-destructive:     var(--tg-theme-destructive-text-color, #ff3b30);
 
-  --safe-top: env(safe-area-inset-top, 0px);
+  /* Telegram injects --tg-content-safe-area-inset-top (header bar) and
+     --tg-safe-area-inset-top (device notch) automatically as CSS variables.
+     We combine both: content inset avoids Telegram header, device inset avoids notch. */
+  --safe-top: calc(
+    var(--tg-content-safe-area-inset-top, 0px) +
+    var(--tg-safe-area-inset-top, 0px)
+  );
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --tab-bar-h: calc(72px + var(--safe-bottom));
 }

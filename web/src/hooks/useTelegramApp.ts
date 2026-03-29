@@ -25,46 +25,17 @@ try {
   // SDK not available outside Telegram
 }
 
-type TgWebApp = {
-  expand?: () => void
-  ready?: () => void
-  safeAreaInset?: { top?: number }
-  contentSafeAreaInset?: { top?: number }
-  onEvent?: (event: string, cb: () => void) => void
-  offEvent?: (event: string, cb: () => void) => void
-}
-
-function getTgWebApp(): TgWebApp | undefined {
-  try {
-    return (((window as unknown) as Record<string, unknown>).Telegram as Record<string, unknown>)?.WebApp as TgWebApp | undefined
-  } catch {
-    return undefined
-  }
-}
-
-function applySafeTop() {
-  try {
-    const tg = getTgWebApp()
-    const safeTop = tg?.safeAreaInset?.top ?? 0
-    const contentTop = tg?.contentSafeAreaInset?.top ?? 0
-    const total = Math.max(safeTop, contentTop)
-    document.documentElement.style.setProperty('--safe-top', total > 0 ? `${total}px` : '')
-  } catch { /* ignore */ }
-}
-
-// Apply immediately (before React renders) so there's no layout jump
-applySafeTop()
-
 /** Initialise Telegram Mini App: expand, sync theme CSS vars. */
 export function useTelegramApp() {
   const tpState = sdkLoaded ? sdkModules!.useSignal(sdkModules!.themeParams.state) : undefined
 
   useEffect(() => {
-    // Expand and signal ready
+    // Tell Telegram the app is ready and expand to full height
     try {
-      const tg = getTgWebApp()
-      tg?.expand?.()
+      const tg = (((window as unknown) as Record<string, unknown>).Telegram as Record<string, unknown>)?.WebApp as
+        { ready?: () => void; expand?: () => void } | undefined
       tg?.ready?.()
+      tg?.expand?.()
     } catch { /* ignore */ }
 
     if (sdkLoaded) {
@@ -73,18 +44,8 @@ export function useTelegramApp() {
         if (vp.isStable() && !vp.isExpanded()) vp.expand()
       } catch { /* ignore */ }
     }
-
-    // Re-apply safe area (may update after expand)
-    applySafeTop()
-
-    // Listen for safe area changes (fires when user swipes up/down in TG)
-    const tg = getTgWebApp()
-    tg?.onEvent?.('safeAreaChanged', applySafeTop)
-    tg?.onEvent?.('contentSafeAreaChanged', applySafeTop)
-    return () => {
-      tg?.offEvent?.('safeAreaChanged', applySafeTop)
-      tg?.offEvent?.('contentSafeAreaChanged', applySafeTop)
-    }
+    // NOTE: Telegram automatically injects --tg-content-safe-area-inset-top and
+    // --tg-safe-area-inset-top as CSS variables — no JS sync needed.
   }, [])
 
   useEffect(() => {
