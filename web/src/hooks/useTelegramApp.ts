@@ -25,32 +25,66 @@ try {
   // SDK not available outside Telegram
 }
 
+type TgWebApp = {
+  expand?: () => void
+  ready?: () => void
+  safeAreaInset?: { top?: number }
+  contentSafeAreaInset?: { top?: number }
+  onEvent?: (event: string, cb: () => void) => void
+  offEvent?: (event: string, cb: () => void) => void
+}
+
+function getTgWebApp(): TgWebApp | undefined {
+  try {
+    return (((window as unknown) as Record<string, unknown>).Telegram as Record<string, unknown>)?.WebApp as TgWebApp | undefined
+  } catch {
+    return undefined
+  }
+}
+
+function applySafeTop() {
+  try {
+    const tg = getTgWebApp()
+    const safeTop = tg?.safeAreaInset?.top ?? 0
+    const contentTop = tg?.contentSafeAreaInset?.top ?? 0
+    const total = Math.max(safeTop, contentTop)
+    document.documentElement.style.setProperty('--safe-top', total > 0 ? `${total}px` : '')
+  } catch { /* ignore */ }
+}
+
+// Apply immediately (before React renders) so there's no layout jump
+applySafeTop()
+
 /** Initialise Telegram Mini App: expand, sync theme CSS vars. */
 export function useTelegramApp() {
   const tpState = sdkLoaded ? sdkModules!.useSignal(sdkModules!.themeParams.state) : undefined
 
   useEffect(() => {
-    if (!sdkLoaded) return
+    // Expand and signal ready
     try {
-      const vp = sdkModules!.viewport
-      if (vp.isStable() && !vp.isExpanded()) {
-        vp.expand()
-      }
+      const tg = getTgWebApp()
+      tg?.expand?.()
+      tg?.ready?.()
     } catch { /* ignore */ }
 
-    // Sync Telegram safe area insets to CSS variables
-    try {
-      const tg = ((window as unknown) as Record<string, unknown>).Telegram as {
-        WebApp?: {
-          safeAreaInset?: { top?: number }
-          contentSafeAreaInset?: { top?: number }
-        }
-      } | undefined
-      const safeTop = tg?.WebApp?.safeAreaInset?.top ?? 0
-      const contentTop = tg?.WebApp?.contentSafeAreaInset?.top ?? 0
-      if (safeTop) document.documentElement.style.setProperty('--tg-safe-area-inset-top', `${safeTop}px`)
-      if (contentTop) document.documentElement.style.setProperty('--tg-content-safe-area-inset-top', `${contentTop}px`)
-    } catch { /* ignore */ }
+    if (sdkLoaded) {
+      try {
+        const vp = sdkModules!.viewport
+        if (vp.isStable() && !vp.isExpanded()) vp.expand()
+      } catch { /* ignore */ }
+    }
+
+    // Re-apply safe area (may update after expand)
+    applySafeTop()
+
+    // Listen for safe area changes (fires when user swipes up/down in TG)
+    const tg = getTgWebApp()
+    tg?.onEvent?.('safeAreaChanged', applySafeTop)
+    tg?.onEvent?.('contentSafeAreaChanged', applySafeTop)
+    return () => {
+      tg?.offEvent?.('safeAreaChanged', applySafeTop)
+      tg?.offEvent?.('contentSafeAreaChanged', applySafeTop)
+    }
   }, [])
 
   useEffect(() => {
