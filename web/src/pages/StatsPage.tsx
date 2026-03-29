@@ -330,7 +330,7 @@ export function StatsPage() {
                 {withPercent.length > 0 ? (
                   <>
                     {/* Chart card — 3-column layout */}
-                    <div className="card-elevated overflow-hidden shrink-0">
+                    <div className="card-elevated shrink-0">
                       <div className="flex items-center px-4 py-4">
                         {/* Left — top category */}
                         <div className="flex-1 min-w-0">
@@ -377,7 +377,7 @@ export function StatsPage() {
                     </div>
 
                     {/* Category breakdown — scrollable */}
-                    <div className="card-elevated overflow-hidden flex-1 min-h-0 flex flex-col">
+                    <div className="card-elevated flex-1 min-h-0 flex flex-col">
                       <div className="overflow-y-auto no-scrollbar flex-1">
                         {withPercent.map((entry, i) => (
                           <CategoryRow

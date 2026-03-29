@@ -314,7 +314,7 @@ export function CategoriesPage() {
               />
             </div>
           ) : (
-            <div className="mx-4 card-elevated overflow-hidden divide-y divide-border">
+            <div className="mx-4 card-elevated divide-y divide-border">
               {categories.map((cat) => (
                 <CategoryRow
                   key={cat.id}

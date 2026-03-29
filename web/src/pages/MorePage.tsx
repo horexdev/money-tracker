@@ -73,7 +73,7 @@ export function MorePage() {
             )
             if (item.comingSoon) {
               return (
-                <div key={item.to} className="card-elevated p-5 relative overflow-hidden select-none">
+                <div key={item.to} className="card-elevated p-5 relative select-none">
                   {inner}
                 </div>
               )
@@ -82,7 +82,7 @@ export function MorePage() {
               <Link
                 key={item.to}
                 to={item.to}
-                className="card-elevated p-5 active:scale-[0.96] transition-transform relative overflow-hidden"
+                className="card-elevated p-5 active:scale-[0.96] transition-transform relative"
               >
                 {inner}
               </Link>

@@ -379,7 +379,7 @@ export function BudgetsPage() {
               />
             </div>
           ) : (
-            <div className="mx-4 card-elevated overflow-hidden divide-y divide-border">
+            <div className="mx-4 card-elevated divide-y divide-border">
               {budgets.map(b => (
                 <BudgetCard
                   key={b.id}

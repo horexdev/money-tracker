@@ -361,7 +361,7 @@ export function RecurringPage() {
               />
             </div>
           ) : (
-            <div className="mx-4 card-elevated overflow-hidden divide-y divide-border">
+            <div className="mx-4 card-elevated divide-y divide-border">
               {items.map(item => (
                 <RecurringCard
                   key={item.id}

@@ -201,7 +201,7 @@ export function AddTransactionPage() {
         </div>
 
         {/* Note + Date */}
-        <div className="mx-4 mt-3 card-elevated overflow-hidden shrink-0">
+        <div className="mx-4 mt-3 card-elevated shrink-0">
           <div className="px-4 py-3 flex items-center gap-3 border-b border-border">
             <span className="text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
               {t('transactions.note')}

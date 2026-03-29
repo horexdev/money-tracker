@@ -107,7 +107,7 @@ export function DashboardPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => navigate('/stats', { state: { type: 'income' } })}
-                className="card-elevated p-4 relative overflow-hidden text-left active:scale-[0.97] transition-transform"
+                className="card-elevated p-4 relative text-left active:scale-[0.97] transition-transform"
               >
                 <div className="absolute top-0 left-0 w-1 h-full rounded-l-[--radius-card] bg-income" />
                 <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full bg-income/[0.06] pointer-events-none" />
@@ -125,7 +125,7 @@ export function DashboardPage() {
 
               <button
                 onClick={() => navigate('/stats', { state: { type: 'expense' } })}
-                className="card-elevated p-4 relative overflow-hidden text-left active:scale-[0.97] transition-transform"
+                className="card-elevated p-4 relative text-left active:scale-[0.97] transition-transform"
               >
                 <div className="absolute top-0 left-0 w-1 h-full rounded-l-[--radius-card] bg-expense" />
                 <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full bg-expense/[0.06] pointer-events-none" />
@@ -146,7 +146,7 @@ export function DashboardPage() {
 
         {/* Recent transactions — fills remaining space, scrolls internally */}
         <div className="flex-1 min-h-0 px-4 pt-3 pb-2 flex flex-col">
-          <div className="card-elevated overflow-hidden flex-1 min-h-0 flex flex-col">
+          <div className="card-elevated flex-1 min-h-0 flex flex-col">
             <div className="flex justify-between items-center px-5 pt-4 pb-2 shrink-0">
               <span className="text-sm font-bold text-text">
                 {t('dashboard.recent_transactions')}

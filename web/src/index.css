@@ -160,11 +160,14 @@ body {
   border-radius: inherit;
 }
 
-/* Card with elevation */
+/* Card with elevation.
+   overflow: clip clips content to the border-radius without clipping box-shadow,
+   unlike overflow: hidden which cuts off shadows too. */
 .card-elevated {
   background: var(--color-surface);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
+  overflow: clip;
 }
 
 [data-theme="dark"] .card-elevated {

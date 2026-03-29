@@ -131,7 +131,7 @@ function DateGroup({
         </span>
       </div>
       {/* Transaction cards */}
-      <div className="mx-4 card-elevated overflow-hidden divide-y divide-border">
+      <div className="mx-4 card-elevated divide-y divide-border">
         {transactions.map((tx) => (
           <SwipeableRow
             key={tx.id}

@@ -372,7 +372,7 @@ export function SettingsPage() {
           </div>
 
           {/* All currencies list */}
-          <div className="card-elevated divide-y divide-border overflow-hidden rounded-2xl">
+          <div className="card-elevated divide-y divide-border rounded-2xl">
             {filteredCurrencies.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted">{t('common.no_data')}</p>
             ) : (

@@ -8,7 +8,7 @@ interface CardProps {
 
 export function Card({ children, className = '', padding = 'p-5' }: CardProps) {
   return (
-    <div className={`card-elevated overflow-hidden ${padding} ${className}`}>
+    <div className={`card-elevated ${padding} ${className}`}>
       {children}
     </div>
   )
