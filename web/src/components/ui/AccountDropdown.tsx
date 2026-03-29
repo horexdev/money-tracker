@@ -90,8 +90,8 @@ export function AccountDropdown({ accounts, selectedId, onChange, allLabel, show
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -4 }}
           transition={{ duration: 0.12 }}
-          style={{ ...menuStyle, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}
-          className="bg-card rounded-2xl border border-border overflow-hidden"
+          style={{ ...menuStyle, boxShadow: '0 8px 32px rgba(0,0,0,0.18)', backgroundColor: 'var(--app-surface)', borderColor: 'var(--app-border, rgba(0,0,0,0.08))' }}
+          className="rounded-2xl border overflow-hidden"
         >
           {allLabel && (
             <button
