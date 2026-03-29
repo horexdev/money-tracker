@@ -7,11 +7,12 @@ import { formatDate, formatCents } from '../lib/money'
 import { TrendUp, TrendDown, ArrowRight, Plus, CaretDown } from '@phosphor-icons/react'
 import { balanceApi } from '../api/balance'
 import { transactionsApi } from '../api/transactions'
+import { accountsApi } from '../api/accounts'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
-import { TransactionRow, EditTransactionSheet } from '../components/ui'
+import { TransactionRow, EditTransactionSheet, AccountDropdown } from '../components/ui'
 import type { Transaction } from '../types'
 
 export function DashboardPage() {
@@ -19,21 +20,41 @@ export function DashboardPage() {
   const navigate = useNavigate()
   const [showCurrencyBreakdown, setShowCurrencyBreakdown] = useState(false)
   const [editingTx, setEditingTx] = useState<Transaction | null>(null)
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
 
-  const balanceQ = useQuery({ queryKey: ['balance'], queryFn: balanceApi.get })
-  const txQ      = useQuery({ queryKey: ['transactions', 1], queryFn: () => transactionsApi.list(1, 5) })
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: accountsApi.list,
+  })
+
+  const balanceQ = useQuery({
+    queryKey: ['balance', selectedAccountId],
+    queryFn: () => balanceApi.get(selectedAccountId),
+  })
+
+  const txQ = useQuery({
+    queryKey: ['transactions', 1, selectedAccountId],
+    queryFn: () => transactionsApi.list(1, 5, selectedAccountId),
+  })
+
   const { code: baseCurrency } = useBaseCurrency()
 
   if (balanceQ.isPending) return (
     <div className="flex justify-center items-center pt-24"><Spinner /></div>
   )
   if (balanceQ.isError) return <ErrorMessage onRetry={() => balanceQ.refetch()} />
+
   const balance = balanceQ.data
   const isMultiCurrency = (balance?.by_currency?.length ?? 0) > 1
   const totalInBase = balance?.total_in_base_cents ?? 0
-  // Entry matching base currency for income/expense cards
   const baseEntry = balance?.by_currency?.find(b => b.currency_code === baseCurrency)
     ?? balance?.by_currency?.[0]
+
+  const selectedAccount = accounts.find(a => a.id === selectedAccountId)
+  const heroAmount = selectedAccount
+    ? formatCents(selectedAccount.balance_cents, selectedAccount.currency_code)
+    : formatCents(totalInBase, baseCurrency)
+  const heroCurrency = selectedAccount?.currency_code ?? baseCurrency
 
   return (
     <PageTransition>
@@ -50,18 +71,20 @@ export function DashboardPage() {
             <div className="absolute top-1/2 right-1/3 w-20 h-20 rounded-full bg-white/[0.04] pointer-events-none" />
 
             <div className="relative z-10">
-              <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em]">
+              <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em] mb-1">
                 {t('dashboard.net_balance')}
               </p>
+
               <div className="flex items-baseline gap-2 mt-1">
-                {isMultiCurrency && (
+                {!selectedAccount && isMultiCurrency && (
                   <span className="text-white/50 text-2xl font-bold">≈</span>
                 )}
                 <p className="text-white text-[42px] font-extrabold tabular-nums leading-none tracking-tight">
-                  {formatCents(totalInBase, baseCurrency)}
+                  {heroAmount}
                 </p>
               </div>
-              {isMultiCurrency ? (
+
+              {!selectedAccount && isMultiCurrency ? (
                 <button
                   onClick={() => setShowCurrencyBreakdown(v => !v)}
                   className="flex items-center gap-1 text-white/50 text-xs font-medium mt-2"
@@ -80,7 +103,7 @@ export function DashboardPage() {
               )}
 
               {/* Per-currency breakdown */}
-              {isMultiCurrency && showCurrencyBreakdown && (
+              {!selectedAccount && isMultiCurrency && showCurrencyBreakdown && (
                 <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
                   {balance!.by_currency.map((b) => (
                     <div key={b.currency_code} className="flex justify-between text-xs">
@@ -100,6 +123,19 @@ export function DashboardPage() {
             >
               <Plus size={20} weight="bold" className="text-white" />
             </Link>
+
+            {accounts.length > 0 && (
+              <div className="absolute bottom-5 right-5 z-10">
+                <AccountDropdown
+                  accounts={accounts}
+                  selectedId={selectedAccountId}
+                  onChange={id => { setSelectedAccountId(id); setShowCurrencyBreakdown(false) }}
+                  allLabel={t('accounts')}
+                  showBalance
+                  dropUp
+                />
+              </div>
+            )}
           </div>
 
           {/* Income / Expense bento cards */}
@@ -119,7 +155,7 @@ export function DashboardPage() {
                   <ArrowRight size={12} weight="bold" className="text-muted/40 ml-auto" />
                 </div>
                 <p className="text-income text-lg font-bold tabular-nums leading-tight">
-                  {formatCents(baseEntry.income_cents, baseCurrency)}
+                  {formatCents(baseEntry.income_cents, heroCurrency)}
                 </p>
               </button>
 
@@ -137,7 +173,7 @@ export function DashboardPage() {
                   <ArrowRight size={12} weight="bold" className="text-muted/40 ml-auto" />
                 </div>
                 <p className="text-expense text-lg font-bold tabular-nums leading-tight">
-                  {formatCents(baseEntry.expense_cents, baseCurrency)}
+                  {formatCents(baseEntry.expense_cents, heroCurrency)}
                 </p>
               </button>
             </div>

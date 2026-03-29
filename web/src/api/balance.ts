@@ -2,7 +2,8 @@ import { api } from './client'
 import type { BalanceResponse } from '../types'
 
 export const balanceApi = {
-  get(): Promise<BalanceResponse> {
-    return api.get('/v1/balance')
+  get(accountId?: number | null): Promise<BalanceResponse> {
+    const qs = accountId ? `?account_id=${accountId}` : ''
+    return api.get(`/v1/balance${qs}`)
   },
 }

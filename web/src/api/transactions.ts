@@ -19,8 +19,9 @@ export interface UpdateTransactionPayload {
 }
 
 export const transactionsApi = {
-  list(page = 1, pageSize = 20): Promise<ListTransactionsResponse> {
-    return api.get(`/v1/transactions?page=${page}&page_size=${pageSize}`)
+  list(page = 1, pageSize = 20, accountId?: number | null): Promise<ListTransactionsResponse> {
+    const qs = accountId ? `&account_id=${accountId}` : ''
+    return api.get(`/v1/transactions?page=${page}&page_size=${pageSize}${qs}`)
   },
 
   create(payload: CreateTransactionPayload): Promise<Transaction> {

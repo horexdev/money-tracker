@@ -17,6 +17,7 @@ import { Spinner } from '../components/Spinner'
 import { PageTransition } from '../components/PageTransition'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { SingleDateModal, fmtDisplay } from '../components/ui/DatePicker'
+import { AccountDropdown } from '../components/ui/AccountDropdown'
 import type { TransactionType } from '../types'
 
 /** Only allow digits and a single dot with up to 2 decimal places */
@@ -61,7 +62,7 @@ export function AddTransactionPage() {
 
   const { data: balanceData } = useQuery({
     queryKey: ['balance'],
-    queryFn: balanceApi.get,
+    queryFn: () => balanceApi.get(),
   })
 
   const { data: accounts = [] } = useQuery({
@@ -144,6 +145,18 @@ export function AddTransactionPage() {
           <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/[0.06] blur-xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
+          {/* Account selector — top-right of card */}
+          {accounts.length > 0 && selectedAccountId !== null && (
+            <div className="absolute top-4 right-4 z-20">
+              <AccountDropdown
+                accounts={accounts}
+                selectedId={selectedAccountId}
+                onChange={id => id !== null && setSelectedAccountId(id)}
+                showBalance
+              />
+            </div>
+          )}
+
           <div className="relative z-10">
             {/* Type toggle — glass pills */}
             <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08]">
@@ -206,30 +219,6 @@ export function AddTransactionPage() {
           </button>
         </div>
 
-        {/* Account picker */}
-        {accounts.length > 0 && (
-          <div className="shrink-0 mt-3 px-4">
-            <p className="mb-2 text-[11px] font-bold text-muted uppercase tracking-widest">
-              {t('accounts.title')}
-            </p>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-              {accounts.map((acc) => (
-                <button
-                  key={acc.id}
-                  onClick={() => setSelectedAccountId(acc.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                    selectedAccountId === acc.id
-                      ? 'text-white shadow-sm'
-                      : 'bg-surface-2 text-secondary'
-                  }`}
-                  style={selectedAccountId === acc.id ? { backgroundColor: acc.color } : undefined}
-                >
-                  <span className="text-xs">{acc.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Categories — scrollable grid + inline save button */}
         <div className="flex-1 min-h-0 mt-3 flex flex-col">

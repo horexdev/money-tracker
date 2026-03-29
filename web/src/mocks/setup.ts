@@ -95,18 +95,39 @@ type RouteHandler = (url: URL) => unknown
 const routes: Array<{ pattern: RegExp; handler: RouteHandler }> = [
   {
     pattern: /\/api\/v1\/balance$/,
-    handler: () => mockBalance,
+    handler: (url) => {
+      const accountId = url.searchParams.get('account_id')
+      if (accountId) {
+        const acc = mockAccounts.accounts.find(a => a.id === Number(accountId))
+        if (acc) {
+          return {
+            total_in_base_cents: acc.balance_cents,
+            by_currency: [{
+              currency_code: acc.currency_code,
+              net_cents: acc.balance_cents,
+              income_cents: Math.round(acc.balance_cents * 0.6),
+              expense_cents: Math.round(acc.balance_cents * 0.4),
+            }],
+          }
+        }
+      }
+      return mockBalance
+    },
   },
   {
     pattern: /\/api\/v1\/transactions$/,
     handler: (url) => {
       const page = Number(url.searchParams.get('page') || '1')
       const pageSize = Number(url.searchParams.get('page_size') || '20')
+      const accountId = url.searchParams.get('account_id')
+      const all = accountId
+        ? mockTransactions.transactions.filter(tx => tx.account_id === Number(accountId))
+        : mockTransactions.transactions
       const start = (page - 1) * pageSize
-      const txs = mockTransactions.transactions.slice(start, start + pageSize)
+      const txs = all.slice(start, start + pageSize)
       return {
         transactions: txs,
-        total_pages: Math.ceil(mockTransactions.transactions.length / pageSize),
+        total_pages: Math.ceil(all.length / pageSize),
         current_page: page,
       }
     },
