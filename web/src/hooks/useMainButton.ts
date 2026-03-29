@@ -11,7 +11,7 @@ interface Options {
 /** Controls the Telegram native Main Button (bottom blue button). */
 export function useTgMainButton({ text, onClick, enabled = true, loading = false }: Options) {
   useEffect(() => {
-    if (!mainButton.isAvailable()) return
+    if (!mainButton.isMounted()) return
     try {
       mainButton.setText(text)
 

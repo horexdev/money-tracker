@@ -47,7 +47,7 @@ export function useTelegramApp() {
 /** Show/hide the Telegram native Back Button and handle clicks. */
 export function useTgBackButton(onBack: () => void, enabled = true) {
   useEffect(() => {
-    if (!backButton.isAvailable()) return
+    if (!backButton.isSupported()) return
     try {
       if (!enabled) {
         backButton.hide()
