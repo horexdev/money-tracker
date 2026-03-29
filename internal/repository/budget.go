@@ -145,10 +145,7 @@ func (r *BudgetRepository) ListDistinctUserIDs(ctx context.Context) ([]int64, er
 	if err != nil {
 		return nil, err
 	}
-	ids := make([]int64, 0, len(rows))
-	for _, id := range rows {
-		ids = append(ids, id)
-	}
+	ids := append(make([]int64, 0, len(rows)), rows...)
 	return ids, nil
 }
 
