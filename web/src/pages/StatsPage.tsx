@@ -133,10 +133,12 @@ function CategoryRow({
   entry,
   index,
   color,
+  currency,
 }: {
   entry: CategoryStat & { percent: number }
   index: number
   color: string
+  currency: string
 }) {
   const tCategory = useCategoryName()
   return (
@@ -157,7 +159,7 @@ function CategoryRow({
         <div className="flex justify-between items-center">
           <span className="text-sm font-semibold text-text truncate">{tCategory(entry.category_name)}</span>
           <span className="text-sm font-bold tabular-nums text-text ml-2 shrink-0">
-            {formatCents(entry.total_cents, entry.currency_code)}
+            {formatCents(entry.total_cents, currency)}
           </span>
         </div>
         <div className="mt-1.5 h-1.5 rounded-full overflow-hidden bg-bg">
@@ -377,6 +379,7 @@ export function StatsPage() {
                             entry={entry}
                             index={i}
                             color={COLORS[i % COLORS.length]}
+                            currency={baseCurrency}
                           />
                         ))}
                       </div>

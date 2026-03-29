@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { formatDate } from '../lib/money'
+import { formatDate, formatCents } from '../lib/money'
 import { TrendUp, TrendDown, ArrowRight, Plus, CaretDown } from '@phosphor-icons/react'
 import { balanceApi } from '../api/balance'
 import { transactionsApi } from '../api/transactions'
-import { formatCents } from '../lib/money'
+import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
@@ -25,11 +25,13 @@ export function DashboardPage() {
   )
   if (balanceQ.isError) return <ErrorMessage onRetry={() => balanceQ.refetch()} />
 
+  const { code: baseCurrency } = useBaseCurrency()
   const balance = balanceQ.data
-  const primary = balance?.by_currency?.[0]
   const isMultiCurrency = (balance?.by_currency?.length ?? 0) > 1
-  const totalInBase = balance?.total_in_base_cents ?? primary?.net_cents ?? 0
-  const baseCurrency = primary?.currency_code ?? 'USD'
+  const totalInBase = balance?.total_in_base_cents ?? 0
+  // Entry matching base currency for income/expense cards
+  const baseEntry = balance?.by_currency?.find(b => b.currency_code === baseCurrency)
+    ?? balance?.by_currency?.[0]
 
   return (
     <PageTransition>
@@ -99,7 +101,7 @@ export function DashboardPage() {
           </div>
 
           {/* Income / Expense bento cards */}
-          {primary && (
+          {baseEntry && (
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => navigate('/stats', { state: { type: 'income' } })}
@@ -115,7 +117,7 @@ export function DashboardPage() {
                   <ArrowRight size={12} weight="bold" className="text-muted/40 ml-auto" />
                 </div>
                 <p className="text-income text-lg font-bold tabular-nums leading-tight">
-                  {formatCents(primary.income_cents, primary.currency_code)}
+                  {formatCents(baseEntry.income_cents, baseCurrency)}
                 </p>
               </button>
 
@@ -133,7 +135,7 @@ export function DashboardPage() {
                   <ArrowRight size={12} weight="bold" className="text-muted/40 ml-auto" />
                 </div>
                 <p className="text-expense text-lg font-bold tabular-nums leading-tight">
-                  {formatCents(primary.expense_cents, primary.currency_code)}
+                  {formatCents(baseEntry.expense_cents, baseCurrency)}
                 </p>
               </button>
             </div>
