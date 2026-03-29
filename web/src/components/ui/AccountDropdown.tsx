@@ -39,22 +39,25 @@ export function AccountDropdown({ accounts, selectedId, onChange, allLabel, show
     const spaceBelow = window.innerHeight - rect.bottom
     const menuH = Math.min(accounts.length * 56 + (allLabel ? 56 : 0), 280)
 
+    const menuWidth = Math.max(160, rect.width)
+    // Align right edge of menu to right edge of trigger, but clamp to viewport
+    const rightAligned = rect.right - menuWidth
+    const left = Math.max(8, rightAligned)
+
     if (spaceBelow < menuH + 8) {
-      // Open upward
       setMenuStyle({
         position: 'fixed',
         bottom: window.innerHeight - rect.top + 6,
-        right: window.innerWidth - rect.right,
-        minWidth: 160,
+        left,
+        minWidth: menuWidth,
         zIndex: 9999,
       })
     } else {
-      // Open downward
       setMenuStyle({
         position: 'fixed',
         top: rect.bottom + 6,
-        right: window.innerWidth - rect.right,
-        minWidth: 160,
+        left,
+        minWidth: menuWidth,
         zIndex: 9999,
       })
     }
