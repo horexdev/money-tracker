@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Home, PlusCircle, Clock, BarChart3, MoreHorizontal } from 'lucide-react'
+import { House, Plus, ClockCounterClockwise, ChartBar, DotsThree } from '@phosphor-icons/react'
 import { useHaptic } from '../hooks/useHaptic'
 import type { ReactNode } from 'react'
 
@@ -12,11 +12,11 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { to: '/',        icon: <Home size={22} />,           labelKey: 'tabs.home'    },
-  { to: '/history', icon: <Clock size={22} />,          labelKey: 'tabs.history' },
-  { to: '/add',     icon: <PlusCircle size={26} />,     labelKey: 'tabs.add',    isCenter: true },
-  { to: '/stats',   icon: <BarChart3 size={22} />,      labelKey: 'tabs.stats'   },
-  { to: '/more',    icon: <MoreHorizontal size={22} />, labelKey: 'tabs.more'    },
+  { to: '/',        icon: <House size={24} weight="fill" />,                  labelKey: 'tabs.home'    },
+  { to: '/history', icon: <ClockCounterClockwise size={24} weight="bold" />, labelKey: 'tabs.history' },
+  { to: '/add',     icon: <Plus size={24} weight="bold" />,                  labelKey: 'tabs.add',    isCenter: true },
+  { to: '/stats',   icon: <ChartBar size={24} weight="fill" />,             labelKey: 'tabs.stats'   },
+  { to: '/more',    icon: <DotsThree size={24} weight="bold" />,            labelKey: 'tabs.more'    },
 ]
 
 export function TabBar() {
@@ -25,41 +25,45 @@ export function TabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex glass border-t border-border"
+      className="fixed bottom-0 left-0 right-0 z-50 glass"
       style={{ paddingBottom: 'var(--safe-bottom)' }}
     >
-      {TABS.map((tab) => (
-        <NavLink
-          key={tab.to}
-          to={tab.to}
-          end={tab.to === '/'}
-          onClick={selection}
-          className={({ isActive }) =>
-            `flex flex-1 flex-col items-center justify-center gap-0.5 py-3 transition-all duration-200 ${
-              tab.isCenter ? '' : isActive ? 'text-accent' : 'text-muted'
-            }`
-          }
-        >
-          {({ isActive }) =>
-            tab.isCenter ? (
-              <div className={`
-                aurora-bg w-11 h-11 rounded-2xl flex items-center justify-center text-white
-                shadow-lg transition-transform duration-150
-                ${isActive ? 'scale-90' : 'scale-100 active:scale-90'}
-              `}>
-                {tab.icon}
-              </div>
-            ) : (
-              <>
-                <div className={`transition-transform duration-150 ${isActive ? 'scale-110' : 'scale-100'}`}>
+      <div className="flex items-end">
+        {TABS.map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            end={tab.to === '/'}
+            onClick={selection}
+            className={({ isActive }) =>
+              `flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-200 ${
+                tab.isCenter ? 'pb-2 pt-1' : 'py-2.5'
+              } ${isActive ? 'text-accent' : 'text-muted'}`
+            }
+          >
+            {({ isActive }) =>
+              tab.isCenter ? (
+                <div className={`
+                  w-[52px] h-[52px] -mt-4 rounded-2xl flex items-center justify-center
+                  hero-gradient text-white
+                  shadow-[0_4px_20px_rgba(67,56,202,0.45)]
+                  transition-transform duration-150
+                  ${isActive ? 'scale-95' : 'active:scale-90'}
+                `}>
                   {tab.icon}
                 </div>
-                <span className="text-[10px] leading-none font-medium">{t(tab.labelKey)}</span>
-              </>
-            )
-          }
-        </NavLink>
-      ))}
+              ) : (
+                <>
+                  <div className={`transition-transform duration-150 ${isActive ? 'scale-110' : ''}`}>
+                    {tab.icon}
+                  </div>
+                  <span className="text-[10px] leading-none font-semibold">{t(tab.labelKey)}</span>
+                </>
+              )
+            }
+          </NavLink>
+        ))}
+      </div>
     </nav>
   )
 }

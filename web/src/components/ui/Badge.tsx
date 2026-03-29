@@ -9,7 +9,7 @@ interface BadgeProps {
 }
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: 'bg-border text-muted',
+  default: 'bg-bg text-muted',
   accent:  'bg-accent-subtle text-accent',
   income:  'bg-income-subtle text-income',
   expense: 'bg-expense-subtle text-expense',
@@ -18,7 +18,7 @@ const variantClasses: Record<BadgeVariant, string> = {
 export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-[--radius-xs] text-xs font-medium ${variantClasses[variant]} ${className}`}
+      className={`inline-flex items-center px-2.5 py-1 rounded-[--radius-xs] text-[11px] font-bold ${variantClasses[variant]} ${className}`}
     >
       {children}
     </span>

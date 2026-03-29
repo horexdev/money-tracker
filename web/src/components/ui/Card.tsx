@@ -6,9 +6,9 @@ interface CardProps {
   padding?: string
 }
 
-export function Card({ children, className = '', padding = 'p-4' }: CardProps) {
+export function Card({ children, className = '', padding = 'p-5' }: CardProps) {
   return (
-    <div className={`bg-surface rounded-[--radius-card] overflow-hidden ${padding} ${className}`}>
+    <div className={`card-elevated overflow-hidden ${padding} ${className}`}>
       {children}
     </div>
   )

@@ -9,7 +9,7 @@ interface SectionHeaderProps {
 export function SectionHeader({ children, action, className = '' }: SectionHeaderProps) {
   return (
     <div className={`flex items-center justify-between px-4 mb-2 ${className}`}>
-      <span className="text-xs font-semibold uppercase tracking-widest text-muted">{children}</span>
+      <span className="text-sm font-semibold tracking-wide text-muted">{children}</span>
       {action}
     </div>
   )
