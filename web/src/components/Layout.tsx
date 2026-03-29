@@ -6,10 +6,9 @@ export function Layout() {
   useTelegramApp()
 
   return (
-    <div className="flex flex-col min-h-svh bg-bg" style={{ paddingTop: 'var(--safe-top)' }}>
-      <main className="flex-1 overflow-y-auto">
+    <div className="flex flex-col bg-bg" style={{ height: '100svh', paddingTop: 'var(--safe-top)' }}>
+      <main className="flex-1 overflow-y-auto min-h-0" style={{ paddingBottom: 'var(--tab-bar-h)' }}>
         <Outlet />
-        <div className="tab-spacer" />
       </main>
       <TabBar />
     </div>
