@@ -1,5 +1,25 @@
 import { useEffect } from 'react'
-import { mainButton } from '@tma.js/sdk-react'
+
+let mainButtonModule: {
+  mainButton: {
+    isMounted: () => boolean
+    setText: (text: string) => void
+    showLoader: () => void
+    hideLoader: () => void
+    enable: () => void
+    disable: () => void
+    show: () => void
+    hide: () => void
+    onClick: (cb: () => void) => () => void
+  }
+} | null = null
+
+try {
+  const mod = await import('@tma.js/sdk-react')
+  mainButtonModule = { mainButton: mod.mainButton }
+} catch {
+  // SDK not available
+}
 
 interface Options {
   text: string
@@ -11,27 +31,29 @@ interface Options {
 /** Controls the Telegram native Main Button (bottom blue button). */
 export function useTgMainButton({ text, onClick, enabled = true, loading = false }: Options) {
   useEffect(() => {
-    if (!mainButton.isMounted()) return
+    if (!mainButtonModule) return
+    const mb = mainButtonModule.mainButton
+    if (!mb.isMounted()) return
     try {
-      mainButton.setText(text)
+      mb.setText(text)
 
       if (loading) {
-        mainButton.showLoader()
-        mainButton.enable()
+        mb.showLoader()
+        mb.enable()
       } else if (enabled) {
-        mainButton.hideLoader()
-        mainButton.enable()
+        mb.hideLoader()
+        mb.enable()
       } else {
-        mainButton.hideLoader()
-        mainButton.disable()
+        mb.hideLoader()
+        mb.disable()
       }
 
-      mainButton.show()
-      const off = mainButton.onClick(onClick)
+      mb.show()
+      const off = mb.onClick(onClick)
 
       return () => {
         off()
-        mainButton.hide()
+        mb.hide()
       }
     } catch {
       // mainButton not supported in this Telegram client

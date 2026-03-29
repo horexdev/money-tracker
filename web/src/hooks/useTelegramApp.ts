@@ -1,21 +1,42 @@
 import { useEffect } from 'react'
-import {
-  miniApp,
-  themeParams,
-  viewport,
-  backButton,
-  useSignal,
-  retrieveRawInitData,
-} from '@tma.js/sdk-react'
+
+let sdkLoaded = false
+let sdkModules: {
+  miniApp: unknown
+  themeParams: { state: unknown }
+  viewport: { isStable: () => boolean; isExpanded: () => boolean; expand: () => void }
+  backButton: { isSupported: () => boolean; show: () => void; hide: () => void; onClick: (cb: () => void) => () => void }
+  useSignal: (signal: unknown) => Record<string, string | undefined> | undefined
+  retrieveRawInitData: () => string | undefined
+} | null = null
+
+try {
+  const mod = await import('@tma.js/sdk-react')
+  sdkModules = {
+    miniApp: mod.miniApp,
+    themeParams: mod.themeParams,
+    viewport: mod.viewport,
+    backButton: mod.backButton,
+    useSignal: mod.useSignal as (signal: unknown) => Record<string, string | undefined> | undefined,
+    retrieveRawInitData: mod.retrieveRawInitData,
+  }
+  sdkLoaded = true
+} catch {
+  // SDK not available outside Telegram
+}
 
 /** Initialise Telegram Mini App: expand, sync theme CSS vars. */
 export function useTelegramApp() {
-  const tpState = useSignal(themeParams.state)
+  const tpState = sdkLoaded ? sdkModules!.useSignal(sdkModules!.themeParams.state) : undefined
 
   useEffect(() => {
-    if (viewport.isStable() && !viewport.isExpanded()) {
-      viewport.expand()
-    }
+    if (!sdkLoaded) return
+    try {
+      const vp = sdkModules!.viewport
+      if (vp.isStable() && !vp.isExpanded()) {
+        vp.expand()
+      }
+    } catch { /* ignore */ }
   }, [])
 
   useEffect(() => {
@@ -41,23 +62,25 @@ export function useTelegramApp() {
     }
   }, [tpState])
 
-  return { miniApp, themeParams, viewport }
+  return { miniApp: sdkModules?.miniApp, themeParams: sdkModules?.themeParams, viewport: sdkModules?.viewport }
 }
 
 /** Show/hide the Telegram native Back Button and handle clicks. */
 export function useTgBackButton(onBack: () => void, enabled = true) {
   useEffect(() => {
-    if (!backButton.isSupported()) return
+    if (!sdkLoaded) return
+    const bb = sdkModules!.backButton
+    if (!bb.isSupported()) return
     try {
       if (!enabled) {
-        backButton.hide()
+        bb.hide()
         return
       }
-      backButton.show()
-      const off = backButton.onClick(onBack)
+      bb.show()
+      const off = bb.onClick(onBack)
       return () => {
         off()
-        backButton.hide()
+        bb.hide()
       }
     } catch {
       // backButton not supported in this Telegram client
@@ -67,8 +90,9 @@ export function useTgBackButton(onBack: () => void, enabled = true) {
 
 /** Get Telegram initData raw string for API auth. */
 export function getInitDataRaw(): string {
+  if (!sdkLoaded) return ''
   try {
-    return retrieveRawInitData() ?? ''
+    return sdkModules!.retrieveRawInitData() ?? ''
   } catch {
     return ''
   }

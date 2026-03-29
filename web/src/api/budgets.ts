@@ -16,6 +16,7 @@ export function createBudget(body: {
 }
 
 export function updateBudget(id: number, body: {
+  category_id?: number
   limit_cents?: number
   period?: string
   notify_at_percent?: number

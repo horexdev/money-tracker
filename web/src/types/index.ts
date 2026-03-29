@@ -43,6 +43,7 @@ export interface DisplayConversion {
 export interface BalanceResponse {
   by_currency: BalanceCurrency[]
   display_conversions: DisplayConversion[]
+  total_in_base_cents: number
 }
 
 // GET /api/v1/stats
