@@ -46,45 +46,34 @@ type IconComponent = React.ComponentType<{ size?: number; weight?: IconWeight; c
 
 /** Emoji → Phosphor icon mapping (for legacy emoji-based categories) */
 const EMOJI_MAP: Record<string, IconComponent> = {
-  '🍔': ForkKnife,
-  '🍕': ForkKnife,
-  '🍳': ForkKnife,
-  '🥗': ForkKnife,
-  '🍜': ForkKnife,
-  '🚕': Car,
-  '🚗': Car,
-  '🚌': Car,
-  '🏍️': Car,
-  '🎬': FilmSlate,
-  '🎭': FilmSlate,
-  '🎪': FilmSlate,
-  '🛍️': ShoppingBag,
-  '🛒': ShoppingBag,
-  '💊': FirstAid,
-  '🏥': FirstAid,
-  '💰': Money,
-  '💵': Money,
-  '💸': Money,
-  '💻': Laptop,
-  '🖥️': Laptop,
-  '🏠': House,
-  '🏡': House,
-  '☕': Coffee,
-  '📱': DeviceMobile,
-  '📲': DeviceMobile,
-  '⚡': Lightning,
-  '❤️': Heartbeat,
-  '🎓': GraduationCap,
-  '✈️': Airplane,
-  '🎁': Gift,
-  '🎮': GameController,
-  '🐾': PawPrint,
-  '👕': TShirt,
-  '💪': Barbell,
-  '🎵': MusicNote,
-  '🏦': Bank,
-  '👛': Wallet,
-  '💲': CurrencyDollar,
+  // Food
+  '🍔': ForkKnife, '🍕': Pizza, '🍳': ForkKnife, '🥗': ForkKnife,
+  '🍜': ForkKnife, '🍱': ForkKnife, '🥘': ForkKnife,
+  // Transport
+  '🚕': Taxi, '🚗': Car, '🚌': Bus, '🚎': Bus, '🏍️': Car, '🏍': Car,
+  '🚂': Car, '⛽': Car,
+  // Entertainment
+  '🎬': FilmSlate, '🎭': FilmSlate, '🎪': FilmSlate, '🎮': GameController,
+  '🎵': MusicNote, '🎶': MusicNote,
+  // Shopping
+  '🛍️': ShoppingBag, '🛍': ShoppingBag, '🛒': ShoppingBag,
+  // Health
+  '💊': FirstAid, '🏥': FirstAid, '🩺': FirstAid,
+  // Money / income
+  '💰': Money, '💵': Money, '💸': Money, '💲': CurrencyDollar,
+  '💼': Briefcase, '🧾': Money,
+  // Tech
+  '💻': Laptop, '🖥️': Laptop, '📱': DeviceMobile, '📲': DeviceMobile,
+  // Home
+  '🏠': House, '🏡': House, '🛋️': Bed, '🛋': Bed,
+  // Other
+  '📦': Tag, '📫': Tag, '📬': Tag,
+  '☕': Coffee, '⚡': Lightning, '❤️': Heartbeat, '🎓': GraduationCap,
+  '✈️': Airplane, '🎁': Gift, '🐾': PawPrint, '👕': TShirt,
+  '💪': Barbell, '🏦': Bank, '👛': Wallet, '🌸': Flower,
+  '🌺': Flower, '🐶': PawPrint, '🐱': PawPrint, '👶': Baby,
+  '📚': BookOpen, '📖': BookOpen, '🔧': Wrench, '✂️': Scissors,
+  '📷': Camera, '📸': Camera, '🔒': ShieldCheck,
 }
 
 /** All available icons for the icon picker, keyed by a stable string ID */

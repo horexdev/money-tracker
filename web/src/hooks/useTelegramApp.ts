@@ -37,6 +37,20 @@ export function useTelegramApp() {
         vp.expand()
       }
     } catch { /* ignore */ }
+
+    // Sync Telegram safe area insets to CSS variables
+    try {
+      const tg = (window as Record<string, unknown>).Telegram as {
+        WebApp?: {
+          safeAreaInset?: { top?: number }
+          contentSafeAreaInset?: { top?: number }
+        }
+      } | undefined
+      const safeTop = tg?.WebApp?.safeAreaInset?.top ?? 0
+      const contentTop = tg?.WebApp?.contentSafeAreaInset?.top ?? 0
+      if (safeTop) document.documentElement.style.setProperty('--tg-safe-area-inset-top', `${safeTop}px`)
+      if (contentTop) document.documentElement.style.setProperty('--tg-content-safe-area-inset-top', `${contentTop}px`)
+    } catch { /* ignore */ }
   }, [])
 
   useEffect(() => {
