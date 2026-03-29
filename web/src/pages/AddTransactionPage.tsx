@@ -181,9 +181,6 @@ export function AddTransactionPage() {
       ? '0 8px 32px rgba(239,68,68,0.3), 0 2px 8px rgba(0,0,0,0.1)'
       : '0 8px 32px rgba(34,197,94,0.3), 0 2px 8px rgba(0,0,0,0.1)'
 
-  const fromAccount = accounts.find(a => a.id === fromAccountId)
-  const toAccount = accounts.find(a => a.id === toAccountId)
-
   return (
     <PageTransition>
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
@@ -231,11 +228,24 @@ export function AddTransactionPage() {
               ))}
             </div>
 
-            {isTransfer ? (
-              /* Transfer: from ⇄ to dropdowns */
-              <div className="mt-4 flex items-center gap-3">
+            {/* Amount input — always shown */}
+            <div className="mt-4 flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-white/50 shrink-0">{currencySymbol}</span>
+              <input
+                inputMode="decimal"
+                placeholder="0.00"
+                value={amount}
+                onChange={handleAmountChange}
+                autoFocus
+                className="flex-1 bg-transparent text-white text-4xl font-extrabold outline-none tabular-nums placeholder:text-white/25 min-w-0"
+              />
+            </div>
+
+            {/* Transfer: from ⇄ to row */}
+            {isTransfer && (
+              <div className="mt-4 flex items-center gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1.5">
+                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
                     {t('from')}
                   </p>
                   <AccountDropdown
@@ -245,13 +255,11 @@ export function AddTransactionPage() {
                     showBalance
                   />
                 </div>
-
-                <div className="shrink-0 mt-5">
-                  <ArrowsLeftRight size={18} weight="bold" className="text-white/50" />
+                <div className="shrink-0 mt-4">
+                  <ArrowsLeftRight size={16} weight="bold" className="text-white/40" />
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1.5">
+                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
                     {t('to')}
                   </p>
                   <AccountDropdown
@@ -262,49 +270,10 @@ export function AddTransactionPage() {
                   />
                 </div>
               </div>
-            ) : (
-              /* Amount input */
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-white/50 shrink-0">{currencySymbol}</span>
-                <input
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={handleAmountChange}
-                  autoFocus
-                  className="flex-1 bg-transparent text-white text-4xl font-extrabold outline-none tabular-nums placeholder:text-white/25 min-w-0"
-                />
-              </div>
             )}
           </div>
         </div>
 
-        {/* Transfer: amount input below card */}
-        {isTransfer && (
-          <div className="mx-4 mt-3 card-elevated shrink-0">
-            <div className="px-4 py-3 flex items-center gap-2">
-              <span className="text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
-                {t('transactions.amount')}
-              </span>
-              <input
-                inputMode="decimal"
-                placeholder="0.00"
-                value={amount}
-                onChange={handleAmountChange}
-                autoFocus
-                className="flex-1 bg-transparent text-xl font-bold outline-none tabular-nums text-text placeholder:text-muted/30 min-w-0 text-right"
-              />
-              <span className="text-sm font-semibold text-muted shrink-0">
-                {fromAccount?.currency_code ?? baseCurrency}
-              </span>
-            </div>
-            {fromAccount && toAccount && fromAccount.currency_code !== toAccount.currency_code && (
-              <p className="px-4 pb-3 text-[10px] text-muted/60 font-medium">
-                → {toAccount.currency_code}
-              </p>
-            )}
-          </div>
-        )}
 
         {/* Note + Date */}
         <div className="mx-4 mt-3 card-elevated shrink-0">
