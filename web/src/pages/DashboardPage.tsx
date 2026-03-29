@@ -19,13 +19,12 @@ export function DashboardPage() {
 
   const balanceQ = useQuery({ queryKey: ['balance'], queryFn: balanceApi.get })
   const txQ      = useQuery({ queryKey: ['transactions', 1], queryFn: () => transactionsApi.list(1, 5) })
+  const { code: baseCurrency } = useBaseCurrency()
 
   if (balanceQ.isPending) return (
     <div className="flex justify-center items-center pt-24"><Spinner /></div>
   )
   if (balanceQ.isError) return <ErrorMessage onRetry={() => balanceQ.refetch()} />
-
-  const { code: baseCurrency } = useBaseCurrency()
   const balance = balanceQ.data
   const isMultiCurrency = (balance?.by_currency?.length ?? 0) > 1
   const totalInBase = balance?.total_in_base_cents ?? 0
