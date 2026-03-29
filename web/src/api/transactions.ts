@@ -7,6 +7,14 @@ export interface CreateTransactionPayload {
   amount_cents: number
   note?: string
   currency_code?: string
+  created_at?: string
+}
+
+export interface UpdateTransactionPayload {
+  amount_cents: number
+  category_id: number
+  note?: string
+  created_at: string
 }
 
 export const transactionsApi = {
@@ -16,6 +24,10 @@ export const transactionsApi = {
 
   create(payload: CreateTransactionPayload): Promise<Transaction> {
     return api.post('/v1/transactions', payload)
+  },
+
+  update(id: number, payload: UpdateTransactionPayload): Promise<Transaction> {
+    return api.put(`/v1/transactions/${id}`, payload)
   },
 
   delete(id: number): Promise<void> {

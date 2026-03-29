@@ -40,6 +40,7 @@
     "amount": "Bedrag",
     "category": "Categorie",
     "note": "Notitie",
+    "date": "Datum",
     "note_placeholder": "Notitie toevoegen (optioneel)",
     "type": "Type",
     "expense": "Uitgave",
@@ -48,7 +49,8 @@
     "frequency": "Frequentie",
     "delete_confirm": "Deze transactie verwijderen?",
     "no_transactions": "Nog geen transacties",
-    "start_tracking": "Begin met het bijhouden van je financiën"
+    "start_tracking": "Begin met het bijhouden van je financiën",
+    "edit_title": "Transactie bewerken"
   },
   "history": {
     "title": "Geschiedenis",
@@ -94,6 +96,7 @@
     "name": "Naam",
     "emoji": "Emoji",
     "icon": "Icoon",
+    "color": "Kleur",
     "choose_icon": "Kies een icoon",
     "type": "Type",
     "type_expense": "Uitgave",
@@ -122,6 +125,7 @@
       "Beauty": "Schoonheid",
       "Pets": "Huisdieren",
       "Business": "Zakelijk",
+      "Housing": "Wonen",
       "Investments": "Investeringen",
       "Other": "Overig"
     }
@@ -138,7 +142,9 @@
     "notify_at": "Melden bij",
     "over_limit": "Limiet overschreden!",
     "no_budgets": "Geen budgetten ingesteld",
-    "set_budget": "Stel een budget in om uitgaven te beheersen"
+    "set_budget": "Stel een budget in om uitgaven te beheersen",
+    "view_transactions": "Transacties",
+    "no_transactions": "Geen transacties in deze periode"
   },
   "recurring": {
     "title": "Terugkerend",
@@ -166,7 +172,10 @@
     "completed": "Voltooid!",
     "progress": "{{percent}}% voltooid",
     "no_goals": "Geen spaardoelen",
-    "start_saving": "Stel een doel in en begin met sparen"
+    "start_saving": "Stel een doel in en begin met sparen",
+    "history": "Geschiedenis",
+    "history_title": "Doelgeschiedenis",
+    "no_history": "Nog geen transacties"
   },
   "export": {
     "title": "Gegevens exporteren",

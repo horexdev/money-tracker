@@ -27,3 +27,22 @@ export function updateBudget(id: number, body: {
 export function deleteBudget(id: number): Promise<void> {
   return api.delete(`/v1/budgets/${id}`)
 }
+
+export interface BudgetTransaction {
+  id: number
+  amount_cents: number
+  category_name: string
+  category_emoji: string
+  category_color: string
+  note: string
+  currency_code: string
+  created_at: string
+}
+
+export interface BudgetTransactionsResponse {
+  transactions: BudgetTransaction[]
+}
+
+export function fetchBudgetTransactions(id: number): Promise<BudgetTransactionsResponse> {
+  return api.get(`/v1/budgets/${id}/transactions`)
+}

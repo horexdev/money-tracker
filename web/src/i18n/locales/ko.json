@@ -40,6 +40,7 @@
     "amount": "금액",
     "category": "카테고리",
     "note": "메모",
+    "date": "날짜",
     "note_placeholder": "메모 추가 (선택사항)",
     "type": "유형",
     "expense": "지출",
@@ -48,7 +49,8 @@
     "frequency": "빈도",
     "delete_confirm": "이 거래를 삭제하시겠습니까?",
     "no_transactions": "아직 거래가 없습니다",
-    "start_tracking": "재정 관리를 시작하세요"
+    "start_tracking": "재정 관리를 시작하세요",
+    "edit_title": "거래 수정"
   },
   "history": {
     "title": "내역",
@@ -94,6 +96,7 @@
     "name": "이름",
     "emoji": "이모지",
     "icon": "아이콘",
+    "color": "색상",
     "choose_icon": "아이콘 선택",
     "type": "유형",
     "type_expense": "지출",
@@ -122,6 +125,7 @@
       "Beauty": "미용",
       "Pets": "반려동물",
       "Business": "비즈니스",
+      "Housing": "주거",
       "Investments": "투자",
       "Other": "기타"
     }
@@ -138,7 +142,9 @@
     "notify_at": "알림 기준",
     "over_limit": "한도 초과!",
     "no_budgets": "설정된 예산 없음",
-    "set_budget": "지출 한도를 관리하기 위해 예산을 설정하세요"
+    "set_budget": "지출 한도를 관리하기 위해 예산을 설정하세요",
+    "view_transactions": "거래 내역",
+    "no_transactions": "이 기간에 거래가 없습니다"
   },
   "recurring": {
     "title": "반복",
@@ -166,7 +172,10 @@
     "completed": "달성!",
     "progress": "{{percent}}% 달성",
     "no_goals": "저축 목표가 없습니다",
-    "start_saving": "목표를 설정하고 저축을 시작하세요"
+    "start_saving": "목표를 설정하고 저축을 시작하세요",
+    "history": "내역",
+    "history_title": "목표 내역",
+    "no_history": "아직 거래 없음"
   },
   "export": {
     "title": "데이터 내보내기",

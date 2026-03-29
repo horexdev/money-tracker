@@ -46,7 +46,7 @@ export function ExportPage() {
               <label className="block text-xs font-semibold text-muted uppercase tracking-widest mb-2">
                 {t('export.format')}
               </label>
-              <div className="bg-bg rounded-xl px-3 py-2.5 text-sm font-medium text-text">
+              <div className="bg-bg rounded-2xl px-3 py-2.5 text-sm font-medium text-text">
                 CSV
               </div>
             </div>
@@ -58,7 +58,7 @@ export function ExportPage() {
               </label>
               <button
                 onClick={() => setShowPicker(true)}
-                className="w-full bg-bg rounded-xl px-4 py-3 flex items-center justify-between active:bg-accent/5 transition-colors"
+                className="w-full bg-bg rounded-2xl px-4 py-3 flex items-center justify-between active:bg-accent/5 transition-colors"
               >
                 <div className="text-left">
                   <span className="text-sm font-bold text-text">{fmtDisplay(from)}</span>

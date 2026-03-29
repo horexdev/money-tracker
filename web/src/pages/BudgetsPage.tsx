@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Warning } from '@phosphor-icons/react'
-import { fetchBudgets, createBudget, updateBudget, deleteBudget } from '../api/budgets'
+import { AnimatePresence } from 'framer-motion'
+import { Plus, Warning, ClockCounterClockwise, ArrowCircleDown, ChartBar } from '@phosphor-icons/react'
+import { fetchBudgets, createBudget, updateBudget, deleteBudget, fetchBudgetTransactions } from '../api/budgets'
+import type { BudgetTransaction } from '../api/budgets'
 import { categoriesApi } from '../api/categories'
 import { formatCents, parseCents } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
@@ -13,7 +14,7 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { useTgBackButton } from '../hooks/useTelegramApp'
 import { useHaptic } from '../hooks/useHaptic'
-import { EmptyState, SwipeToDelete } from '../components/ui'
+import { EmptyState, SwipeToDelete, FAB, BottomSheet } from '../components/ui'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { Budget } from '../types'
@@ -29,36 +30,72 @@ function sanitizeAmount(value: string): string {
   return cleaned
 }
 
-/* ─── Bottom Sheet ─── */
-function BottomSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+/* ─── Budget Transactions Sheet ─── */
+function BudgetTransactionsSheet({ budget, onClose }: { budget: Budget; onClose: () => void }) {
+  const { t } = useTranslation()
+  const tCategory = useCategoryName()
+  const { code: baseCurrency } = useBaseCurrency()
+
+  const q = useQuery({
+    queryKey: ['budget-transactions', budget.id],
+    queryFn: () => fetchBudgetTransactions(budget.id),
+  })
+
+  const txs: BudgetTransaction[] = q.data?.transactions ?? []
+
+  function fmtDate(iso: string) {
+    const d = new Date(iso)
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  }
+
   return (
-    <>
-      <motion.div
-        className="fixed inset-0 bg-black/40 z-[60]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      />
-      <motion.div
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-[24px] overflow-hidden"
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        drag="y"
-        dragConstraints={{ top: 0 }}
-        dragElastic={{ top: 0, bottom: 0.3 }}
-        onDragEnd={(_, info) => {
-          if (info.velocity.y > 500 || info.offset.y > 100) onClose()
-        }}
+    <BottomSheet onClose={onClose}>
+      <div
+        className="px-5 overflow-y-auto no-scrollbar"
+        style={{ maxHeight: '80dvh', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
       >
-        <div className="pt-3 pb-1 flex justify-center">
-          <div className="w-10 h-1 rounded-full bg-border" />
+        <div className="flex items-center gap-2 mb-4">
+          <div
+            className="w-8 h-8 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: budget.category_color || 'var(--color-accent)' }}
+          >
+            <CategoryIcon emoji={budget.category_emoji} size={16} weight="fill" className="text-white" />
+          </div>
+          <h2 className="text-[15px] font-bold text-text">{tCategory(budget.category_name)}</h2>
         </div>
-        {children}
-      </motion.div>
-    </>
+
+        {q.isPending && <div className="flex justify-center py-8"><Spinner /></div>}
+        {q.isError && <ErrorMessage onRetry={() => q.refetch()} />}
+
+        {!q.isPending && !q.isError && txs.length === 0 && (
+          <div className="py-8 text-center text-muted text-sm">{t('budgets.no_transactions')}</div>
+        )}
+
+        {txs.length > 0 && (
+          <div className="space-y-0 divide-y divide-border rounded-2xl overflow-hidden bg-bg">
+            {txs.map(tx => (
+              <div key={tx.id} className="flex items-center gap-3 px-4 py-3">
+                <div
+                  className="w-8 h-8 rounded-2xl flex items-center justify-center shrink-0"
+                  style={{ background: tx.category_color || 'var(--color-accent)' }}
+                >
+                  <ArrowCircleDown size={16} weight="fill" className="text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-text truncate">
+                    {tx.note || tCategory(tx.category_name)}
+                  </p>
+                  <p className="text-[11px] text-muted">{fmtDate(tx.created_at)}</p>
+                </div>
+                <span className="text-[13px] font-bold text-expense tabular-nums">
+                  -{formatCents(tx.amount_cents, baseCurrency)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </BottomSheet>
   )
 }
 
@@ -67,10 +104,12 @@ function BudgetCard({
   budget,
   onEdit,
   onDelete,
+  onHistory,
 }: {
   budget: Budget
   onEdit: (b: Budget) => void
   onDelete: (id: number) => void
+  onHistory: (b: Budget) => void
 }) {
   const { t } = useTranslation()
   const tCategory = useCategoryName()
@@ -86,8 +125,11 @@ function BudgetCard({
       >
         {/* Header row */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-accent-subtle flex items-center justify-center shrink-0">
-            <CategoryIcon emoji={budget.category_emoji} size={20} weight="fill" className="text-accent" />
+          <div
+            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: budget.category_color || 'var(--color-accent)' }}
+          >
+            <CategoryIcon emoji={budget.category_emoji} size={20} weight="fill" className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -96,9 +138,18 @@ function BudgetCard({
             </div>
             <span className="text-[11px] font-semibold text-muted uppercase tracking-wide">{t(`budgets.${budget.period}`)}</span>
           </div>
-          <span className="text-sm font-bold tabular-nums" style={{ color: barColor }}>
-            {budget.usage_percent.toFixed(0)}%
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={e => { e.stopPropagation(); onHistory(budget) }}
+              className="p-1.5 rounded-2xl text-muted active:bg-accent-subtle transition-colors"
+              aria-label={t('budgets.view_transactions')}
+            >
+              <ClockCounterClockwise size={16} weight="bold" />
+            </button>
+            <span className="text-sm font-bold tabular-nums" style={{ color: barColor }}>
+              {budget.usage_percent.toFixed(0)}%
+            </span>
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -191,20 +242,20 @@ function BudgetForm({
                   key={cat.id}
                   onClick={() => { setCategoryID(cat.id); selection() }}
                   className={`
-                    flex flex-col items-center gap-1 py-2.5 rounded-2xl text-xs transition-all duration-150 active:scale-95 select-none
+                    flex flex-col items-center gap-1.5 py-2.5 rounded-2xl text-xs transition-all duration-150 active:scale-95 select-none
                     ${categoryID === cat.id
-                      ? 'bg-accent text-accent-text shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
-                      : 'bg-accent-subtle text-accent'
+                      ? 'bg-accent/10 shadow-[0_2px_8px_rgba(99,102,241,0.15)]'
+                      : 'bg-surface shadow-sm'
                     }
                   `}
                 >
-                  <CategoryIcon
-                    emoji={cat.emoji}
-                    size={18}
-                    weight="fill"
-                    className={categoryID === cat.id ? 'text-white' : 'text-accent'}
-                  />
-                  <span className="truncate w-full text-center px-1 font-medium text-[10px]">
+                  <div
+                    className="w-9 h-9 rounded-2xl flex items-center justify-center"
+                    style={{ background: categoryID === cat.id ? 'var(--color-accent)' : (cat.color || 'var(--color-accent)') }}
+                  >
+                    <CategoryIcon emoji={cat.emoji} size={18} weight="fill" className="text-white" />
+                  </div>
+                  <span className="truncate w-full text-center px-1 font-medium text-[10px] text-text">
                     {tCategory(cat.name)}
                   </span>
                 </button>
@@ -288,6 +339,7 @@ export function BudgetsPage() {
 
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const [historyFor, setHistoryFor] = useState<Budget | null>(null)
 
   const budgetsQ = useQuery({ queryKey: ['budgets'], queryFn: fetchBudgets })
 
@@ -307,22 +359,24 @@ export function BudgetsPage() {
     <PageTransition>
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
 
-        {/* Add button */}
-        <div className="shrink-0 px-4 pt-3 pb-2 flex justify-end">
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
-          >
-            <Plus size={14} weight="bold" />
-            {t('budgets.create_new')}
-          </button>
-        </div>
-
         {/* Scrollable list */}
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3 pt-3">
           {budgets.length === 0 ? (
             <div className="mx-4 card-elevated mt-2">
-              <EmptyState icon="📊" title={t('budgets.no_budgets')} description={t('budgets.set_budget')} />
+              <EmptyState
+                icon={ChartBar}
+                title={t('budgets.no_budgets')}
+                description={t('budgets.set_budget')}
+                action={
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
+                  >
+                    <Plus size={14} weight="bold" />
+                    {t('budgets.create_new')}
+                  </button>
+                }
+              />
             </div>
           ) : (
             <div className="mx-4 card-elevated overflow-hidden divide-y divide-border">
@@ -332,6 +386,7 @@ export function BudgetsPage() {
                   budget={b}
                   onEdit={setEditingBudget}
                   onDelete={id => deleteMut.mutate(id)}
+                  onHistory={setHistoryFor}
                 />
               ))}
             </div>
@@ -339,13 +394,15 @@ export function BudgetsPage() {
 
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
-              <p className="text-xs text-destructive text-center bg-expense/10 rounded-xl py-2 px-3">
+              <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
                 {(deleteMut.error as Error)?.message}
               </p>
             </div>
           )}
         </div>
       </div>
+
+      <FAB onClick={() => setShowCreate(true)} label={t('budgets.create_new')} />
 
       {/* Bottom sheet form */}
       <AnimatePresence>
@@ -354,6 +411,13 @@ export function BudgetsPage() {
             key={editingBudget?.id ?? 'new'}
             editBudget={editingBudget}
             onClose={() => { setShowCreate(false); setEditingBudget(null) }}
+          />
+        )}
+        {historyFor && (
+          <BudgetTransactionsSheet
+            key={`history-${historyFor.id}`}
+            budget={historyFor}
+            onClose={() => setHistoryFor(null)}
           />
         )}
       </AnimatePresence>

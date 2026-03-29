@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
-import { CalendarDots } from '@phosphor-icons/react'
+import { CalendarDots, ChartBar } from '@phosphor-icons/react'
 import { statsApi } from '../api/stats'
 import { formatCents } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
@@ -50,7 +50,7 @@ function DonutChart({
   animationKey,
   currency,
 }: {
-  data: Array<{ percent: number; category_name: string }>
+  data: Array<{ percent: number; category_name: string; category_color: string }>
   total: number
   animationKey: string
   currency: string
@@ -75,7 +75,7 @@ function DonutChart({
         cy={cy}
         r={r}
         fill="none"
-        stroke={COLORS[i % COLORS.length]}
+        stroke={d.category_color || COLORS[i % COLORS.length]}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeDasharray={`${segLen - 2} ${circumference - segLen + 2}`}
@@ -152,8 +152,11 @@ function CategoryRow({
         className="w-2.5 h-2.5 rounded-full shrink-0"
         style={{ background: color }}
       />
-      <div className="w-9 h-9 rounded-2xl bg-accent-subtle flex items-center justify-center shrink-0">
-        <CategoryIcon emoji={entry.category_emoji} size={18} weight="fill" className="text-accent" />
+      <div
+        className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
+        style={{ background: entry.category_color || color }}
+      >
+        <CategoryIcon emoji={entry.category_emoji} size={18} weight="fill" className="text-white" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center">
@@ -246,7 +249,7 @@ export function StatsPage() {
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
 
         {/* Hero block with type toggle */}
-        <div className="mx-4 mt-4 hero-gradient rounded-[--radius-card] px-5 pt-5 pb-4 relative overflow-hidden shrink-0"
+        <div className="mx-4 mt-4 hero-gradient rounded-card px-5 pt-5 pb-4 relative overflow-hidden shrink-0"
              style={{ boxShadow: 'var(--shadow-hero)' }}>
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/[0.06] blur-xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-indigo-400/15 blur-2xl pointer-events-none" />
@@ -334,11 +337,14 @@ export function StatsPage() {
                           <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.top_category')}</p>
                           {topCategory && (
                             <div className="mt-1.5">
-                              <div className="w-10 h-10 rounded-2xl bg-accent-subtle flex items-center justify-center mb-1.5">
-                                <CategoryIcon emoji={topCategory.category_emoji} size={20} weight="fill" className="text-accent" />
+                              <div
+                                className="w-10 h-10 rounded-2xl flex items-center justify-center mb-1.5"
+                                style={{ background: topCategory.category_color || COLORS[0] }}
+                              >
+                                <CategoryIcon emoji={topCategory.category_emoji} size={20} weight="fill" className="text-white" />
                               </div>
                               <p className="text-xs font-bold text-text truncate">{tCategory(topCategory.category_name)}</p>
-                              <p className="text-lg font-extrabold tabular-nums" style={{ color: COLORS[0] }}>
+                              <p className="text-lg font-extrabold tabular-nums" style={{ color: topCategory.category_color || COLORS[0] }}>
                                 {topCategory.percent.toFixed(0)}%
                               </p>
                             </div>
@@ -378,7 +384,7 @@ export function StatsPage() {
                             key={`${animationKey}-${entry.category_name}`}
                             entry={entry}
                             index={i}
-                            color={COLORS[i % COLORS.length]}
+                            color={entry.category_color || COLORS[i % COLORS.length]}
                             currency={baseCurrency}
                           />
                         ))}
@@ -387,7 +393,7 @@ export function StatsPage() {
                   </>
                 ) : (
                   <div className="card-elevated">
-                    <EmptyState icon="📊" title={t('stats.no_stats')} />
+                    <EmptyState icon={ChartBar} title={t('stats.no_stats')} />
                   </div>
                 )}
               </motion.div>

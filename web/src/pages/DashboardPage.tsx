@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { AnimatePresence } from 'framer-motion'
 import { formatDate, formatCents } from '../lib/money'
 import { TrendUp, TrendDown, ArrowRight, Plus, CaretDown } from '@phosphor-icons/react'
 import { balanceApi } from '../api/balance'
@@ -10,12 +11,14 @@ import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
-import { TransactionRow } from '../components/ui'
+import { TransactionRow, EditTransactionSheet } from '../components/ui'
+import type { Transaction } from '../types'
 
 export function DashboardPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [showCurrencyBreakdown, setShowCurrencyBreakdown] = useState(false)
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null)
 
   const balanceQ = useQuery({ queryKey: ['balance'], queryFn: balanceApi.get })
   const txQ      = useQuery({ queryKey: ['transactions', 1], queryFn: () => transactionsApi.list(1, 5) })
@@ -40,7 +43,7 @@ export function DashboardPage() {
         <div className="px-4 pt-4 flex flex-col gap-3 shrink-0">
 
           {/* Hero card */}
-          <div className="hero-gradient rounded-[--radius-card] p-6 relative overflow-hidden"
+          <div className="hero-gradient rounded-card p-6 relative overflow-hidden"
                style={{ boxShadow: 'var(--shadow-hero)' }}>
             <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/[0.07] blur-xl pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-indigo-400/20 blur-2xl pointer-events-none" />
@@ -109,7 +112,7 @@ export function DashboardPage() {
                 <div className="absolute top-0 left-0 w-1 h-full rounded-l-[--radius-card] bg-income" />
                 <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full bg-income/[0.06] pointer-events-none" />
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-xl bg-income/15 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-2xl bg-income/15 flex items-center justify-center">
                     <TrendUp size={16} weight="bold" className="text-income" />
                   </div>
                   <span className="text-xs font-semibold text-muted">{t('transactions.income')}</span>
@@ -127,7 +130,7 @@ export function DashboardPage() {
                 <div className="absolute top-0 left-0 w-1 h-full rounded-l-[--radius-card] bg-expense" />
                 <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full bg-expense/[0.06] pointer-events-none" />
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-xl bg-expense/15 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-2xl bg-expense/15 flex items-center justify-center">
                     <TrendDown size={16} weight="bold" className="text-expense" />
                   </div>
                   <span className="text-xs font-semibold text-muted">{t('transactions.expense')}</span>
@@ -159,7 +162,7 @@ export function DashboardPage() {
               <div className="overflow-y-auto no-scrollbar flex-1">
                 <div className="divide-y divide-border">
                   {txQ.data.transactions.map(tx => (
-                    <TransactionRow key={tx.id} tx={tx} />
+                    <TransactionRow key={tx.id} tx={tx} onEdit={setEditingTx} />
                   ))}
                 </div>
               </div>
@@ -172,6 +175,16 @@ export function DashboardPage() {
         </div>
 
       </div>
+
+      <AnimatePresence>
+        {editingTx && (
+          <EditTransactionSheet
+            key={editingTx.id}
+            tx={editingTx}
+            onClose={() => setEditingTx(null)}
+          />
+        )}
+      </AnimatePresence>
     </PageTransition>
   )
 }

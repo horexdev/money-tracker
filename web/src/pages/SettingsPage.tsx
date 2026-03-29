@@ -80,7 +80,7 @@ function BottomSheet({
           />
           {/* Sheet */}
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-bg rounded-t-[28px] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-card flex flex-col"
             style={{ maxHeight: '80dvh' }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -236,7 +236,7 @@ export function SettingsPage() {
               onClick={() => setModal('language')}
               className="w-full card-elevated p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left"
             >
-              <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
                 <Globe size={22} weight="fill" className="text-accent" />
               </div>
               <div className="flex-1 min-w-0">
@@ -255,7 +255,7 @@ export function SettingsPage() {
               onClick={() => setModal('currency')}
               className="w-full card-elevated p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left"
             >
-              <div className="w-11 h-11 rounded-xl bg-income/10 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-income/10 flex items-center justify-center shrink-0">
                 <CurrencyDollar size={22} weight="fill" className="text-income" />
               </div>
               <div className="flex-1 min-w-0">
@@ -278,7 +278,7 @@ export function SettingsPage() {
                 onClick={() => setModal('reset-confirm')}
                 className="w-full card-elevated p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left border border-destructive/20"
               >
-                <div className="w-11 h-11 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-2xl bg-destructive/10 flex items-center justify-center shrink-0">
                   <Trash size={22} weight="fill" className="text-destructive" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -359,7 +359,7 @@ export function SettingsPage() {
               value={currencySearch}
               onChange={(e) => setCurrencySearch(e.target.value)}
               placeholder={`${t('common.search')}...`}
-              className="w-full bg-surface rounded-xl pl-9 pr-9 py-2.5 text-xs font-medium outline-none text-text placeholder:text-muted/50 shadow-sm focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow"
+              className="w-full bg-surface rounded-2xl pl-9 pr-9 py-2.5 text-xs font-medium outline-none text-text placeholder:text-muted/50 shadow-sm focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow"
             />
             {currencySearch && (
               <button
@@ -408,7 +408,7 @@ export function SettingsPage() {
               onClick={closeModal}
             />
             <motion.div
-              className="fixed bottom-0 left-0 right-0 z-50 bg-bg rounded-t-[28px] px-5 pt-6 pb-8"
+              className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-card px-5 pt-6 pb-8"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -462,7 +462,7 @@ export function SettingsPage() {
               onClick={closeModal}
             />
             <motion.div
-              className="fixed bottom-0 left-0 right-0 z-50 bg-bg rounded-t-[28px] px-5 pt-6 pb-8"
+              className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-card px-5 pt-6 pb-8"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}

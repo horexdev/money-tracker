@@ -40,6 +40,7 @@
     "amount": "المبلغ",
     "category": "الفئة",
     "note": "ملاحظة",
+    "date": "التاريخ",
     "note_placeholder": "أضف ملاحظة (اختياري)",
     "type": "النوع",
     "expense": "مصروف",
@@ -48,7 +49,8 @@
     "frequency": "التكرار",
     "delete_confirm": "هل تريد حذف هذه المعاملة؟",
     "no_transactions": "لا توجد معاملات بعد",
-    "start_tracking": "ابدأ بتتبع أموالك"
+    "start_tracking": "ابدأ بتتبع أموالك",
+    "edit_title": "تعديل المعاملة"
   },
   "history": {
     "title": "السجل",
@@ -94,6 +96,7 @@
     "name": "الاسم",
     "emoji": "رمز تعبيري",
     "icon": "أيقونة",
+    "color": "لون",
     "choose_icon": "اختر أيقونة",
     "type": "النوع",
     "type_expense": "مصروف",
@@ -122,6 +125,7 @@
       "Beauty": "جمال",
       "Pets": "حيوانات أليفة",
       "Business": "أعمال",
+      "Housing": "سكن",
       "Investments": "استثمارات",
       "Other": "أخرى"
     }
@@ -138,7 +142,9 @@
     "notify_at": "التنبيه عند",
     "over_limit": "تم تجاوز الحد!",
     "no_budgets": "لا توجد ميزانيات",
-    "set_budget": "حدد ميزانية لمتابعة حدود الإنفاق"
+    "set_budget": "حدد ميزانية لمتابعة حدود الإنفاق",
+    "view_transactions": "المعاملات",
+    "no_transactions": "لا توجد معاملات في هذه الفترة"
   },
   "recurring": {
     "title": "المتكررة",
@@ -166,7 +172,10 @@
     "completed": "مكتمل!",
     "progress": "{{percent}}% مكتمل",
     "no_goals": "لا توجد أهداف ادخار",
-    "start_saving": "حدد هدفاً وابدأ بالادخار"
+    "start_saving": "حدد هدفاً وابدأ بالادخار",
+    "history": "السجل",
+    "history_title": "سجل الهدف",
+    "no_history": "لا توجد معاملات بعد"
   },
   "export": {
     "title": "تصدير البيانات",

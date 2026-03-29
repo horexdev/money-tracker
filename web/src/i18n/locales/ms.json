@@ -40,6 +40,7 @@
     "amount": "Jumlah",
     "category": "Kategori",
     "note": "Nota",
+    "date": "Tarikh",
     "note_placeholder": "Tambah nota (pilihan)",
     "type": "Jenis",
     "expense": "Perbelanjaan",
@@ -48,7 +49,8 @@
     "frequency": "Kekerapan",
     "delete_confirm": "Padam transaksi ini?",
     "no_transactions": "Tiada transaksi lagi",
-    "start_tracking": "Mula jejak kewangan anda"
+    "start_tracking": "Mula jejak kewangan anda",
+    "edit_title": "Edit transaksi"
   },
   "history": {
     "title": "Sejarah",
@@ -94,6 +96,7 @@
     "name": "Nama",
     "emoji": "Emoji",
     "icon": "Ikon",
+    "color": "Warna",
     "choose_icon": "Pilih ikon",
     "type": "Jenis",
     "type_expense": "Perbelanjaan",
@@ -122,6 +125,7 @@
       "Beauty": "Kecantikan",
       "Pets": "Haiwan peliharaan",
       "Business": "Perniagaan",
+      "Housing": "Perumahan",
       "Investments": "Pelaburan",
       "Other": "Lain-lain"
     }
@@ -138,7 +142,9 @@
     "notify_at": "Maklumkan pada",
     "over_limit": "Melebihi had!",
     "no_budgets": "Tiada bajet ditetapkan",
-    "set_budget": "Tetapkan bajet untuk mengawal perbelanjaan"
+    "set_budget": "Tetapkan bajet untuk mengawal perbelanjaan",
+    "view_transactions": "Transaksi",
+    "no_transactions": "Tiada transaksi dalam tempoh ini"
   },
   "recurring": {
     "title": "Berulang",
@@ -166,7 +172,10 @@
     "completed": "Selesai!",
     "progress": "{{percent}}% selesai",
     "no_goals": "Tiada matlamat simpanan",
-    "start_saving": "Tetapkan matlamat dan mula menyimpan"
+    "start_saving": "Tetapkan matlamat dan mula menyimpan",
+    "history": "Sejarah",
+    "history_title": "Sejarah Matlamat",
+    "no_history": "Tiada transaksi lagi"
   },
   "export": {
     "title": "Eksport Data",

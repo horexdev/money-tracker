@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, X, CheckCircle, ArrowCircleDown, ArrowCircleUp, CalendarBlank } from '@phosphor-icons/react'
-import { fetchGoals, createGoal, updateGoal, depositGoal, withdrawGoal, deleteGoal } from '../api/goals'
+import { AnimatePresence } from 'framer-motion'
+import { Plus, X, CheckCircle, ArrowCircleDown, ArrowCircleUp, CalendarBlank, ClockCounterClockwise, Receipt, Target } from '@phosphor-icons/react'
+import { fetchGoals, createGoal, updateGoal, depositGoal, withdrawGoal, deleteGoal, fetchGoalHistory } from '../api/goals'
+import type { GoalTransaction } from '../api/goals'
 import { formatCents, parseCents, formatDate } from '../lib/money'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { useTgBackButton } from '../hooks/useTelegramApp'
 import { useHaptic } from '../hooks/useHaptic'
-import { EmptyState, SwipeToDelete, SingleDateModal, fmtDisplay } from '../components/ui'
+import { EmptyState, SwipeToDelete, SingleDateModal, fmtDisplay, FAB, BottomSheet } from '../components/ui'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { SavingsGoal } from '../types'
 
@@ -26,41 +27,6 @@ function sanitizeAmount(value: string): string {
   return cleaned
 }
 
-/* ─── Bottom Sheet wrapper ─── */
-function BottomSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  return (
-    <>
-      <motion.div
-        className="fixed inset-0 bg-black/40 z-[60]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      />
-      <motion.div
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-[24px] overflow-hidden"
-        style={{ boxShadow: '0 -8px 40px rgba(0,0,0,0.15)' }}
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-        drag="y"
-        dragConstraints={{ top: 0 }}
-        dragElastic={0.1}
-        onDragEnd={(_, info) => {
-          if (info.velocity.y > 500 || info.offset.y > 100) onClose()
-        }}
-      >
-        {/* Drag handle */}
-        <div className="pt-3 pb-1 flex justify-center">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
-        {children}
-      </motion.div>
-    </>
-  )
-}
-
 /* ─── Goal Row ─── */
 function GoalRow({
   goal,
@@ -68,12 +34,14 @@ function GoalRow({
   onWithdraw,
   onDelete,
   onEdit,
+  onHistory,
 }: {
   goal: SavingsGoal
   onDeposit: (id: number) => void
   onWithdraw: (id: number) => void
   onDelete: (id: number) => void
   onEdit: (goal: SavingsGoal) => void
+  onHistory: (id: number) => void
 }) {
   const { t, i18n } = useTranslation()
   const { code: baseCurrency } = useBaseCurrency()
@@ -126,7 +94,7 @@ function GoalRow({
           </div>
         </button>
 
-        {/* Action buttons — deposit/withdraw only, larger hit area */}
+        {/* Action buttons */}
         <div className="flex gap-1 shrink-0">
           <button
             onClick={() => onWithdraw(goal.id)}
@@ -141,6 +109,13 @@ function GoalRow({
           >
             <ArrowCircleDown size={18} weight="fill" />
             <span className="text-[8px] font-bold leading-none">{t('savings.deposit')}</span>
+          </button>
+          <button
+            onClick={() => onHistory(goal.id)}
+            className="w-10 h-10 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-muted active:text-accent active:bg-accent-subtle transition-colors"
+          >
+            <ClockCounterClockwise size={18} weight="fill" />
+            <span className="text-[8px] font-bold leading-none">{t('savings.history')}</span>
           </button>
         </div>
       </div>
@@ -371,6 +346,59 @@ function AmountSheet({
   )
 }
 
+/* ─── Goal History Sheet ─── */
+function GoalHistorySheet({ goalId, onClose }: { goalId: number; onClose: () => void }) {
+  const { t, i18n } = useTranslation()
+  const { code: baseCurrency } = useBaseCurrency()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['goal-history', goalId],
+    queryFn: () => fetchGoalHistory(goalId),
+  })
+
+  const history = data?.history ?? []
+
+  return (
+    <BottomSheet onClose={onClose}>
+      <div
+        className="px-5 overflow-y-auto no-scrollbar"
+        style={{ maxHeight: '75dvh', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+      >
+        <h3 className="text-base font-bold text-text mb-3">{t('savings.history_title')}</h3>
+        {isLoading ? (
+          <div className="flex justify-center py-8"><Spinner /></div>
+        ) : history.length === 0 ? (
+          <EmptyState icon={Receipt} title={t('savings.no_history')} />
+        ) : (
+          <div className="space-y-2">
+            {history.map((tx: GoalTransaction) => (
+              <div key={tx.id} className="flex items-center gap-3 bg-bg rounded-2xl px-3 py-2.5">
+                <div className={`w-8 h-8 rounded-2xl flex items-center justify-center shrink-0 ${
+                  tx.type === 'deposit' ? 'bg-income/10' : 'bg-expense/10'
+                }`}>
+                  {tx.type === 'deposit'
+                    ? <ArrowCircleDown size={18} weight="fill" className="text-income" />
+                    : <ArrowCircleUp size={18} weight="fill" className="text-expense" />
+                  }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[12px] font-semibold text-muted capitalize">{tx.type === 'deposit' ? t('savings.deposit') : t('savings.withdraw')}</span>
+                  <p className="text-[11px] text-muted/60">{formatDate(tx.created_at, i18n.language)}</p>
+                </div>
+                <span className={`text-sm font-bold tabular-nums shrink-0 ${
+                  tx.type === 'deposit' ? 'text-income' : 'text-expense'
+                }`}>
+                  {tx.type === 'deposit' ? '+' : '-'}{formatCents(tx.amount_cents, baseCurrency)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </BottomSheet>
+  )
+}
+
 /* ─── Main Page ─── */
 export function SavingsPage() {
   const { t } = useTranslation()
@@ -382,6 +410,7 @@ export function SavingsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null)
   const [amountFor, setAmountFor] = useState<{ id: number; action: 'deposit' | 'withdraw' } | null>(null)
+  const [historyFor, setHistoryFor] = useState<number | null>(null)
 
   const goalsQ = useQuery({ queryKey: ['goals'], queryFn: fetchGoals })
 
@@ -424,25 +453,23 @@ export function SavingsPage() {
     <PageTransition>
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
 
-        {/* Add button */}
-        <div className="shrink-0 px-4 pt-3 pb-2 flex justify-end">
-          <button
-            onClick={() => { setEditingGoal(null); setAmountFor(null); setShowForm(true) }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
-          >
-            <Plus size={14} weight="bold" />
-            {t('savings.create_new')}
-          </button>
-        </div>
-
         {/* Scrollable list */}
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3 pt-3">
           {goals.length === 0 ? (
             <div className="mx-4 card-elevated mt-2">
               <EmptyState
-                icon="🎯"
+                icon={Target}
                 title={t('savings.no_goals')}
                 description={t('savings.start_saving')}
+                action={
+                  <button
+                    onClick={() => { setEditingGoal(null); setAmountFor(null); setShowForm(true) }}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
+                  >
+                    <Plus size={14} weight="bold" />
+                    {t('savings.create_new')}
+                  </button>
+                }
               />
             </div>
           ) : (
@@ -451,9 +478,10 @@ export function SavingsPage() {
                 <GoalRow
                   key={goal.id}
                   goal={goal}
-                  onEdit={g => { setShowForm(false); setAmountFor(null); setEditingGoal(g) }}
-                  onDeposit={id => { setShowForm(false); setEditingGoal(null); setAmountFor({ id, action: 'deposit' }) }}
-                  onWithdraw={id => { setShowForm(false); setEditingGoal(null); setAmountFor({ id, action: 'withdraw' }) }}
+                  onEdit={g => { setShowForm(false); setAmountFor(null); setHistoryFor(null); setEditingGoal(g) }}
+                  onDeposit={id => { setShowForm(false); setEditingGoal(null); setHistoryFor(null); setAmountFor({ id, action: 'deposit' }) }}
+                  onWithdraw={id => { setShowForm(false); setEditingGoal(null); setHistoryFor(null); setAmountFor({ id, action: 'withdraw' }) }}
+                  onHistory={id => { setShowForm(false); setEditingGoal(null); setAmountFor(null); setHistoryFor(id) }}
                   onDelete={id => deleteMut.mutate(id)}
                 />
               ))}
@@ -462,13 +490,15 @@ export function SavingsPage() {
 
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
-              <p className="text-xs text-destructive text-center bg-expense/10 rounded-xl py-2 px-3">
+              <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
                 {(deleteMut.error as Error)?.message}
               </p>
             </div>
           )}
         </div>
       </div>
+
+      <FAB onClick={() => { setEditingGoal(null); setAmountFor(null); setShowForm(true) }} label={t('savings.create_new')} />
 
       {/* Bottom sheet modals */}
       <AnimatePresence>
@@ -502,6 +532,12 @@ export function SavingsPage() {
             isError={activeMut.isError}
             error={activeMut.error as Error | null}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {historyFor !== null && (
+          <GoalHistorySheet goalId={historyFor} onClose={() => setHistoryFor(null)} />
         )}
       </AnimatePresence>
     </PageTransition>

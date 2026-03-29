@@ -1,18 +1,19 @@
 import type { ReactNode } from 'react'
+import type { Icon } from '@phosphor-icons/react'
 
 interface EmptyStateProps {
-  icon?: string
+  icon?: typeof Icon
   title: string
   description?: string
   action?: ReactNode
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({ icon: IconComponent, title, description, action }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-      {icon && (
-        <div className="w-16 h-16 rounded-[20px] bg-accent-subtle flex items-center justify-center text-[32px] shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-          {icon}
+      {IconComponent && (
+        <div className="w-16 h-16 rounded-[20px] bg-accent-subtle flex items-center justify-center shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+          <IconComponent size={32} weight="duotone" className="text-accent" />
         </div>
       )}
       <div className="space-y-1.5">

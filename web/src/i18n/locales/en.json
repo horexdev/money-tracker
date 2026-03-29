@@ -41,6 +41,7 @@
     "amount": "Amount",
     "category": "Category",
     "note": "Note",
+    "date": "Date",
     "note_placeholder": "Add a note (optional)",
     "type": "Type",
     "expense": "Expense",
@@ -49,7 +50,8 @@
     "frequency": "Frequency",
     "delete_confirm": "Delete this transaction?",
     "no_transactions": "No transactions yet",
-    "start_tracking": "Start tracking your finances"
+    "start_tracking": "Start tracking your finances",
+    "edit_title": "Edit Transaction"
   },
   "add": {
     "select_currency": "Select Currency"
@@ -98,6 +100,7 @@
     "name": "Name",
     "emoji": "Emoji",
     "icon": "Icon",
+    "color": "Color",
     "choose_icon": "Choose an icon",
     "type": "Type",
     "type_expense": "Expense",
@@ -126,6 +129,7 @@
       "Beauty": "Beauty",
       "Pets": "Pets",
       "Business": "Business",
+      "Housing": "Housing",
       "Investments": "Investments",
       "Other": "Other"
     }
@@ -142,7 +146,9 @@
     "notify_at": "Notify at",
     "over_limit": "Over limit!",
     "no_budgets": "No budgets set",
-    "set_budget": "Set a budget to track spending limits"
+    "set_budget": "Set a budget to track spending limits",
+    "view_transactions": "Transactions",
+    "no_transactions": "No transactions in this period"
   },
   "recurring": {
     "title": "Recurring",
@@ -170,7 +176,10 @@
     "completed": "Completed!",
     "progress": "{{percent}}% complete",
     "no_goals": "No savings goals",
-    "start_saving": "Set a goal and start saving"
+    "start_saving": "Set a goal and start saving",
+    "history": "History",
+    "history_title": "Goal History",
+    "no_history": "No transactions yet"
   },
   "export": {
     "title": "Export Data",

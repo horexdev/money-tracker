@@ -40,6 +40,7 @@
     "amount": "Jumlah",
     "category": "Kategori",
     "note": "Catatan",
+    "date": "Tanggal",
     "note_placeholder": "Tambahkan catatan (opsional)",
     "type": "Jenis",
     "expense": "Pengeluaran",
@@ -48,7 +49,8 @@
     "frequency": "Frekuensi",
     "delete_confirm": "Hapus transaksi ini?",
     "no_transactions": "Belum ada transaksi",
-    "start_tracking": "Mulai lacak keuangan Anda"
+    "start_tracking": "Mulai lacak keuangan Anda",
+    "edit_title": "Edit transaksi"
   },
   "history": {
     "title": "Riwayat",
@@ -94,6 +96,7 @@
     "name": "Nama",
     "emoji": "Emoji",
     "icon": "Ikon",
+    "color": "Warna",
     "choose_icon": "Pilih ikon",
     "type": "Jenis",
     "type_expense": "Pengeluaran",
@@ -122,6 +125,7 @@
       "Beauty": "Kecantikan",
       "Pets": "Hewan peliharaan",
       "Business": "Bisnis",
+      "Housing": "Perumahan",
       "Investments": "Investasi",
       "Other": "Lainnya"
     }
@@ -138,7 +142,9 @@
     "notify_at": "Beri tahu pada",
     "over_limit": "Melebihi batas!",
     "no_budgets": "Belum ada anggaran",
-    "set_budget": "Tetapkan anggaran untuk mengontrol pengeluaran"
+    "set_budget": "Tetapkan anggaran untuk mengontrol pengeluaran",
+    "view_transactions": "Transaksi",
+    "no_transactions": "Tidak ada transaksi pada periode ini"
   },
   "recurring": {
     "title": "Berulang",
@@ -166,7 +172,10 @@
     "completed": "Tercapai!",
     "progress": "{{percent}}% tercapai",
     "no_goals": "Tidak ada target tabungan",
-    "start_saving": "Tetapkan target dan mulai menabung"
+    "start_saving": "Tetapkan target dan mulai menabung",
+    "history": "Riwayat",
+    "history_title": "Riwayat Tujuan",
+    "no_history": "Belum ada transaksi"
   },
   "export": {
     "title": "Ekspor Data",

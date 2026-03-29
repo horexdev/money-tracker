@@ -6,10 +6,10 @@ export const categoriesApi = {
     const params = type ? `?type=${type}` : ''
     return api.get(`/v1/categories${params}`)
   },
-  create(body: { name: string; emoji: string; type: string }): Promise<Category> {
+  create(body: { name: string; emoji: string; type: string; color: string }): Promise<Category> {
     return api.post('/v1/categories', body)
   },
-  update(id: number, body: { name: string; emoji: string; type: string }): Promise<Category> {
+  update(id: number, body: { name: string; emoji: string; type: string; color: string }): Promise<Category> {
     return api.put(`/v1/categories/${id}`, body)
   },
   delete(id: number): Promise<void> {

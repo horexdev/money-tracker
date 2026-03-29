@@ -40,6 +40,7 @@
     "amount": "Summa",
     "category": "Kategoriya",
     "note": "Izoh",
+    "date": "Sana",
     "note_placeholder": "Izoh qo'shing (ixtiyoriy)",
     "type": "Turi",
     "expense": "Xarajat",
@@ -48,7 +49,8 @@
     "frequency": "Davriylik",
     "delete_confirm": "Bu operatsiyani o'chirasizmi?",
     "no_transactions": "Hali operatsiyalar yo'q",
-    "start_tracking": "Moliyangizni kuzatishni boshlang"
+    "start_tracking": "Moliyangizni kuzatishni boshlang",
+    "edit_title": "Tranzaksiyani tahrirlash"
   },
   "history": {
     "title": "Tarix",
@@ -94,6 +96,7 @@
     "name": "Nomi",
     "emoji": "Emoji",
     "icon": "Belgi",
+    "color": "Rang",
     "choose_icon": "Belgi tanlang",
     "type": "Turi",
     "type_expense": "Xarajat",
@@ -122,6 +125,7 @@
       "Beauty": "Go'zallik",
       "Pets": "Uy hayvonlari",
       "Business": "Biznes",
+      "Housing": "Uy-joy",
       "Investments": "Investitsiyalar",
       "Other": "Boshqa"
     }
@@ -138,7 +142,9 @@
     "notify_at": "Ogohlantirish",
     "over_limit": "Limit oshdi!",
     "no_budgets": "Byudjetlar o'rnatilmagan",
-    "set_budget": "Xarajatlarni nazorat qilish uchun byudjet o'rnating"
+    "set_budget": "Xarajatlarni nazorat qilish uchun byudjet o'rnating",
+    "view_transactions": "Tranzaksiyalar",
+    "no_transactions": "Bu davrda tranzaksiyalar yo'q"
   },
   "recurring": {
     "title": "Muntazam",
@@ -166,7 +172,10 @@
     "completed": "Bajarildi!",
     "progress": "{{percent}}% bajarildi",
     "no_goals": "Jamg'arma maqsadlari yo'q",
-    "start_saving": "Maqsad qo'ying va jamg'arishni boshlang"
+    "start_saving": "Maqsad qo'ying va jamg'arishni boshlang",
+    "history": "Tarix",
+    "history_title": "Maqsad tarixi",
+    "no_history": "Tranzaksiyalar yo'q"
   },
   "export": {
     "title": "Ma'lumotlarni eksport qilish",

@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Check, CaretDown, MagnifyingGlass, X } from '@phosphor-icons/react'
+import { Check, CaretDown, MagnifyingGlass, X, CalendarBlank } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { categoriesApi } from '../api/categories'
 import { transactionsApi } from '../api/transactions'
@@ -15,6 +15,7 @@ import { useHaptic } from '../hooks/useHaptic'
 import { Spinner } from '../components/Spinner'
 import { PageTransition } from '../components/PageTransition'
 import { useCategoryName } from '../hooks/useCategoryName'
+import { SingleDateModal, fmtDisplay } from '../components/ui/DatePicker'
 import type { TransactionType } from '../types'
 
 const ALL_CURRENCIES = [
@@ -68,6 +69,8 @@ export function AddTransactionPage() {
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false)
   const [currencySearch, setCurrencySearch] = useState('')
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
+  const [txDate, setTxDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [showDatePicker, setShowDatePicker] = useState(false)
 
   const { data: catData, isLoading } = useQuery({
     queryKey: ['categories'],
@@ -109,12 +112,14 @@ export function AddTransactionPage() {
 
   const handleSubmit = useCallback(() => {
     if (!canSubmit || categoryID === null) return
+    const today = new Date().toISOString().split('T')[0]
     mutation.mutate({
       category_id: categoryID,
       type,
       amount_cents: parseCents(amount),
       note: note.trim() || undefined,
       currency_code: currencyCode,
+      created_at: txDate !== today ? txDate : undefined,
     })
   }, [canSubmit, categoryID, type, amount, note, currencyCode, mutation])
 
@@ -138,7 +143,7 @@ export function AddTransactionPage() {
 
         {/* Hero — type toggle + amount */}
         <div
-          className="mx-4 mt-4 rounded-[--radius-card] p-5 pb-6 relative overflow-hidden shrink-0"
+          className="mx-4 mt-4 rounded-card p-5 pb-6 relative overflow-hidden shrink-0"
           style={{
             background: isExpense
               ? 'linear-gradient(135deg, #7f1d1d 0%, #ef4444 50%, #f87171 100%)'
@@ -195,9 +200,9 @@ export function AddTransactionPage() {
           </div>
         </div>
 
-        {/* Note input */}
+        {/* Note + Date */}
         <div className="mx-4 mt-3 card-elevated overflow-hidden shrink-0">
-          <div className="px-4 py-3 flex items-center gap-3">
+          <div className="px-4 py-3 flex items-center gap-3 border-b border-border">
             <span className="text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
               {t('transactions.note')}
             </span>
@@ -210,6 +215,16 @@ export function AddTransactionPage() {
               className="flex-1 bg-transparent text-sm text-text outline-none min-w-0"
             />
           </div>
+          <button
+            onClick={() => setShowDatePicker(true)}
+            className="w-full px-4 py-3 flex items-center gap-3 active:bg-accent-subtle/30 transition-colors"
+          >
+            <CalendarBlank size={16} weight="bold" className="text-muted shrink-0" />
+            <span className="text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
+              {t('transactions.date')}
+            </span>
+            <span className="flex-1 text-sm text-text text-right">{fmtDisplay(txDate)}</span>
+          </button>
         </div>
 
         {/* Categories — scrollable grid */}
@@ -217,7 +232,7 @@ export function AddTransactionPage() {
           <p className="px-5 mb-2 text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
             {t('transactions.category')}
           </p>
-          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 pb-3">
+          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px) + 16px)' }}>
             {isLoading ? (
               <div className="flex justify-center py-8"><Spinner /></div>
             ) : (
@@ -246,19 +261,18 @@ export function AddTransactionPage() {
                           <Check size={10} weight="bold" className="text-white" />
                         </div>
                       )}
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        isSelected
-                          ? isExpense ? 'bg-expense/15' : 'bg-income/15'
-                          : 'bg-accent-subtle'
-                      }`}>
+                      <div
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                        style={{ background: isSelected
+                          ? (isExpense ? 'var(--color-expense)' : 'var(--color-income)')
+                          : (cat.color || 'var(--color-accent)')
+                        }}
+                      >
                         <CategoryIcon
                           emoji={cat.emoji}
                           size={20}
                           weight="fill"
-                          className={isSelected
-                            ? isExpense ? 'text-expense' : 'text-income'
-                            : 'text-accent'
-                          }
+                          className="text-white"
                         />
                       </div>
                       <span className="text-center leading-tight px-0.5 truncate w-full">
@@ -271,25 +285,26 @@ export function AddTransactionPage() {
             )}
           </div>
         </div>
+      </div>
 
-        {/* Save button — visible fallback for non-Telegram */}
-        <div className="shrink-0 px-4 pb-4">
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            className={`
-              w-full py-3 rounded-2xl text-sm font-bold transition-all active:scale-[0.98]
-              ${canSubmit
-                ? isExpense
-                  ? 'bg-expense text-white shadow-[0_4px_16px_rgba(239,68,68,0.3)]'
-                  : 'bg-income text-white shadow-[0_4px_16px_rgba(34,197,94,0.3)]'
-                : 'bg-border text-muted'
-              }
-            `}
-          >
-            {mutation.isPending ? t('common.loading') : t('common.save')}
-          </button>
-        </div>
+      {/* Save button — fixed above tab bar */}
+      <div
+        className="fixed left-0 right-0 px-4 z-10"
+        style={{ bottom: 'calc(var(--tab-bar-h) + 8px)' }}
+      >
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          className={`
+            w-full py-4 rounded-2xl text-[15px] font-bold transition-all active:scale-[0.98]
+            ${canSubmit
+              ? 'bg-accent text-accent-text shadow-[0_4px_16px_rgba(99,102,241,0.35)]'
+              : 'bg-border text-muted'
+            }
+          `}
+        >
+          {mutation.isPending ? t('common.loading') : t('common.save')}
+        </button>
       </div>
       {/* Currency picker bottom sheet */}
       <AnimatePresence>
@@ -303,7 +318,7 @@ export function AddTransactionPage() {
               onClick={() => { setShowCurrencyPicker(false); setCurrencySearch('') }}
             />
             <motion.div
-              className="fixed bottom-0 left-0 right-0 z-50 bg-bg rounded-t-[28px] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-card flex flex-col"
               style={{ maxHeight: '75dvh' }}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
@@ -339,7 +354,7 @@ export function AddTransactionPage() {
                     value={currencySearch}
                     onChange={(e) => setCurrencySearch(e.target.value)}
                     placeholder={`${t('common.search')}...`}
-                    className="w-full bg-surface rounded-xl pl-9 pr-9 py-2.5 text-xs font-medium outline-none text-text placeholder:text-muted/50 shadow-sm focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow"
+                    className="w-full bg-bg rounded-2xl pl-9 pr-9 py-2.5 text-xs font-medium outline-none text-text placeholder:text-muted/50 shadow-sm focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow"
                   />
                   {currencySearch && (
                     <button
@@ -377,6 +392,17 @@ export function AddTransactionPage() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showDatePicker && (
+          <SingleDateModal
+            value={txDate}
+            onApply={(iso) => setTxDate(iso)}
+            onClose={() => setShowDatePicker(false)}
+            applyLabel={t('common.done')}
+          />
         )}
       </AnimatePresence>
 

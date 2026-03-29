@@ -2,14 +2,14 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion'
-import { MagnifyingGlass, Trash, X } from '@phosphor-icons/react'
+import { MagnifyingGlass, Trash, X, Receipt } from '@phosphor-icons/react'
 import { transactionsApi } from '../api/transactions'
 import { formatCents, formatDate } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
-import { AmountDisplay, EmptyState } from '../components/ui'
+import { AmountDisplay, EmptyState, EditTransactionSheet } from '../components/ui'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { Transaction, TransactionType } from '../types'
@@ -20,10 +20,12 @@ const PAGE_SIZE = 20
 function SwipeableRow({
   tx,
   onDelete,
+  onEdit,
   isDeleting,
 }: {
   tx: Transaction
   onDelete: (id: number) => void
+  onEdit: (tx: Transaction) => void
   isDeleting: boolean
 }) {
   const x = useMotionValue(0)
@@ -72,10 +74,13 @@ function SwipeableRow({
         dragConstraints={{ left: -80, right: 0 }}
         dragElastic={0.1}
         onDragEnd={handleDragEnd}
-        onClick={() => { if (swiped) handleClose() }}
+        onClick={() => { if (swiped) { handleClose() } else { onEdit(tx) } }}
       >
-        <div className="w-10 h-10 rounded-2xl bg-accent-subtle flex items-center justify-center shrink-0">
-          <CategoryIcon emoji={tx.category_emoji} size={20} weight="fill" className="text-accent" />
+        <div
+          className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+          style={{ background: tx.category_color || 'var(--color-accent)' }}
+        >
+          <CategoryIcon emoji={tx.category_emoji} size={20} weight="fill" className="text-white" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -101,12 +106,14 @@ function DateGroup({
   label,
   transactions,
   onDelete,
+  onEdit,
   deletingId,
   baseCurrency,
 }: {
   label: string
   transactions: Transaction[]
   onDelete: (id: number) => void
+  onEdit: (tx: Transaction) => void
   deletingId: number | null
   baseCurrency: string
 }) {
@@ -130,6 +137,7 @@ function DateGroup({
             key={tx.id}
             tx={tx}
             onDelete={onDelete}
+            onEdit={onEdit}
             isDeleting={deletingId === tx.id}
           />
         ))}
@@ -178,6 +186,7 @@ export function HistoryPage() {
   const { code: baseCurrency } = useBaseCurrency()
   const qc = useQueryClient()
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null)
   const [typeFilter, setTypeFilter] = useState<'all' | TransactionType>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
@@ -232,6 +241,7 @@ export function HistoryPage() {
   })
 
   const handleDelete = useCallback((id: number) => { deleteMutation.mutate(id) }, [deleteMutation])
+  const handleEdit = useCallback((tx: Transaction) => { setEditingTx(tx) }, [])
 
   const allItems = useMemo(
     () => data?.pages.flatMap((p) => p.transactions) ?? [],
@@ -336,7 +346,7 @@ export function HistoryPage() {
           {filtered.length === 0 ? (
             <div className="mx-4 card-elevated mt-2">
               <EmptyState
-                icon="📋"
+                icon={Receipt}
                 title={t('transactions.no_transactions')}
                 description={searchQuery ? undefined : t('transactions.start_tracking')}
               />
@@ -349,6 +359,7 @@ export function HistoryPage() {
                   label={date}
                   transactions={txs}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                   deletingId={deletingId}
                   baseCurrency={baseCurrency}
                 />
@@ -365,6 +376,17 @@ export function HistoryPage() {
           )}
         </div>
       </div>
+
+      {/* Edit sheet */}
+      <AnimatePresence>
+        {editingTx && (
+          <EditTransactionSheet
+            key={editingTx.id}
+            tx={editingTx}
+            onClose={() => setEditingTx(null)}
+          />
+        )}
+      </AnimatePresence>
     </PageTransition>
   )
 }

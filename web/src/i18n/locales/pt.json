@@ -40,6 +40,7 @@
     "amount": "Valor",
     "category": "Categoria",
     "note": "Nota",
+    "date": "Data",
     "note_placeholder": "Adicione uma nota (opcional)",
     "type": "Tipo",
     "expense": "Despesa",
@@ -48,7 +49,8 @@
     "frequency": "Frequência",
     "delete_confirm": "Excluir esta transação?",
     "no_transactions": "Nenhuma transação ainda",
-    "start_tracking": "Comece a acompanhar suas finanças"
+    "start_tracking": "Comece a acompanhar suas finanças",
+    "edit_title": "Editar transação"
   },
   "history": {
     "title": "Histórico",
@@ -94,6 +96,7 @@
     "name": "Nome",
     "emoji": "Emoji",
     "icon": "Ícone",
+    "color": "Cor",
     "choose_icon": "Escolha um ícone",
     "type": "Tipo",
     "type_expense": "Despesa",
@@ -122,6 +125,7 @@
       "Beauty": "Beleza",
       "Pets": "Animais de estimação",
       "Business": "Negócios",
+      "Housing": "Moradia",
       "Investments": "Investimentos",
       "Other": "Outros"
     }
@@ -138,7 +142,9 @@
     "notify_at": "Notificar em",
     "over_limit": "Limite excedido!",
     "no_budgets": "Nenhum orçamento definido",
-    "set_budget": "Defina um orçamento para controlar seus gastos"
+    "set_budget": "Defina um orçamento para controlar seus gastos",
+    "view_transactions": "Transações",
+    "no_transactions": "Sem transações neste período"
   },
   "recurring": {
     "title": "Recorrentes",
@@ -166,7 +172,10 @@
     "completed": "Concluído!",
     "progress": "{{percent}}% concluído",
     "no_goals": "Nenhuma meta de poupança",
-    "start_saving": "Defina uma meta e comece a poupar"
+    "start_saving": "Defina uma meta e comece a poupar",
+    "history": "Histórico",
+    "history_title": "Histórico do objetivo",
+    "no_history": "Sem transações ainda"
   },
   "export": {
     "title": "Exportar dados",

@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, PencilSimple } from '@phosphor-icons/react'
+import { AnimatePresence } from 'framer-motion'
+import { Plus, PencilSimple, Tag } from '@phosphor-icons/react'
 import { categoriesApi } from '../api/categories'
 import { CategoryIcon, ICON_CHOICES } from '../lib/categoryIcons'
 import { Spinner } from '../components/Spinner'
@@ -11,7 +11,7 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { useTgBackButton } from '../hooks/useTelegramApp'
 import { useHaptic } from '../hooks/useHaptic'
-import { Badge, EmptyState, SwipeToDelete } from '../components/ui'
+import { Badge, EmptyState, SwipeToDelete, FAB, BottomSheet } from '../components/ui'
 import { useCategoryName } from '../hooks/useCategoryName'
 import type { Category } from '../types'
 
@@ -20,39 +20,6 @@ const TYPE_OPTIONS = [
   { value: 'income', labelKey: 'categories.type_income' },
   { value: 'both', labelKey: 'categories.type_both' },
 ]
-
-/* ─── Bottom Sheet ─── */
-function BottomSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  return (
-    <>
-      <motion.div
-        className="fixed inset-0 bg-black/40 z-[60]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      />
-      <motion.div
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-[24px] overflow-hidden"
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        drag="y"
-        dragConstraints={{ top: 0 }}
-        dragElastic={{ top: 0, bottom: 0.3 }}
-        onDragEnd={(_, info) => {
-          if (info.velocity.y > 500 || info.offset.y > 100) onClose()
-        }}
-      >
-        <div className="pt-3 pb-1 flex justify-center">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
-        {children}
-      </motion.div>
-    </>
-  )
-}
 
 /* ─── Icon Picker ─── */
 function IconPicker({
@@ -74,7 +41,7 @@ function IconPicker({
             type="button"
             onClick={() => { onSelect(choice.id); selection() }}
             className={`
-              flex items-center justify-center h-10 rounded-xl transition-all duration-150 active:scale-90
+              flex items-center justify-center h-10 rounded-2xl transition-all duration-150 active:scale-90
               ${isActive
                 ? 'bg-accent text-white shadow-[0_2px_8px_rgba(99,102,241,0.4)]'
                 : 'bg-accent-subtle text-accent'
@@ -85,6 +52,34 @@ function IconPicker({
           </button>
         )
       })}
+    </div>
+  )
+}
+
+const COLOR_SWATCHES = [
+  '#6366f1', '#8b5cf6', '#ec4899', '#ef4444',
+  '#f97316', '#eab308', '#22c55e', '#10b981',
+  '#14b8a6', '#06b6d4', '#3b82f6', '#64748b',
+]
+
+/* ─── Color Picker ─── */
+function ColorPicker({ selected, onSelect }: { selected: string; onSelect: (c: string) => void }) {
+  const { selection } = useHaptic()
+  return (
+    <div className="grid grid-cols-6 gap-2">
+      {COLOR_SWATCHES.map((c) => (
+        <button
+          key={c}
+          type="button"
+          onClick={() => { onSelect(c); selection() }}
+          className="h-10 rounded-2xl transition-all duration-150 active:scale-90 relative flex items-center justify-center"
+          style={{ background: c }}
+        >
+          {selected === c && (
+            <span className="w-3 h-3 rounded-full border-2 border-white bg-white/40 block" />
+          )}
+        </button>
+      ))}
     </div>
   )
 }
@@ -104,14 +99,15 @@ function CategoryForm({
   const [name, setName] = useState(editingCat?.name ?? '')
   const [iconId, setIconId] = useState(editingCat?.emoji ?? 'star')
   const [catType, setCatType] = useState(editingCat?.type ?? 'both')
+  const [color, setColor] = useState(editingCat?.color ?? '#6366f1')
 
   const createMut = useMutation({
-    mutationFn: () => categoriesApi.create({ name, emoji: iconId, type: catType }),
+    mutationFn: () => categoriesApi.create({ name, emoji: iconId, type: catType, color }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); notification('success'); onClose() },
   })
 
   const updateMut = useMutation({
-    mutationFn: () => categoriesApi.update(editingCat!.id, { name, emoji: iconId, type: catType }),
+    mutationFn: () => categoriesApi.update(editingCat!.id, { name, emoji: iconId, type: catType, color }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); notification('success'); onClose() },
   })
 
@@ -130,7 +126,10 @@ function CategoryForm({
       >
         {/* Name + selected icon preview */}
         <div className="flex gap-3 items-end">
-          <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center shrink-0 shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: color, boxShadow: `0 2px 8px ${color}66` }}
+          >
             <CategoryIcon emoji={iconId} size={22} weight="fill" className="text-white" />
           </div>
           <div className="flex-1">
@@ -180,6 +179,14 @@ function CategoryForm({
           <IconPicker selected={iconId} onSelect={setIconId} />
         </div>
 
+        {/* Color picker */}
+        <div>
+          <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            {t('categories.color')}
+          </label>
+          <ColorPicker selected={color} onSelect={setColor} />
+        </div>
+
         {/* Submit */}
         <button
           onClick={handleSubmit}
@@ -223,8 +230,11 @@ function CategoryRow({
     <div className={`transition-opacity ${isDeleting ? 'opacity-30 pointer-events-none' : ''}`}>
       <SwipeToDelete onDelete={() => onDelete(cat.id)}>
         <div className="flex items-center gap-3 px-4 py-3">
-          <div className="w-10 h-10 rounded-xl bg-accent-subtle flex items-center justify-center shrink-0">
-            <CategoryIcon emoji={cat.emoji} size={20} weight="fill" className="text-accent" />
+          <div
+            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: cat.color || 'var(--color-accent)' }}
+          >
+            <CategoryIcon emoji={cat.emoji} size={20} weight="fill" className="text-white" />
           </div>
           <button
             onClick={() => onEdit(cat)}
@@ -237,7 +247,7 @@ function CategoryRow({
           </button>
           <button
             onClick={() => onEdit(cat)}
-            className="w-11 h-11 rounded-xl flex items-center justify-center text-muted active:text-accent active:bg-accent-subtle transition-colors shrink-0"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center text-muted active:text-accent active:bg-accent-subtle transition-colors shrink-0"
           >
             <PencilSimple size={18} weight="bold" />
           </button>
@@ -285,22 +295,23 @@ export function CategoriesPage() {
     <PageTransition>
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
 
-        {/* Add button */}
-        <div className="shrink-0 px-4 pt-3 pb-2 flex justify-end">
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
-          >
-            <Plus size={14} weight="bold" />
-            {t('categories.create_new')}
-          </button>
-        </div>
-
         {/* Scrollable list */}
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3 pt-3">
           {categories.length === 0 ? (
             <div className="mx-4 card-elevated mt-2">
-              <EmptyState icon="🏷" title={t('categories.no_categories')} />
+              <EmptyState
+                icon={Tag}
+                title={t('categories.no_categories')}
+                action={
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
+                  >
+                    <Plus size={14} weight="bold" />
+                    {t('categories.create_new')}
+                  </button>
+                }
+              />
             </div>
           ) : (
             <div className="mx-4 card-elevated overflow-hidden divide-y divide-border">
@@ -318,13 +329,15 @@ export function CategoriesPage() {
 
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
-              <p className="text-xs text-destructive text-center bg-expense/10 rounded-xl py-2 px-3">
+              <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
                 {(deleteMut.error as Error)?.message}
               </p>
             </div>
           )}
         </div>
       </div>
+
+      <FAB onClick={() => setShowCreate(true)} label={t('categories.create_new')} />
 
       {/* Bottom sheet form */}
       <AnimatePresence>

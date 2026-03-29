@@ -5,6 +5,7 @@ export interface Category {
   name: string
   emoji: string
   type: string
+  color: string
   is_system: boolean
 }
 
@@ -17,6 +18,7 @@ export interface Transaction {
   category_id: number
   category_name: string
   category_emoji: string
+  category_color: string
   note: string
   created_at: string
 }
@@ -50,6 +52,7 @@ export interface BalanceResponse {
 export interface CategoryStat {
   category_name: string
   category_emoji: string
+  category_color: string
   type: TransactionType
   total_cents: number
   tx_count: number
@@ -79,6 +82,7 @@ export interface Budget {
   category_id: number
   category_name: string
   category_emoji: string
+  category_color: string
   limit_cents: number
   spent_cents: number
   period: string
@@ -101,6 +105,7 @@ export interface RecurringTransaction {
   category_id: number
   category_name: string
   category_emoji: string
+  category_color: string
   note: string
   frequency: string
   next_run_at: string

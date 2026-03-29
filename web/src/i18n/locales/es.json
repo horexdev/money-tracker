@@ -40,6 +40,7 @@
     "amount": "Monto",
     "category": "Categoría",
     "note": "Nota",
+    "date": "Fecha",
     "note_placeholder": "Añade una nota (opcional)",
     "type": "Tipo",
     "expense": "Gasto",
@@ -48,7 +49,8 @@
     "frequency": "Frecuencia",
     "delete_confirm": "¿Eliminar esta transacción?",
     "no_transactions": "Aún no hay transacciones",
-    "start_tracking": "Comienza a controlar tus finanzas"
+    "start_tracking": "Comienza a controlar tus finanzas",
+    "edit_title": "Editar transacción"
   },
   "history": {
     "title": "Historial",
@@ -94,6 +96,7 @@
     "name": "Nombre",
     "emoji": "Emoji",
     "icon": "Icono",
+    "color": "Color",
     "choose_icon": "Elige un icono",
     "type": "Tipo",
     "type_expense": "Gasto",
@@ -122,6 +125,7 @@
       "Beauty": "Belleza",
       "Pets": "Mascotas",
       "Business": "Negocios",
+      "Housing": "Vivienda",
       "Investments": "Inversiones",
       "Other": "Otros"
     }
@@ -138,7 +142,9 @@
     "notify_at": "Notificar en",
     "over_limit": "¡Límite superado!",
     "no_budgets": "No hay presupuestos",
-    "set_budget": "Establece un presupuesto para controlar tus gastos"
+    "set_budget": "Establece un presupuesto para controlar tus gastos",
+    "view_transactions": "Transacciones",
+    "no_transactions": "Sin transacciones en este período"
   },
   "recurring": {
     "title": "Recurrentes",
@@ -166,7 +172,10 @@
     "completed": "¡Completado!",
     "progress": "{{percent}}% completado",
     "no_goals": "No hay metas de ahorro",
-    "start_saving": "Establece una meta y comienza a ahorrar"
+    "start_saving": "Establece una meta y comienza a ahorrar",
+    "history": "Historial",
+    "history_title": "Historial del objetivo",
+    "no_history": "Sin transacciones aún"
   },
   "export": {
     "title": "Exportar datos",

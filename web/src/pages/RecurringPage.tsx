@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Pause, Play } from '@phosphor-icons/react'
+import { AnimatePresence } from 'framer-motion'
+import { Plus, Pause, Play, ArrowsClockwise } from '@phosphor-icons/react'
 import { fetchRecurring, createRecurring, updateRecurring, toggleRecurring, deleteRecurring } from '../api/recurring'
 import { categoriesApi } from '../api/categories'
 import { formatCents, parseCents, formatDate } from '../lib/money'
@@ -13,7 +13,7 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { useTgBackButton } from '../hooks/useTelegramApp'
 import { useHaptic } from '../hooks/useHaptic'
-import { Badge, EmptyState, SwipeToDelete } from '../components/ui'
+import { Badge, EmptyState, SwipeToDelete, FAB, BottomSheet } from '../components/ui'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { RecurringTransaction, TransactionType } from '../types'
@@ -35,39 +35,6 @@ const FREQ_OPTIONS = [
   { value: 'monthly', labelKey: 'recurring.monthly' },
   { value: 'yearly',  labelKey: 'recurring.yearly' },
 ]
-
-/* ─── Bottom Sheet ─── */
-function BottomSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  return (
-    <>
-      <motion.div
-        className="fixed inset-0 bg-black/40 z-[60]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      />
-      <motion.div
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-[24px] overflow-hidden"
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        drag="y"
-        dragConstraints={{ top: 0 }}
-        dragElastic={{ top: 0, bottom: 0.3 }}
-        onDragEnd={(_, info) => {
-          if (info.velocity.y > 500 || info.offset.y > 100) onClose()
-        }}
-      >
-        <div className="pt-3 pb-1 flex justify-center">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
-        {children}
-      </motion.div>
-    </>
-  )
-}
 
 /* ─── Recurring Card ─── */
 function RecurringCard({
@@ -91,9 +58,10 @@ function RecurringCard({
       <div className="flex items-center gap-3 px-4 py-3.5">
         <button
           onClick={() => onEdit(item)}
-          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:scale-95 ${!item.is_active ? 'opacity-40' : 'bg-accent-subtle'}`}
+          className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-opacity active:scale-95 ${!item.is_active ? 'opacity-40' : ''}`}
+          style={{ background: item.category_color || 'var(--color-accent)' }}
         >
-          <CategoryIcon emoji={item.category_emoji} size={20} weight="fill" className="text-accent" />
+          <CategoryIcon emoji={item.category_emoji} size={20} weight="fill" className="text-white" />
         </button>
         <button
           onClick={() => onEdit(item)}
@@ -121,7 +89,7 @@ function RecurringCard({
         </button>
         <button
           onClick={() => onToggle(item.id)}
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted active:text-accent active:bg-accent-subtle transition-colors shrink-0"
+          className="w-11 h-11 rounded-2xl flex items-center justify-center text-muted active:text-accent active:bg-accent-subtle transition-colors shrink-0"
         >
           {item.is_active ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}
         </button>
@@ -270,20 +238,20 @@ function RecurringForm({
                   key={cat.id}
                   onClick={() => setCategoryID(cat.id)}
                   className={`
-                    flex flex-col items-center gap-1 py-2.5 rounded-2xl text-xs transition-all duration-150 active:scale-95 select-none
+                    flex flex-col items-center gap-1.5 py-2.5 rounded-2xl text-xs transition-all duration-150 active:scale-95 select-none
                     ${isActive
-                      ? 'bg-accent text-accent-text shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
-                      : 'bg-accent-subtle text-accent'
+                      ? 'bg-accent/10 shadow-[0_2px_8px_rgba(99,102,241,0.15)]'
+                      : 'bg-surface shadow-sm'
                     }
                   `}
                 >
-                  <CategoryIcon
-                    emoji={cat.emoji}
-                    size={18}
-                    weight="fill"
-                    className={isActive ? 'text-white' : 'text-accent'}
-                  />
-                  <span className="truncate w-full text-center px-1 font-medium text-[10px]">
+                  <div
+                    className="w-9 h-9 rounded-2xl flex items-center justify-center"
+                    style={{ background: isActive ? 'var(--color-accent)' : (cat.color || 'var(--color-accent)') }}
+                  >
+                    <CategoryIcon emoji={cat.emoji} size={18} weight="fill" className="text-white" />
+                  </div>
+                  <span className="truncate w-full text-center px-1 font-medium text-[10px] text-text">
                     {tCategory(cat.name)}
                   </span>
                 </button>
@@ -373,25 +341,23 @@ export function RecurringPage() {
     <PageTransition>
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
 
-        {/* Add button */}
-        <div className="shrink-0 px-4 pt-3 pb-2 flex justify-end">
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
-          >
-            <Plus size={14} weight="bold" />
-            {t('recurring.create_new')}
-          </button>
-        </div>
-
         {/* Scrollable list */}
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3 pt-3">
           {items.length === 0 ? (
             <div className="mx-4 card-elevated mt-2">
               <EmptyState
-                icon="🔄"
+                icon={ArrowsClockwise}
                 title={t('recurring.no_recurring')}
                 description={t('recurring.setup_recurring')}
+                action={
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
+                  >
+                    <Plus size={14} weight="bold" />
+                    {t('recurring.create_new')}
+                  </button>
+                }
               />
             </div>
           ) : (
@@ -410,13 +376,15 @@ export function RecurringPage() {
 
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
-              <p className="text-xs text-destructive text-center bg-expense/10 rounded-xl py-2 px-3">
+              <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
                 {(deleteMut.error as Error)?.message}
               </p>
             </div>
           )}
         </div>
       </div>
+
+      <FAB onClick={() => setShowCreate(true)} label={t('recurring.create_new')} />
 
       {/* Bottom sheet form */}
       <AnimatePresence>

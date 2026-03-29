@@ -10,10 +10,11 @@ interface TransactionRowProps {
   tx: Transaction
   compact?: boolean
   onDelete?: (id: number) => void
+  onEdit?: (tx: Transaction) => void
   isDeleting?: boolean
 }
 
-export function TransactionRow({ tx, compact = false, onDelete, isDeleting = false }: TransactionRowProps) {
+export function TransactionRow({ tx, compact = false, onDelete, onEdit, isDeleting = false }: TransactionRowProps) {
   const isIncome = tx.type === 'income'
   const tCategory = useCategoryName()
   const { i18n } = useTranslation()
@@ -24,10 +25,15 @@ export function TransactionRow({ tx, compact = false, onDelete, isDeleting = fal
       className={`
         flex items-center gap-3.5 px-5 py-3.5 border-b border-border last:border-b-0
         transition-opacity ${isDeleting ? 'opacity-30 pointer-events-none' : ''}
+        ${onEdit ? 'active:bg-accent-subtle/20 cursor-pointer' : ''}
       `}
+      onClick={onEdit ? () => onEdit(tx) : undefined}
     >
-      <div className="w-11 h-11 rounded-2xl bg-accent-subtle flex items-center justify-center shrink-0">
-        <CategoryIcon emoji={tx.category_emoji} size={22} weight="fill" className="text-accent" />
+      <div
+        className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+        style={{ background: tx.category_color || 'var(--color-accent)' }}
+      >
+        <CategoryIcon emoji={tx.category_emoji} size={22} weight="fill" className="text-white" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -51,8 +57,8 @@ export function TransactionRow({ tx, compact = false, onDelete, isDeleting = fal
 
       {onDelete && (
         <button
-          onClick={() => onDelete(tx.id)}
-          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl
+          onClick={(e) => { e.stopPropagation(); onDelete(tx.id) }}
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-2xl
             text-muted hover:text-destructive hover:bg-expense-subtle transition-all"
           aria-label="Delete"
         >

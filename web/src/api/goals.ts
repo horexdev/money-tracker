@@ -33,3 +33,18 @@ export function withdrawGoal(id: number, amount_cents: number): Promise<SavingsG
 export function deleteGoal(id: number): Promise<void> {
   return api.delete(`/v1/goals/${id}`)
 }
+
+export interface GoalTransaction {
+  id: number
+  type: 'deposit' | 'withdraw'
+  amount_cents: number
+  created_at: string
+}
+
+export interface GoalHistoryResponse {
+  history: GoalTransaction[]
+}
+
+export function fetchGoalHistory(id: number): Promise<GoalHistoryResponse> {
+  return api.get(`/v1/goals/${id}/history`)
+}

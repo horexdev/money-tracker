@@ -40,6 +40,7 @@
     "amount": "Tutar",
     "category": "Kategori",
     "note": "Not",
+    "date": "Tarih",
     "note_placeholder": "Not ekleyin (isteğe bağlı)",
     "type": "Tür",
     "expense": "Gider",
@@ -48,7 +49,8 @@
     "frequency": "Sıklık",
     "delete_confirm": "Bu işlemi silmek istiyor musunuz?",
     "no_transactions": "Henüz işlem yok",
-    "start_tracking": "Finanslarınızı takip etmeye başlayın"
+    "start_tracking": "Finanslarınızı takip etmeye başlayın",
+    "edit_title": "İşlemi düzenle"
   },
   "history": {
     "title": "Geçmiş",
@@ -94,6 +96,7 @@
     "name": "Ad",
     "emoji": "Emoji",
     "icon": "Simge",
+    "color": "Renk",
     "choose_icon": "Bir simge seçin",
     "type": "Tür",
     "type_expense": "Gider",
@@ -122,6 +125,7 @@
       "Beauty": "Güzellik",
       "Pets": "Evcil hayvanlar",
       "Business": "İş",
+      "Housing": "Konut",
       "Investments": "Yatırımlar",
       "Other": "Diğer"
     }
@@ -138,7 +142,9 @@
     "notify_at": "Bildirim",
     "over_limit": "Limit aşıldı!",
     "no_budgets": "Bütçe belirlenmemiş",
-    "set_budget": "Harcama limitlerini takip etmek için bütçe belirleyin"
+    "set_budget": "Harcama limitlerini takip etmek için bütçe belirleyin",
+    "view_transactions": "İşlemler",
+    "no_transactions": "Bu dönemde işlem yok"
   },
   "recurring": {
     "title": "Tekrarlayan",
@@ -166,7 +172,10 @@
     "completed": "Tamamlandı!",
     "progress": "{{percent}}% tamamlandı",
     "no_goals": "Birikim hedefi yok",
-    "start_saving": "Bir hedef belirleyin ve biriktirmeye başlayın"
+    "start_saving": "Bir hedef belirleyin ve biriktirmeye başlayın",
+    "history": "Geçmiş",
+    "history_title": "Hedef Geçmişi",
+    "no_history": "Henüz işlem yok"
   },
   "export": {
     "title": "Verileri Dışa Aktar",
