@@ -110,6 +110,10 @@
 html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
+  /* Prevent horizontal scroll when virtual keyboard shifts layout */
+  overflow-x: hidden;
+  /* Prevent touch-driven horizontal pan at the root level */
+  touch-action: pan-y;
 }
 
 body {
@@ -120,6 +124,7 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   overscroll-behavior: none;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

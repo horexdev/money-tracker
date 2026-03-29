@@ -3,7 +3,9 @@ package api
 import (
 	"log/slog"
 	"net/http"
+	"time"
 
+	"github.com/horexdev/money-tracker/internal/domain"
 	"github.com/horexdev/money-tracker/internal/service"
 )
 
@@ -23,6 +25,7 @@ type statsResponse struct {
 }
 
 // statsHandler handles GET /api/v1/stats?period=month
+// or GET /api/v1/stats?from=2024-01-01&to=2024-01-31 for a custom date range.
 func statsHandler(statsSvc *service.StatsService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -32,36 +35,66 @@ func statsHandler(statsSvc *service.StatsService, log *slog.Logger) http.Handler
 		ctx := r.Context()
 		userID := userIDFromContext(ctx)
 
-		period := r.URL.Query().Get("period")
+		q := r.URL.Query()
+		fromStr := q.Get("from")
+		toStr := q.Get("to")
+
+		if fromStr != "" && toStr != "" {
+			// Custom range: parse ISO date strings (YYYY-MM-DD)
+			f, err := time.Parse("2006-01-02", fromStr)
+			if err != nil {
+				http.Error(w, "invalid from date", http.StatusBadRequest)
+				return
+			}
+			t, err := time.Parse("2006-01-02", toStr)
+			if err != nil {
+				http.Error(w, "invalid to date", http.StatusBadRequest)
+				return
+			}
+			// to is inclusive: advance by one day to capture the full end date
+			stats, err := statsSvc.ByCategory(ctx, userID, f, t.AddDate(0, 0, 1))
+			if err != nil {
+				writeError(w, log, err)
+				return
+			}
+			writeJSON(w, http.StatusOK, statsResponse{Period: "custom", Items: buildItems(stats)})
+			return
+		}
+
+		// Named period
+		period := q.Get("period")
 		if period == "" {
 			period = "month"
 		}
 
-		from, to, err := service.PeriodRange(period)
+		fromTime, toTime, err := service.PeriodRange(period)
 		if err != nil {
 			writeError(w, log, err)
 			return
 		}
 
-		stats, err := statsSvc.ByCategory(ctx, userID, from, to)
+		stats, err := statsSvc.ByCategory(ctx, userID, fromTime, toTime)
 		if err != nil {
 			writeError(w, log, err)
 			return
 		}
 
-		items := make([]categoryStatResponse, 0, len(stats))
-		for _, s := range stats {
-			items = append(items, categoryStatResponse{
-				CategoryName:  s.CategoryName,
-				CategoryEmoji: s.CategoryEmoji,
-				CategoryColor: s.CategoryColor,
-				Type:          string(s.Type),
-				TotalCents:    s.TotalCents,
-				TxCount:       s.TxCount,
-				CurrencyCode:  s.CurrencyCode,
-			})
-		}
-
-		writeJSON(w, http.StatusOK, statsResponse{Period: period, Items: items})
+		writeJSON(w, http.StatusOK, statsResponse{Period: period, Items: buildItems(stats)})
 	}
+}
+
+func buildItems(stats []domain.CategoryStat) []categoryStatResponse {
+	items := make([]categoryStatResponse, 0, len(stats))
+	for _, s := range stats {
+		items = append(items, categoryStatResponse{
+			CategoryName:  s.CategoryName,
+			CategoryEmoji: s.CategoryEmoji,
+			CategoryColor: s.CategoryColor,
+			Type:          string(s.Type),
+			TotalCents:    s.TotalCents,
+			TxCount:       s.TxCount,
+			CurrencyCode:  s.CurrencyCode,
+		})
+	}
+	return items
 }
