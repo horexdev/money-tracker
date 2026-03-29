@@ -142,10 +142,13 @@ body {
 /* Tab bar safe area spacer */
 .tab-spacer { height: var(--tab-bar-h); flex-shrink: 0; }
 
-/* Hero gradient — deep indigo with animated shimmer */
+/* Hero gradient — deep indigo with shimmer overlay */
 .hero-gradient {
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 80%, #6366f1 100%);
   position: relative;
+  /* Explicit radius so ::after inherit works reliably on iOS WebKit */
+  border-radius: var(--radius-card);
+  overflow: hidden;
 }
 .hero-gradient::after {
   content: '';

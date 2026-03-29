@@ -39,7 +39,7 @@ export function ExportPage() {
     <PageTransition>
       <div className="p-4 space-y-4">
         <div className="card-elevated overflow-hidden">
-          <div className="hero-gradient h-2 relative" />
+          <div className="hero-gradient h-2 relative !rounded-none !overflow-visible" />
           <div className="p-5 space-y-4">
 
             <div>

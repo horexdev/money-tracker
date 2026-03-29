@@ -38,7 +38,7 @@ export function MorePage() {
         {/* Featured full-width tile */}
         <Link
           to={FEATURED.to}
-          className="block hero-gradient rounded-card p-6 relative overflow-hidden active:scale-[0.98] transition-transform"
+          className="block hero-gradient p-6 relative active:scale-[0.98] transition-transform"
           style={{ boxShadow: 'var(--shadow-hero)' }}
         >
           <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/[0.08] blur-xl pointer-events-none" />

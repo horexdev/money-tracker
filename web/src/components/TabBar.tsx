@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { House, Plus, ClockCounterClockwise, ChartBar, DotsThree } from '@phosphor-icons/react'
@@ -19,9 +20,45 @@ const TABS: Tab[] = [
   { to: '/more',    icon: <DotsThree size={24} weight="bold" />,            labelKey: 'tabs.more'    },
 ]
 
+/** Hide the tab bar while any text input or textarea is focused so it
+ *  doesn't float over the virtual keyboard on iOS. */
+function useKeyboardVisible() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const INPUT_SELECTORS = 'input, textarea, [contenteditable]'
+
+    function onFocusIn(e: FocusEvent) {
+      if ((e.target as Element)?.matches?.(INPUT_SELECTORS)) {
+        setVisible(true)
+      }
+    }
+    function onFocusOut() {
+      // Small delay so the bar doesn't flash back before keyboard fully dismisses
+      setTimeout(() => {
+        if (!document.activeElement?.matches?.(INPUT_SELECTORS)) {
+          setVisible(false)
+        }
+      }, 100)
+    }
+
+    document.addEventListener('focusin', onFocusIn)
+    document.addEventListener('focusout', onFocusOut)
+    return () => {
+      document.removeEventListener('focusin', onFocusIn)
+      document.removeEventListener('focusout', onFocusOut)
+    }
+  }, [])
+
+  return visible
+}
+
 export function TabBar() {
   const { t } = useTranslation()
   const { selection } = useHaptic()
+  const keyboardOpen = useKeyboardVisible()
+
+  if (keyboardOpen) return null
 
   return (
     <nav

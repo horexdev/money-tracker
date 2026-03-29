@@ -43,7 +43,7 @@ export function DashboardPage() {
         <div className="px-4 pt-4 flex flex-col gap-3 shrink-0">
 
           {/* Hero card */}
-          <div className="hero-gradient rounded-card p-6 relative overflow-hidden"
+          <div className="hero-gradient p-6 relative"
                style={{ boxShadow: 'var(--shadow-hero)' }}>
             <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/[0.07] blur-xl pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-indigo-400/20 blur-2xl pointer-events-none" />

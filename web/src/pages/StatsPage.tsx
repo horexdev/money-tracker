@@ -249,7 +249,7 @@ export function StatsPage() {
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
 
         {/* Hero block with type toggle */}
-        <div className="mx-4 mt-4 hero-gradient rounded-card px-5 pt-5 pb-4 relative overflow-hidden shrink-0"
+        <div className="mx-4 mt-4 hero-gradient px-5 pt-5 pb-4 relative shrink-0"
              style={{ boxShadow: 'var(--shadow-hero)' }}>
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/[0.06] blur-xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-indigo-400/15 blur-2xl pointer-events-none" />
