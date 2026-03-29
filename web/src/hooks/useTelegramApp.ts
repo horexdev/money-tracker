@@ -40,7 +40,7 @@ export function useTelegramApp() {
 
     // Sync Telegram safe area insets to CSS variables
     try {
-      const tg = (window as Record<string, unknown>).Telegram as {
+      const tg = ((window as unknown) as Record<string, unknown>).Telegram as {
         WebApp?: {
           safeAreaInset?: { top?: number }
           contentSafeAreaInset?: { top?: number }
