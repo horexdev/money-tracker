@@ -66,7 +66,10 @@ docker compose -f "$DEPLOY_DIR/docker-compose.yml" --env-file "$DEPLOY_DIR/.env"
   up -d --remove-orphans postgres redis
 
 if [ ! -f "$CERT_PATH" ]; then
-  echo "[deploy] no SSL cert found — obtaining via certbot standalone..."
+  echo "[deploy] no SSL cert found — stopping nginx if running, then obtaining cert..."
+  docker compose -f "$DEPLOY_DIR/docker-compose.yml" stop nginx 2>/dev/null || true
+  docker rm -f moneytracker-nginx-1 2>/dev/null || true
+
   docker run --rm \
     -p 80:80 \
     -v /etc/letsencrypt:/etc/letsencrypt \
