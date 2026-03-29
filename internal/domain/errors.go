@@ -20,4 +20,8 @@ var (
 	ErrCategorySystemReadOnly   = errors.New("system categories cannot be modified")
 	ErrInsufficientGoalFunds    = errors.New("insufficient funds in savings goal")
 	ErrBudgetAlreadyExists      = errors.New("budget already exists for this category and period")
+	ErrAccountNotFound          = errors.New("account not found")
+	ErrDefaultAccountExists     = errors.New("default account already exists")
+	ErrAccountHasTransactions   = errors.New("account has transactions and cannot be deleted")
+	ErrTransferSameAccount      = errors.New("transfer source and destination must be different")
 )

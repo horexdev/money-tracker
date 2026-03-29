@@ -78,4 +78,28 @@ type SavingsGoalStorer interface {
 	Withdraw(ctx context.Context, id, userID, amountCents int64) (*domain.SavingsGoal, error)
 	Delete(ctx context.Context, id, userID int64) error
 	ListHistory(ctx context.Context, goalID, userID int64) ([]*domain.GoalTransaction, error)
+	GetByAccountID(ctx context.Context, accountID int64) ([]*domain.SavingsGoal, error)
+}
+
+// AccountStorer is the repository interface for account operations.
+type AccountStorer interface {
+	Create(ctx context.Context, a *domain.Account) (*domain.Account, error)
+	GetByID(ctx context.Context, id, userID int64) (*domain.Account, error)
+	GetDefault(ctx context.Context, userID int64) (*domain.Account, error)
+	ListByUser(ctx context.Context, userID int64) ([]*domain.Account, error)
+	Update(ctx context.Context, a *domain.Account) (*domain.Account, error)
+	SetDefault(ctx context.Context, id, userID int64) (*domain.Account, error)
+	Delete(ctx context.Context, id, userID int64) error
+	CountTransactions(ctx context.Context, accountID, userID int64) (int64, error)
+	GetBalance(ctx context.Context, accountID, userID int64) (int64, error)
+}
+
+// TransferStorer is the repository interface for transfer operations.
+type TransferStorer interface {
+	Create(ctx context.Context, t *domain.Transfer) (*domain.Transfer, error)
+	GetByID(ctx context.Context, id, userID int64) (*domain.Transfer, error)
+	ListByUser(ctx context.Context, userID int64, limit, offset int) ([]*domain.Transfer, error)
+	ListByAccount(ctx context.Context, userID, accountID int64) ([]*domain.Transfer, error)
+	Count(ctx context.Context, userID int64) (int64, error)
+	Delete(ctx context.Context, id, userID int64) error
 }

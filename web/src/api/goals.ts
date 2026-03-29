@@ -10,6 +10,7 @@ export function createGoal(body: {
   target_cents: number
   currency_code: string
   deadline?: string
+  account_id?: number | null
 }): Promise<SavingsGoal> {
   return api.post('/v1/goals', body)
 }
@@ -18,6 +19,7 @@ export function updateGoal(id: number, body: {
   name?: string
   target_cents?: number
   deadline?: string
+  account_id?: number | null
 }): Promise<SavingsGoal> {
   return api.put(`/v1/goals/${id}`, body)
 }

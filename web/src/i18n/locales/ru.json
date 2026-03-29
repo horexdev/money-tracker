@@ -214,6 +214,24 @@
     "recurring": "Повторяющиеся",
     "savings": "Цели",
     "export": "Экспорт",
-    "settings": "Настройки"
-  }
+    "settings": "Настройки",
+    "accounts": "Счета",
+    "transfers": "Переводы"
+  },
+  "accounts": "Счета",
+  "transfers": "Переводы",
+  "newAccount": "Новый счёт",
+  "newTransfer": "Новый перевод",
+  "accountType": "Тип счёта",
+  "checking": "Текущий",
+  "savings": "Сберегательный",
+  "cash": "Наличные",
+  "credit": "Кредитный",
+  "crypto": "Криптовалюта",
+  "setDefault": "Сделать основным",
+  "defaultAccount": "Основной",
+  "includeInTotal": "Учитывать в балансе",
+  "from": "Откуда",
+  "to": "Куда",
+  "exchangeRate": "Курс обмена"
 }

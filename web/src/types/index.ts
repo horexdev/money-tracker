@@ -21,6 +21,8 @@ export interface Transaction {
   category_color: string
   note: string
   created_at: string
+  account_id?: number
+  account_name?: string
 }
 
 export interface ListTransactionsResponse {
@@ -129,8 +131,40 @@ export interface SavingsGoal {
   is_completed: boolean
   remaining_cents: number
   created_at: string
+  account_id?: number | null
 }
 
 export interface GoalsResponse {
   goals: SavingsGoal[]
+}
+
+// Accounts
+export type AccountType = 'checking' | 'savings' | 'cash' | 'credit' | 'crypto'
+
+export interface Account {
+  id: number
+  name: string
+  icon: string
+  color: string
+  type: AccountType
+  currency_code: string
+  is_default: boolean
+  include_in_total: boolean
+  balance_cents: number
+  created_at: string
+}
+
+// Transfers
+export interface Transfer {
+  id: number
+  from_account_id: number
+  from_account_name: string
+  to_account_id: number
+  to_account_name: string
+  amount_cents: number
+  from_currency_code: string
+  to_currency_code: string
+  exchange_rate: number
+  note: string
+  created_at: string
 }

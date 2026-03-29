@@ -38,17 +38,21 @@ func httpStatus(err error) int {
 		errors.Is(err, domain.ErrTransactionNotFound),
 		errors.Is(err, domain.ErrBudgetNotFound),
 		errors.Is(err, domain.ErrRecurringNotFound),
-		errors.Is(err, domain.ErrGoalNotFound):
+		errors.Is(err, domain.ErrGoalNotFound),
+		errors.Is(err, domain.ErrAccountNotFound):
 		return http.StatusNotFound
 	case errors.Is(err, domain.ErrInvalidAmount),
 		errors.Is(err, domain.ErrInvalidPeriod),
 		errors.Is(err, domain.ErrInvalidCurrency),
 		errors.Is(err, domain.ErrInvalidFrequency),
 		errors.Is(err, domain.ErrInvalidLanguage),
-		errors.Is(err, domain.ErrTooManyDisplayCurrencies):
+		errors.Is(err, domain.ErrTooManyDisplayCurrencies),
+		errors.Is(err, domain.ErrTransferSameAccount):
 		return http.StatusBadRequest
 	case errors.Is(err, domain.ErrBudgetAlreadyExists),
 		errors.Is(err, domain.ErrCategoryInUse):
+		return http.StatusConflict
+	case errors.Is(err, domain.ErrAccountHasTransactions):
 		return http.StatusConflict
 	case errors.Is(err, domain.ErrCategorySystemReadOnly):
 		return http.StatusForbidden
@@ -76,6 +80,8 @@ func userMessage(err error) string {
 		return "recurring transaction not found"
 	case errors.Is(err, domain.ErrGoalNotFound):
 		return "savings goal not found"
+	case errors.Is(err, domain.ErrAccountNotFound):
+		return "account not found"
 	case errors.Is(err, domain.ErrInvalidAmount):
 		return "invalid amount: must be a positive integer number of cents"
 	case errors.Is(err, domain.ErrInvalidPeriod):
@@ -98,6 +104,10 @@ func userMessage(err error) string {
 		return "insufficient funds in savings goal"
 	case errors.Is(err, domain.ErrExchangeRateUnavailable):
 		return "exchange rate temporarily unavailable"
+	case errors.Is(err, domain.ErrAccountHasTransactions):
+		return "account has transactions and cannot be deleted"
+	case errors.Is(err, domain.ErrTransferSameAccount):
+		return "transfer source and destination must be different"
 	default:
 		return "internal server error"
 	}

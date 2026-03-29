@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/horexdev/money-tracker/internal/domain"
@@ -198,4 +200,48 @@ func rowToGoal(row sqlcgen.SavingsGoal) *domain.SavingsGoal {
 		UpdatedAt:    goTime(row.UpdatedAt),
 	}
 	return g
+}
+
+// GetByAccountID returns all goals linked to the given account.
+func (r *SavingsGoalRepository) GetByAccountID(ctx context.Context, accountID int64) ([]*domain.SavingsGoal, error) {
+	const q = `SELECT id, user_id, name, target_cents, current_cents, currency_code, deadline, account_id, created_at, updated_at
+FROM savings_goals WHERE account_id = $1`
+	rows, err := r.pool.Query(ctx, q, accountID)
+	if err != nil {
+		return nil, fmt.Errorf("get goals by account id: %w", err)
+	}
+	defer rows.Close()
+	var out []*domain.SavingsGoal
+	for rows.Next() {
+		var g domain.SavingsGoal
+		var aid pgtype.Int8
+		var deadline pgtype.Date
+		var createdAt, updatedAt pgtype.Timestamptz
+		if err := rows.Scan(
+			&g.ID,
+			&g.UserID,
+			&g.Name,
+			&g.TargetCents,
+			&g.CurrentCents,
+			&g.CurrencyCode,
+			&deadline,
+			&aid,
+			&createdAt,
+			&updatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan goal: %w", err)
+		}
+		if aid.Valid {
+			v := aid.Int64
+			g.AccountID = &v
+		}
+		if deadline.Valid {
+			t := deadline.Time
+			g.Deadline = &t
+		}
+		g.CreatedAt = createdAt.Time
+		g.UpdatedAt = updatedAt.Time
+		out = append(out, &g)
+	}
+	return out, rows.Err()
 }

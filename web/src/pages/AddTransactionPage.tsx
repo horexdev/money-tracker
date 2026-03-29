@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -7,6 +7,7 @@ import { AnimatePresence } from 'framer-motion'
 import { categoriesApi } from '../api/categories'
 import { transactionsApi } from '../api/transactions'
 import { balanceApi } from '../api/balance'
+import { accountsApi } from '../api/accounts'
 import { parseCents, getCurrencySymbol } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
 import { useTgMainButton } from '../hooks/useMainButton'
@@ -51,6 +52,7 @@ export function AddTransactionPage() {
   const [note, setNote] = useState('')
   const [txDate, setTxDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
 
   const { data: catData, isLoading } = useQuery({
     queryKey: ['categories'],
@@ -61,6 +63,18 @@ export function AddTransactionPage() {
     queryKey: ['balance'],
     queryFn: balanceApi.get,
   })
+
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: accountsApi.list,
+  })
+
+  useEffect(() => {
+    if (selectedAccountId === null && accounts.length > 0) {
+      const defaultAccount = accounts.find((a) => a.is_default) ?? accounts[0]
+      setSelectedAccountId(defaultAccount.id)
+    }
+  }, [accounts, selectedAccountId])
 
   const baseCurrency = balanceData?.by_currency?.[0]?.currency_code ?? 'USD'
   const currencySymbol = getCurrencySymbol(baseCurrency)
@@ -93,8 +107,9 @@ export function AddTransactionPage() {
       note: note.trim() || undefined,
       currency_code: baseCurrency,
       created_at: txDate !== today ? txDate : undefined,
+      account_id: selectedAccountId ?? undefined,
     })
-  }, [canSubmit, categoryID, type, amount, note, baseCurrency, mutation])
+  }, [canSubmit, categoryID, type, amount, note, baseCurrency, selectedAccountId, mutation])
 
   const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(sanitizeAmount(e.target.value))
@@ -190,6 +205,31 @@ export function AddTransactionPage() {
             <span className="flex-1 text-sm text-text text-right">{fmtDisplay(txDate)}</span>
           </button>
         </div>
+
+        {/* Account picker */}
+        {accounts.length > 0 && (
+          <div className="shrink-0 mt-3 px-4">
+            <p className="mb-2 text-[11px] font-bold text-muted uppercase tracking-widest">
+              {t('accounts.title')}
+            </p>
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              {accounts.map((acc) => (
+                <button
+                  key={acc.id}
+                  onClick={() => setSelectedAccountId(acc.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                    selectedAccountId === acc.id
+                      ? 'text-white shadow-sm'
+                      : 'bg-surface-2 text-secondary'
+                  }`}
+                  style={selectedAccountId === acc.id ? { backgroundColor: acc.color } : undefined}
+                >
+                  <span className="text-xs">{acc.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Categories — scrollable grid + inline save button */}
         <div className="flex-1 min-h-0 mt-3 flex flex-col">

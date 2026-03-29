@@ -8,6 +8,7 @@ export interface CreateTransactionPayload {
   note?: string
   currency_code?: string
   created_at?: string
+  account_id?: number
 }
 
 export interface UpdateTransactionPayload {

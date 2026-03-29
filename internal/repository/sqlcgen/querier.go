@@ -11,14 +11,20 @@ import (
 )
 
 type Querier interface {
+	ClearDefaultAccounts(ctx context.Context, userID int64) error
+	CountAccountTransactions(ctx context.Context, arg CountAccountTransactionsParams) (int64, error)
 	CountTransactionsByCategory(ctx context.Context, categoryID int64) (int64, error)
+	CountTransfersByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactions(ctx context.Context, userID int64) (int64, error)
+	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateRecurring(ctx context.Context, arg CreateRecurringParams) (RecurringTransaction, error)
 	CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalParams) (SavingsGoal, error)
 	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
 	CreateTransactionWithDate(ctx context.Context, arg CreateTransactionWithDateParams) (Transaction, error)
+	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUserCategory(ctx context.Context, arg CreateUserCategoryParams) (Category, error)
+	DeleteAccount(ctx context.Context, arg DeleteAccountParams) error
 	DeleteAllUserBudgets(ctx context.Context, userID int64) error
 	DeleteAllUserCategories(ctx context.Context, userID pgtype.Int8) error
 	DeleteAllUserGoals(ctx context.Context, userID int64) error
@@ -28,13 +34,17 @@ type Querier interface {
 	DeleteRecurring(ctx context.Context, arg DeleteRecurringParams) error
 	DeleteSavingsGoal(ctx context.Context, arg DeleteSavingsGoalParams) error
 	DeleteTransaction(ctx context.Context, arg DeleteTransactionParams) error
+	DeleteTransfer(ctx context.Context, arg DeleteTransferParams) error
 	DepositToGoal(ctx context.Context, arg DepositToGoalParams) (SavingsGoal, error)
+	GetAccountBalance(ctx context.Context, arg GetAccountBalanceParams) (int64, error)
+	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetBalance(ctx context.Context, userID int64) (GetBalanceRow, error)
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]GetBalanceByCurrencyRow, error)
 	GetBudgetByID(ctx context.Context, arg GetBudgetByIDParams) (Budget, error)
 	GetBudgetByUserCategoryPeriod(ctx context.Context, arg GetBudgetByUserCategoryPeriodParams) (Budget, error)
 	GetCategoryByID(ctx context.Context, id int64) (Category, error)
 	GetCategoryByName(ctx context.Context, arg GetCategoryByNameParams) (Category, error)
+	GetDefaultAccount(ctx context.Context, userID int64) (Account, error)
 	GetDueRecurring(ctx context.Context, nextRunAt pgtype.Timestamptz) ([]RecurringTransaction, error)
 	GetRecurringByID(ctx context.Context, arg GetRecurringByIDParams) (RecurringTransaction, error)
 	GetSavingsGoalByID(ctx context.Context, arg GetSavingsGoalByIDParams) (SavingsGoal, error)
@@ -43,8 +53,10 @@ type Querier interface {
 	// Returns net balance (income - expense) summed across all transactions converted to the user's
 	// base currency using the exchange_rate_snapshot stored at the time each transaction was created.
 	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
+	GetTransferByID(ctx context.Context, arg GetTransferByIDParams) (GetTransferByIDRow, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	InsertGoalTransaction(ctx context.Context, arg InsertGoalTransactionParams) error
+	ListAccountsByUser(ctx context.Context, userID int64) ([]Account, error)
 	ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error)
 	ListDistinctUsersWithBudgets(ctx context.Context) ([]int64, error)
 	ListGoalTransactions(ctx context.Context, arg ListGoalTransactionsParams) ([]GoalTransaction, error)
@@ -52,10 +64,14 @@ type Querier interface {
 	ListSavingsGoalsByUser(ctx context.Context, userID int64) ([]SavingsGoal, error)
 	ListTransactions(ctx context.Context, arg ListTransactionsParams) ([]ListTransactionsRow, error)
 	ListTransactionsByCategoryPeriod(ctx context.Context, arg ListTransactionsByCategoryPeriodParams) ([]ListTransactionsByCategoryPeriodRow, error)
+	ListTransfersByAccount(ctx context.Context, arg ListTransfersByAccountParams) ([]ListTransfersByAccountRow, error)
+	ListTransfersByUser(ctx context.Context, arg ListTransfersByUserParams) ([]ListTransfersByUserRow, error)
 	ListUserCategories(ctx context.Context, userID pgtype.Int8) ([]Category, error)
 	ListUserCategoriesByType(ctx context.Context, arg ListUserCategoriesByTypeParams) ([]Category, error)
+	SetAccountDefault(ctx context.Context, arg SetAccountDefaultParams) (Account, error)
 	SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategoryParams) error
 	ToggleRecurringActive(ctx context.Context, arg ToggleRecurringActiveParams) (RecurringTransaction, error)
+	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
 	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
 	UpdateBudgetLastNotified(ctx context.Context, id int64) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)

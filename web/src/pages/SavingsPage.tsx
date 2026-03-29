@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion'
 import { Plus, X, CheckCircle, ArrowCircleDown, ArrowCircleUp, CalendarBlank, ClockCounterClockwise, Receipt, Target } from '@phosphor-icons/react'
 import { fetchGoals, createGoal, updateGoal, depositGoal, withdrawGoal, deleteGoal, fetchGoalHistory } from '../api/goals'
 import type { GoalTransaction } from '../api/goals'
+import { accountsApi } from '../api/accounts'
 import { formatCents, parseCents, formatDate } from '../lib/money'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
@@ -139,6 +140,12 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
     editGoal?.deadline ? editGoal.deadline.split('T')[0] : ''
   )
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false)
+  const [accountId, setAccountId] = useState<number | null>(editGoal?.account_id ?? null)
+
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: accountsApi.list,
+  })
 
   const createMut = useMutation({
     mutationFn: () => createGoal({
@@ -146,6 +153,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
       target_cents: parseCents(targetStr),
       currency_code: currencyCode,
       deadline: deadline || undefined,
+      account_id: accountId,
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['goals'] })
@@ -160,6 +168,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
       name: name.trim(),
       target_cents: parseCents(targetStr),
       deadline: deadline || undefined,
+      account_id: accountId,
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['goals'] })
@@ -237,6 +246,41 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
               )}
             </div>
           </div>
+
+          {/* Account link */}
+          {accounts.length > 0 && (
+            <div>
+              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
+                {t('accounts.title')}
+              </label>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button
+                  onClick={() => setAccountId(null)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                    accountId === null
+                      ? 'bg-accent text-accent-text shadow-sm'
+                      : 'bg-bg text-muted'
+                  }`}
+                >
+                  <span className="text-xs">{t('common.none')}</span>
+                </button>
+                {accounts.map((acc) => (
+                  <button
+                    key={acc.id}
+                    onClick={() => setAccountId(acc.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                      accountId === acc.id
+                        ? 'text-white shadow-sm'
+                        : 'bg-bg text-muted'
+                    }`}
+                    style={accountId === acc.id ? { backgroundColor: acc.color } : undefined}
+                  >
+                    <span className="text-xs">{acc.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Submit */}
           <button

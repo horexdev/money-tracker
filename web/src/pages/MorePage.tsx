@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix } from '@phosphor-icons/react'
+import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ArrowsHorizontal } from '@phosphor-icons/react'
 import { PageTransition } from '../components/PageTransition'
 import type { ReactNode } from 'react'
 
@@ -22,11 +22,13 @@ const FEATURED: MenuItem = {
 }
 
 const GRID_ITEMS: MenuItem[] = [
-  { to: '/savings',   icon: <Target size={22} weight="fill" />,           labelKey: 'more.savings',   gradient: 'from-emerald-400 to-teal-500' },
-  { to: '/recurring', icon: <ArrowsClockwise size={22} weight="bold" />,  labelKey: 'more.recurring', gradient: 'from-violet-400 to-purple-600' },
-  { to: '/categories',icon: <Tag size={22} weight="fill" />,              labelKey: 'more.categories',gradient: 'from-blue-400 to-indigo-500' },
-  { to: '/export',    icon: <DownloadSimple size={22} weight="bold" />,   labelKey: 'more.export',    gradient: 'from-cyan-400 to-sky-500', comingSoon: true },
-  { to: '/settings',  icon: <GearSix size={22} weight="fill" />,          labelKey: 'more.settings',  gradient: 'from-slate-400 to-slate-600' },
+  { to: '/savings',   icon: <Target size={22} weight="fill" />,            labelKey: 'more.savings',   gradient: 'from-emerald-400 to-teal-500' },
+  { to: '/recurring', icon: <ArrowsClockwise size={22} weight="bold" />,   labelKey: 'more.recurring', gradient: 'from-violet-400 to-purple-600' },
+  { to: '/categories',icon: <Tag size={22} weight="fill" />,               labelKey: 'more.categories',gradient: 'from-blue-400 to-indigo-500' },
+  { to: '/accounts',  icon: <Bank size={22} weight="fill" />,              labelKey: 'more.accounts',  gradient: 'from-amber-400 to-orange-500' },
+  { to: '/transfers', icon: <ArrowsHorizontal size={22} weight="bold" />,  labelKey: 'more.transfers', gradient: 'from-pink-400 to-rose-500' },
+  { to: '/export',    icon: <DownloadSimple size={22} weight="bold" />,    labelKey: 'more.export',    gradient: 'from-cyan-400 to-sky-500', comingSoon: true },
+  { to: '/settings',  icon: <GearSix size={22} weight="fill" />,           labelKey: 'more.settings',  gradient: 'from-slate-400 to-slate-600' },
 ]
 
 export function MorePage() {

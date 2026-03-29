@@ -214,6 +214,24 @@
     "recurring": "Recurring",
     "savings": "Savings Goals",
     "export": "Export",
-    "settings": "Settings"
-  }
+    "settings": "Settings",
+    "accounts": "Accounts",
+    "transfers": "Transfers"
+  },
+  "accounts": "Accounts",
+  "transfers": "Transfers",
+  "newAccount": "New Account",
+  "newTransfer": "New Transfer",
+  "accountType": "Account Type",
+  "checking": "Checking",
+  "savings": "Savings",
+  "cash": "Cash",
+  "credit": "Credit",
+  "crypto": "Crypto",
+  "setDefault": "Set as Default",
+  "defaultAccount": "Default",
+  "includeInTotal": "Include in Total",
+  "from": "From",
+  "to": "To",
+  "exchangeRate": "Exchange Rate"
 }

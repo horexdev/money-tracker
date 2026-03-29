@@ -30,6 +30,8 @@ type Deps struct {
 	RecurringSvc   *service.RecurringService
 	GoalSvc        *service.SavingsGoalService
 	ExportSvc      *service.ExportService
+	AccountSvc     *service.AccountService
+	TransferSvc    *service.TransferService
 	BotToken       string
 	AllowedOrigins string
 	Log            *slog.Logger
@@ -81,6 +83,14 @@ func NewServer(d Deps) http.Handler {
 	// Savings goals CRUD + deposit/withdraw.
 	mux.Handle("/api/v1/goals", protected(goalsHandler(d.GoalSvc, d.Log)))
 	mux.Handle("/api/v1/goals/", protected(goalsHandler(d.GoalSvc, d.Log)))
+
+	// Accounts CRUD.
+	mux.Handle("/api/v1/accounts", protected(accountsHandler(d.AccountSvc, d.Log)))
+	mux.Handle("/api/v1/accounts/", protected(accountsHandler(d.AccountSvc, d.Log)))
+
+	// Transfers.
+	mux.Handle("/api/v1/transfers", protected(transfersHandler(d.TransferSvc, d.Log)))
+	mux.Handle("/api/v1/transfers/", protected(transfersHandler(d.TransferSvc, d.Log)))
 
 	// Data export.
 	mux.Handle("/api/v1/export", protected(exportHandler(d.ExportSvc, d.Log)))

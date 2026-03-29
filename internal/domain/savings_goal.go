@@ -21,6 +21,7 @@ type SavingsGoal struct {
 	CurrentCents int64
 	CurrencyCode string
 	Deadline     *time.Time
+	AccountID    *int64 // nil if not linked to any account
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }

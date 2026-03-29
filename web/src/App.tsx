@@ -18,6 +18,8 @@ const BudgetsPage        = lazy(() => import('./pages/BudgetsPage').then(m => ({
 const RecurringPage      = lazy(() => import('./pages/RecurringPage').then(m => ({ default: m.RecurringPage })))
 const SavingsPage        = lazy(() => import('./pages/SavingsPage').then(m => ({ default: m.SavingsPage })))
 const ExportPage         = lazy(() => import('./pages/ExportPage').then(m => ({ default: m.ExportPage })))
+const AccountsPage       = lazy(() => import('./pages/AccountsPage').then(m => ({ default: m.AccountsPage })))
+const TransfersPage      = lazy(() => import('./pages/TransfersPage').then(m => ({ default: m.TransfersPage })))
 
 function PageLoader() {
   return <div className="flex justify-center items-center h-48"><Spinner /></div>
@@ -42,6 +44,8 @@ function AnimatedRoutes() {
             <Route path="recurring" element={<RecurringPage />} />
             <Route path="savings" element={<SavingsPage />} />
             <Route path="export" element={<ExportPage />} />
+            <Route path="accounts" element={<AccountsPage />} />
+            <Route path="transfers" element={<TransfersPage />} />
           </Route>
         </Routes>
       </Suspense>
