@@ -227,12 +227,12 @@ export function AddTransactionPage() {
           </button>
         </div>
 
-        {/* Categories — scrollable grid */}
+        {/* Categories — scrollable grid + inline save button */}
         <div className="flex-1 min-h-0 mt-3 flex flex-col">
           <p className="px-5 mb-2 text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
             {t('transactions.category')}
           </p>
-          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px) + 16px)' }}>
+          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 pb-4">
             {isLoading ? (
               <div className="flex justify-center py-8"><Spinner /></div>
             ) : (
@@ -283,28 +283,23 @@ export function AddTransactionPage() {
                 })}
               </div>
             )}
+
+            {/* Save button — inline at bottom of scroll area so keyboard never covers it */}
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className={`
+                w-full mt-4 py-4 rounded-2xl text-[15px] font-bold transition-all active:scale-[0.98]
+                ${canSubmit
+                  ? 'bg-accent text-accent-text shadow-[0_4px_16px_rgba(99,102,241,0.35)]'
+                  : 'bg-border text-muted'
+                }
+              `}
+            >
+              {mutation.isPending ? t('common.loading') : t('common.save')}
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Save button — fixed above tab bar */}
-      <div
-        className="fixed left-0 right-0 px-4 z-10"
-        style={{ bottom: 'calc(var(--tab-bar-h) + 8px)' }}
-      >
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-          className={`
-            w-full py-4 rounded-2xl text-[15px] font-bold transition-all active:scale-[0.98]
-            ${canSubmit
-              ? 'bg-accent text-accent-text shadow-[0_4px_16px_rgba(99,102,241,0.35)]'
-              : 'bg-border text-muted'
-            }
-          `}
-        >
-          {mutation.isPending ? t('common.loading') : t('common.save')}
-        </button>
       </div>
       {/* Currency picker bottom sheet */}
       <AnimatePresence>
