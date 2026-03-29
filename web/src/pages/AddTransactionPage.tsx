@@ -10,13 +10,13 @@ import { useTgBackButton } from '../hooks/useTelegramApp'
 import { useHaptic } from '../hooks/useHaptic'
 import { Spinner } from '../components/Spinner'
 import { PageTransition } from '../components/PageTransition'
-import { Card, SegmentedControl } from '../components/ui'
+import { SegmentedControl } from '../components/ui'
 import type { TransactionType, Category } from '../types'
 
 function AmountInput({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
   return (
-    <Card className="mx-4">
-      <label className="block text-xs text-muted mb-1">{label}</label>
+    <div className="mx-4 bg-surface rounded-[--radius-card] p-4">
+      <label className="block text-xs font-semibold text-muted uppercase tracking-widest mb-2">{label}</label>
       <input
         inputMode="decimal"
         placeholder="0.00"
@@ -24,7 +24,7 @@ function AmountInput({ value, onChange, label }: { value: string; onChange: (v: 
         onChange={(e) => onChange(e.target.value)}
         className="w-full bg-transparent text-4xl font-bold text-text outline-none tabular-nums"
       />
-    </Card>
+    </div>
   )
 }
 
@@ -40,8 +40,8 @@ function CategoryGrid({
   label: string
 }) {
   return (
-    <Card className="mx-4" padding="p-0">
-      <p className="px-4 pt-3 pb-2 text-xs uppercase tracking-widest text-muted">
+    <div className="mx-4 bg-surface rounded-[--radius-card] overflow-hidden">
+      <p className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-widest text-muted">
         {label}
       </p>
       <div className="grid grid-cols-4 gap-2 px-3 pb-3">
@@ -54,17 +54,17 @@ function CategoryGrid({
               rounded-[--radius-sm] text-xs transition-all duration-150
               active:scale-[0.95]
               ${selected === cat.id
-                ? 'bg-accent-subtle text-accent ring-2 ring-accent'
-                : 'text-text hover:bg-border'
+                ? 'bg-accent-subtle text-accent ring-2 ring-accent ring-inset'
+                : 'text-text active:bg-border'
               }
             `}
           >
             <span className="text-2xl leading-none">{cat.emoji}</span>
-            <span className="text-center leading-tight px-1">{cat.name}</span>
+            <span className="text-center leading-tight px-1 font-medium">{cat.name}</span>
           </button>
         ))}
       </div>
-    </Card>
+    </div>
   )
 }
 
@@ -82,7 +82,7 @@ export function AddTransactionPage() {
 
   const typeOptions = [
     { value: 'expense', label: t('transactions.expense') },
-    { value: 'income', label: t('transactions.income') },
+    { value: 'income',  label: t('transactions.income') },
   ]
 
   const { data: catData, isLoading } = useQuery({
@@ -115,7 +115,7 @@ export function AddTransactionPage() {
 
   useTgBackButton(() => navigate('/'), true)
   useTgMainButton({
-    text: mutation.isPending ? t('common.loading') : t('common.save'),
+    text:    mutation.isPending ? t('common.loading') : t('common.save'),
     onClick: handleSubmit,
     enabled: canSubmit,
     loading: mutation.isPending,
@@ -134,8 +134,10 @@ export function AddTransactionPage() {
 
         <AmountInput value={amount} onChange={setAmount} label={t('transactions.amount')} />
 
-        <Card className="mx-4">
-          <label className="block text-xs text-muted mb-1">{t('transactions.note')}</label>
+        <div className="mx-4 bg-surface rounded-[--radius-card] p-4">
+          <label className="block text-xs font-semibold text-muted uppercase tracking-widest mb-2">
+            {t('transactions.note')}
+          </label>
           <input
             type="text"
             placeholder={t('transactions.note_placeholder')}
@@ -144,7 +146,7 @@ export function AddTransactionPage() {
             maxLength={120}
             className="w-full bg-transparent text-sm text-text outline-none"
           />
-        </Card>
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center py-4"><Spinner /></div>

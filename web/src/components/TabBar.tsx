@@ -14,7 +14,7 @@ interface Tab {
 const TABS: Tab[] = [
   { to: '/',        icon: <Home size={22} />,           labelKey: 'tabs.home'    },
   { to: '/history', icon: <Clock size={22} />,          labelKey: 'tabs.history' },
-  { to: '/add',     icon: <PlusCircle size={28} />,     labelKey: 'tabs.add',    isCenter: true },
+  { to: '/add',     icon: <PlusCircle size={26} />,     labelKey: 'tabs.add',    isCenter: true },
   { to: '/stats',   icon: <BarChart3 size={22} />,      labelKey: 'tabs.stats'   },
   { to: '/more',    icon: <MoreHorizontal size={22} />, labelKey: 'tabs.more'    },
 ]
@@ -43,15 +43,15 @@ export function TabBar() {
           {({ isActive }) =>
             tab.isCenter ? (
               <div className={`
-                aurora-bg w-12 h-12 rounded-2xl flex items-center justify-center text-white
-                shadow-lg transition-transform duration-200 active:scale-90
-                ${isActive ? 'scale-95' : 'scale-100'}
+                aurora-bg w-11 h-11 rounded-2xl flex items-center justify-center text-white
+                shadow-lg transition-transform duration-150
+                ${isActive ? 'scale-90' : 'scale-100 active:scale-90'}
               `}>
                 {tab.icon}
               </div>
             ) : (
               <>
-                <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'scale-100'}`}>
+                <div className={`transition-transform duration-150 ${isActive ? 'scale-110' : 'scale-100'}`}>
                   {tab.icon}
                 </div>
                 <span className="text-[10px] leading-none font-medium">{t(tab.labelKey)}</span>

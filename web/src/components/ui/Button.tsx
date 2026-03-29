@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive'
-type Size = 'sm' | 'md'
+type Size = 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant
@@ -10,15 +10,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-text',
-  secondary: 'bg-surface text-text',
-  ghost: 'bg-transparent text-accent',
-  destructive: 'bg-transparent text-destructive',
+  primary:     'bg-accent text-accent-text shadow-sm',
+  secondary:   'bg-surface text-text border border-border',
+  ghost:       'bg-transparent text-accent',
+  destructive: 'bg-expense/10 text-expense',
 }
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
+  sm: 'h-8 px-3 text-xs rounded-[--radius-xs]',
+  md: 'h-10 px-4 text-sm rounded-[--radius-btn]',
+  lg: 'h-12 px-5 text-base rounded-[--radius-btn]',
 }
 
 export function Button({
@@ -32,8 +33,8 @@ export function Button({
   return (
     <button
       className={`
-        inline-flex items-center justify-center font-medium
-        rounded-[--radius-btn] transition-all duration-200
+        inline-flex items-center justify-center font-semibold
+        transition-all duration-150 select-none
         active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none
         ${variantClasses[variant]} ${sizeClasses[size]} ${className}
       `}

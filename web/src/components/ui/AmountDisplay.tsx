@@ -15,12 +15,12 @@ interface AmountDisplayProps {
 const sizeClasses: Record<AmountSize, string> = {
   sm: 'text-sm',
   md: 'text-base',
-  lg: 'text-2xl',
-  xl: 'text-4xl',
+  lg: 'text-2xl font-bold',
+  xl: 'text-4xl font-bold',
 }
 
 const typeClasses: Record<AmountType, string> = {
-  income: 'text-income',
+  income:  'text-income',
   expense: 'text-expense',
   neutral: 'text-text',
 }
@@ -33,7 +33,7 @@ export function AmountDisplay({
   showSign = false,
   className = '',
 }: AmountDisplayProps) {
-  const sign = showSign ? (type === 'income' ? '+' : type === 'expense' ? '\u2212' : '') : ''
+  const sign = showSign ? (type === 'income' ? '+' : type === 'expense' ? '−' : '') : ''
 
   return (
     <span className={`font-semibold tabular-nums ${sizeClasses[size]} ${typeClasses[type]} ${className}`}>

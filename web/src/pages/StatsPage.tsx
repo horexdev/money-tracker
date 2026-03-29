@@ -6,7 +6,7 @@ import { formatCents } from '../lib/money'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
-import { Card, SegmentedControl, EmptyState } from '../components/ui'
+import { SegmentedControl, EmptyState } from '../components/ui'
 import type { TransactionType, CategoryStat } from '../types'
 
 const COLORS = [
@@ -18,18 +18,18 @@ type Period = 'month' | 'week' | 'today' | 'lastmonth'
 
 export function StatsPage() {
   const { t } = useTranslation()
-  const [type, setType] = useState<TransactionType>('expense')
+  const [type, setType]     = useState<TransactionType>('expense')
   const [period, setPeriod] = useState<Period>('month')
 
   const typeOptions = [
     { value: 'expense', label: t('transactions.expense') },
-    { value: 'income', label: t('transactions.income') },
+    { value: 'income',  label: t('transactions.income') },
   ]
 
   const periodOptions = [
-    { value: 'today', label: t('stats.today') },
-    { value: 'week', label: t('stats.week') },
-    { value: 'month', label: t('stats.month') },
+    { value: 'today',     label: t('stats.today') },
+    { value: 'week',      label: t('stats.week') },
+    { value: 'month',     label: t('stats.month') },
     { value: 'lastmonth', label: t('stats.last_month') },
   ]
 
@@ -47,43 +47,45 @@ export function StatsPage() {
 
   return (
     <PageTransition>
-      <div className="py-4 flex flex-col gap-3">
-        <div className="px-4">
-          <SegmentedControl
-            options={typeOptions}
-            value={type}
-            onChange={(v) => setType(v as TransactionType)}
-          />
-        </div>
+      <div className="py-4 flex flex-col gap-3 px-4">
+        <h1 className="text-xl font-bold text-text">{t('stats.title')}</h1>
 
-        <div className="px-4">
-          <SegmentedControl
-            options={periodOptions}
-            value={period}
-            onChange={(v) => setPeriod(v as Period)}
-            size="sm"
-          />
-        </div>
+        <SegmentedControl
+          options={typeOptions}
+          value={type}
+          onChange={(v) => setType(v as TransactionType)}
+        />
+
+        <SegmentedControl
+          options={periodOptions}
+          value={period}
+          onChange={(v) => setPeriod(v as Period)}
+          size="sm"
+        />
 
         {isLoading && <div className="flex justify-center py-16"><Spinner /></div>}
-        {isError && <ErrorMessage onRetry={refetch} />}
+        {isError   && <ErrorMessage onRetry={refetch} />}
 
         {data && (
           <>
             {withPercent.length > 0 ? (
               <>
-                {/* Donut chart — custom SVG */}
-                <div className="flex justify-center py-4">
+                {/* Donut chart */}
+                <div className="bg-surface rounded-[--radius-card] flex justify-center py-6">
                   <DonutChart data={withPercent} total={total} />
                 </div>
 
                 {/* Breakdown list */}
-                <Card className="mx-4" padding="p-0">
+                <div className="bg-surface rounded-[--radius-card] overflow-hidden">
                   {withPercent.map((entry, i) => (
                     <div
                       key={`${entry.category_name}-${i}`}
                       className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-b-0"
                     >
+                      <div
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ background: COLORS[i % COLORS.length] }}
+                      />
                       <span className="text-xl w-7 text-center">{entry.category_emoji}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center">
@@ -104,10 +106,12 @@ export function StatsPage() {
                       </span>
                     </div>
                   ))}
-                </Card>
+                </div>
               </>
             ) : (
-              <EmptyState icon="📊" title={t('stats.no_stats')} />
+              <div className="bg-surface rounded-[--radius-card]">
+                <EmptyState icon="📊" title={t('stats.no_stats')} />
+              </div>
             )}
           </>
         )}
@@ -116,19 +120,18 @@ export function StatsPage() {
   )
 }
 
-// Lightweight SVG donut chart replacing recharts PieChart
 function DonutChart({ data, total }: { data: Array<{ percent: number; category_name: string }>; total: number }) {
-  const size = 160
-  const cx = size / 2
-  const cy = size / 2
+  const size   = 160
+  const cx     = size / 2
+  const cy     = size / 2
   const outerR = 68
   const innerR = 46
-  const gap = 0.02 // radians gap between segments
+  const gap    = 0.02
 
   let startAngle = -Math.PI / 2
   const segments = data.map((d, i) => {
     const sweep = (d.percent / 100) * (2 * Math.PI) - gap
-    const s = startAngle
+    const s     = startAngle
     startAngle += sweep + gap
 
     const x1 = cx + outerR * Math.cos(s)
@@ -141,8 +144,7 @@ function DonutChart({ data, total }: { data: Array<{ percent: number; category_n
     const y4 = cy + innerR * Math.sin(s)
 
     const large = sweep > Math.PI ? 1 : 0
-
-    const path = [
+    const path  = [
       `M ${x1} ${y1}`,
       `A ${outerR} ${outerR} 0 ${large} 1 ${x2} ${y2}`,
       `L ${x3} ${y3}`,
@@ -161,7 +163,7 @@ function DonutChart({ data, total }: { data: Array<{ percent: number; category_n
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
           <p className="text-xs text-muted">Total</p>
-          <p className="text-sm font-semibold tabular-nums text-text">{formatCents(total)}</p>
+          <p className="text-sm font-bold tabular-nums text-text">{formatCents(total)}</p>
         </div>
       </div>
     </div>

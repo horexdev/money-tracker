@@ -1,19 +1,20 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { transactionsApi } from '../api/transactions'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
-import { Card, SectionHeader, TransactionRow, EmptyState, Button } from '../components/ui'
+import { SectionHeader, TransactionRow, EmptyState, Button } from '../components/ui'
 import type { Transaction } from '../types'
 
 const PAGE_SIZE = 20
 
 function groupByDate(transactions: Transaction[], t: (key: string) => string): Map<string, Transaction[]> {
   const groups = new Map<string, Transaction[]>()
-  const now = new Date()
-  const today = now.toDateString()
+  const now       = new Date()
+  const today     = now.toDateString()
   const yesterday = new Date(now.getTime() - 86400000).toDateString()
 
   for (const tx of transactions) {
@@ -25,9 +26,7 @@ function groupByDate(transactions: Transaction[], t: (key: string) => string): M
       label = t('history.yesterday')
     } else {
       label = new Date(tx.created_at).toLocaleDateString(undefined, {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
+        month: 'long', day: 'numeric', year: 'numeric',
       })
     }
     const existing = groups.get(label)
@@ -53,40 +52,38 @@ export function HistoryPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => transactionsApi.delete(id),
-    onMutate: (id) => setDeletingId(id),
-    onSettled: () => setDeletingId(null),
-    onSuccess: () => {
+    onMutate:   (id) => setDeletingId(id),
+    onSettled:  () => setDeletingId(null),
+    onSuccess:  () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['balance'] })
     },
   })
 
-  const handleDelete = useCallback((id: number) => {
-    deleteMutation.mutate(id)
-  }, [deleteMutation])
+  const handleDelete = useCallback((id: number) => { deleteMutation.mutate(id) }, [deleteMutation])
 
   const items = useMemo(() => data?.transactions ?? [], [data?.transactions])
   const totalPages = data?.total_pages ?? 1
-  const grouped = useMemo(() => groupByDate(items, t), [items, t])
+  const grouped    = useMemo(() => groupByDate(items, t), [items, t])
 
   if (isLoading) return <div className="flex justify-center py-16"><Spinner /></div>
-  if (isError) return <ErrorMessage onRetry={refetch} />
+  if (isError)   return <ErrorMessage onRetry={refetch} />
 
   return (
     <PageTransition>
       <div className="py-4">
-        <SectionHeader>{t('history.title')}</SectionHeader>
+        <h1 className="text-xl font-bold px-4 mb-4">{t('history.title')}</h1>
 
         {items.length === 0 ? (
-          <Card className="mx-4" padding="p-0">
+          <div className="mx-4 bg-surface rounded-[--radius-card]">
             <EmptyState icon="📋" title={t('transactions.no_transactions')} description={t('transactions.start_tracking')} />
-          </Card>
+          </div>
         ) : (
           <div className="flex flex-col gap-4">
             {[...grouped.entries()].map(([date, txs]) => (
               <div key={date}>
-                <p className="px-4 mb-1 text-xs font-medium text-muted">{date}</p>
-                <Card className="mx-4" padding="p-0">
+                <SectionHeader>{date}</SectionHeader>
+                <div className="mx-4 bg-surface rounded-[--radius-card] overflow-hidden">
                   {txs.map((tx) => (
                     <TransactionRow
                       key={tx.id}
@@ -95,32 +92,30 @@ export function HistoryPage() {
                       isDeleting={deletingId === tx.id}
                     />
                   ))}
-                </Card>
+                </div>
               </div>
             ))}
           </div>
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-4">
+          <div className="flex items-center justify-center gap-4 mt-4 px-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
             >
-              &larr; {t('common.back')}
+              <ChevronLeft size={16} /> {t('common.back')}
             </Button>
-            <span className="text-sm text-muted">
-              {page} / {totalPages}
-            </span>
+            <span className="text-sm text-muted font-medium">{page} / {totalPages}</span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
             >
-              {t('common.done')} &rarr;
+              {t('common.done')} <ChevronRight size={16} />
             </Button>
           </div>
         )}

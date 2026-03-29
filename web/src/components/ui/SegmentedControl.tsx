@@ -12,20 +12,20 @@ interface SegmentedControlProps {
 
 export function SegmentedControl({ options, value, onChange, size = 'md' }: SegmentedControlProps) {
   const textSize = size === 'sm' ? 'text-xs' : 'text-sm'
-  const padding = size === 'sm' ? 'py-1.5 px-3' : 'py-2'
+  const padding  = size === 'sm' ? 'py-1.5 px-2' : 'py-2 px-3'
 
   return (
-    <div className="flex bg-surface rounded-[--radius-btn] p-1">
+    <div className="flex bg-surface rounded-[--radius-btn] p-1 gap-0.5">
       {options.map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
           className={`
-            flex-1 ${padding} rounded-[--radius-sm] ${textSize} font-medium
-            transition-all duration-200
+            flex-1 ${padding} rounded-[--radius-sm] ${textSize} font-semibold
+            transition-all duration-150 select-none
             ${opt.value === value
               ? 'bg-accent text-accent-text shadow-sm'
-              : 'text-muted hover:text-text'
+              : 'text-muted active:bg-border'
             }
           `}
         >
