@@ -2,60 +2,31 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Plus, Trash2, Pause, Play } from 'lucide-react'
-import { fetchRecurring, createRecurring, toggleRecurring, deleteRecurring } from '../api/recurring'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Plus, Pause, Play } from '@phosphor-icons/react'
+import { fetchRecurring, createRecurring, updateRecurring, toggleRecurring, deleteRecurring } from '../api/recurring'
 import { categoriesApi } from '../api/categories'
-import { formatCents, parseCents } from '../lib/money'
+import { formatCents, parseCents, formatDate } from '../lib/money'
+import { CategoryIcon } from '../lib/categoryIcons'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { useTgBackButton } from '../hooks/useTelegramApp'
-import { Button, Badge, EmptyState, SegmentedControl } from '../components/ui'
+import { useHaptic } from '../hooks/useHaptic'
+import { Badge, EmptyState, SwipeToDelete } from '../components/ui'
+import { useCategoryName } from '../hooks/useCategoryName'
+import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { RecurringTransaction, TransactionType } from '../types'
 
-function RecurringCard({
-  item,
-  onToggle,
-  onDelete,
-}: {
-  item: RecurringTransaction
-  onToggle: (id: number) => void
-  onDelete: (id: number) => void
-}) {
-  const { t } = useTranslation()
-  const nextDate = new Date(item.next_run_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-
-  return (
-    <div className={`px-4 py-4 border-b border-border last:border-b-0 transition-opacity ${!item.is_active ? 'opacity-50' : ''}`}>
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-border flex items-center justify-center text-xl shrink-0">
-          {item.category_emoji}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-text truncate">{item.category_name}</span>
-            <Badge variant={item.type === 'income' ? 'income' : 'expense'}>
-              {item.type === 'income' ? t('transactions.income') : t('transactions.expense')}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted">
-            <span className="font-medium text-text">{formatCents(item.amount_cents, item.currency_code)}</span>
-            <span>·</span>
-            <span className="capitalize">{t(`recurring.${item.frequency}`)}</span>
-            <span>·</span>
-            <span>{t('recurring.next_run')}: {nextDate}</span>
-          </div>
-          {item.note && <p className="text-xs text-muted mt-0.5 truncate">{item.note}</p>}
-        </div>
-        <button onClick={() => onToggle(item.id)} className="p-1.5 text-muted active:text-accent">
-          {item.is_active ? <Pause size={16} /> : <Play size={16} />}
-        </button>
-        <button onClick={() => onDelete(item.id)} className="p-1.5 text-muted active:text-destructive">
-          <Trash2 size={16} />
-        </button>
-      </div>
-    </div>
-  )
+function sanitizeAmount(value: string): string {
+  let cleaned = value.replace(/[^0-9.]/g, '')
+  const dotIndex = cleaned.indexOf('.')
+  if (dotIndex !== -1) {
+    cleaned = cleaned.slice(0, dotIndex + 1) + cleaned.slice(dotIndex + 1).replace(/\./g, '')
+  }
+  if (dotIndex !== -1 && cleaned.length - dotIndex > 3) cleaned = cleaned.slice(0, dotIndex + 3)
+  if (cleaned.length > 1 && cleaned[0] === '0' && cleaned[1] !== '.') cleaned = cleaned.slice(1)
+  return cleaned
 }
 
 const FREQ_OPTIONS = [
@@ -65,162 +36,397 @@ const FREQ_OPTIONS = [
   { value: 'yearly',  labelKey: 'recurring.yearly' },
 ]
 
+/* ─── Bottom Sheet ─── */
+function BottomSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  return (
+    <>
+      <motion.div
+        className="fixed inset-0 bg-black/40 z-[60]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      />
+      <motion.div
+        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-[24px] overflow-hidden"
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        drag="y"
+        dragConstraints={{ top: 0 }}
+        dragElastic={{ top: 0, bottom: 0.3 }}
+        onDragEnd={(_, info) => {
+          if (info.velocity.y > 500 || info.offset.y > 100) onClose()
+        }}
+      >
+        <div className="pt-3 pb-1 flex justify-center">
+          <div className="w-10 h-1 rounded-full bg-border" />
+        </div>
+        {children}
+      </motion.div>
+    </>
+  )
+}
+
+/* ─── Recurring Card ─── */
+function RecurringCard({
+  item,
+  onEdit,
+  onToggle,
+  onDelete,
+}: {
+  item: RecurringTransaction
+  onEdit: (item: RecurringTransaction) => void
+  onToggle: (id: number) => void
+  onDelete: (id: number) => void
+}) {
+  const { t, i18n } = useTranslation()
+  const tCategory = useCategoryName()
+  const nextDate = formatDate(item.next_run_at, i18n.language)
+
+  return (
+    <SwipeToDelete onDelete={() => onDelete(item.id)}>
+      <div className="flex items-center gap-3 px-4 py-3.5">
+        <button
+          onClick={() => onEdit(item)}
+          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:scale-95 ${!item.is_active ? 'opacity-40' : 'bg-accent-subtle'}`}
+        >
+          <CategoryIcon emoji={item.category_emoji} size={20} weight="fill" className="text-accent" />
+        </button>
+        <button
+          onClick={() => onEdit(item)}
+          className={`flex-1 min-w-0 text-left transition-opacity ${!item.is_active ? 'opacity-40' : ''}`}
+        >
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[13px] font-bold text-text truncate">{tCategory(item.category_name)}</span>
+            <Badge variant={item.type === 'income' ? 'income' : 'expense'} className="text-[10px] shrink-0">
+              {item.type === 'income' ? t('transactions.income') : t('transactions.expense')}
+            </Badge>
+            {!item.is_active && (
+              <span className="text-[10px] font-bold text-muted bg-border px-1.5 py-0.5 rounded-full shrink-0">
+                {t('recurring.paused')}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1 text-xs text-muted">
+            <span className="font-semibold text-text tabular-nums">{formatCents(item.amount_cents, item.currency_code)}</span>
+            <span className="text-muted/40">·</span>
+            <span className="capitalize">{t(`recurring.${item.frequency}`)}</span>
+            <span className="text-muted/40">·</span>
+            <span>{nextDate}</span>
+          </div>
+          {item.note && <p className="text-[11px] text-muted/70 mt-0.5 truncate">{item.note}</p>}
+        </button>
+        <button
+          onClick={() => onToggle(item.id)}
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted active:text-accent active:bg-accent-subtle transition-colors shrink-0"
+        >
+          {item.is_active ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}
+        </button>
+      </div>
+    </SwipeToDelete>
+  )
+}
+
+/* ─── Form (create or edit, bottom sheet) ─── */
+function RecurringForm({
+  editItem,
+  onClose,
+}: {
+  editItem: RecurringTransaction | null
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const { notification } = useHaptic()
+  const tCategory = useCategoryName()
+  const { code: currencyCode, symbol } = useBaseCurrency()
+
+  const isEdit = editItem !== null
+
+  const [type, setType] = useState<TransactionType>(editItem?.type ?? 'expense')
+  const [amount, setAmount] = useState(editItem ? String(editItem.amount_cents / 100) : '')
+  const [categoryID, setCategoryID] = useState<number | null>(editItem?.category_id ?? null)
+  const [note, setNote] = useState(editItem?.note ?? '')
+  const [frequency, setFrequency] = useState(editItem?.frequency ?? 'monthly')
+
+  const catsQ = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list() })
+  const categories = catsQ.data?.categories ?? []
+  const filtered = categories.filter(c => c.type === type || c.type === 'both')
+
+  const createMut = useMutation({
+    mutationFn: () => createRecurring({
+      type,
+      amount_cents: parseCents(amount),
+      currency_code: currencyCode,
+      category_id: categoryID!,
+      note: note.trim(),
+      frequency,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['recurring'] })
+      notification('success')
+      onClose()
+    },
+  })
+
+  const updateMut = useMutation({
+    mutationFn: () => updateRecurring(editItem!.id, {
+      type,
+      amount_cents: parseCents(amount),
+      currency_code: currencyCode,
+      category_id: categoryID!,
+      note: note.trim(),
+      frequency,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['recurring'] })
+      notification('success')
+      onClose()
+    },
+  })
+
+  const mut = isEdit ? updateMut : createMut
+  const canSubmit = parseCents(amount) > 0 && categoryID !== null && !mut.isPending
+
+  return (
+    <BottomSheet onClose={onClose}>
+      <div
+        className="px-5 space-y-4 overflow-y-auto no-scrollbar"
+        style={{ maxHeight: '80dvh', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+      >
+        {/* Type toggle */}
+        <div className="flex gap-1.5">
+          {(['expense', 'income'] as TransactionType[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => { setType(v); setCategoryID(null) }}
+              className={`
+                flex-1 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 select-none
+                ${type === v
+                  ? 'bg-accent text-accent-text shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
+                  : 'bg-accent-subtle text-muted'
+                }
+              `}
+            >
+              {v === 'expense' ? t('transactions.expense') : t('transactions.income')}
+            </button>
+          ))}
+        </div>
+
+        {/* Amount */}
+        <div>
+          <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            {t('transactions.amount')}
+          </label>
+          <div className="flex items-baseline gap-1.5 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow">
+            <span className="text-3xl font-bold text-muted/40 tabular-nums">{symbol}</span>
+            <input
+              inputMode="decimal"
+              placeholder="0.00"
+              value={amount}
+              onChange={e => setAmount(sanitizeAmount(e.target.value))}
+              className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/30 tabular-nums min-w-0"
+            />
+          </div>
+        </div>
+
+        {/* Frequency */}
+        <div>
+          <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            {t('recurring.frequency')}
+          </label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {FREQ_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setFrequency(opt.value)}
+                className={`
+                  py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 select-none
+                  ${frequency === opt.value
+                    ? 'bg-accent text-accent-text shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
+                    : 'bg-accent-subtle text-muted'
+                  }
+                `}
+              >
+                {t(opt.labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            {t('transactions.category')}
+          </label>
+          <div className="grid grid-cols-4 gap-2">
+            {filtered.map(cat => {
+              const isActive = categoryID === cat.id
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryID(cat.id)}
+                  className={`
+                    flex flex-col items-center gap-1 py-2.5 rounded-2xl text-xs transition-all duration-150 active:scale-95 select-none
+                    ${isActive
+                      ? 'bg-accent text-accent-text shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
+                      : 'bg-accent-subtle text-accent'
+                    }
+                  `}
+                >
+                  <CategoryIcon
+                    emoji={cat.emoji}
+                    size={18}
+                    weight="fill"
+                    className={isActive ? 'text-white' : 'text-accent'}
+                  />
+                  <span className="truncate w-full text-center px-1 font-medium text-[10px]">
+                    {tCategory(cat.name)}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Note */}
+        <div>
+          <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            {t('transactions.note')}
+          </label>
+          <input
+            type="text"
+            placeholder={t('transactions.note_placeholder')}
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            maxLength={120}
+            className="w-full bg-bg rounded-2xl px-4 py-3 text-sm font-medium outline-none text-text placeholder:text-muted/50 transition-shadow focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)]"
+          />
+        </div>
+
+        {/* Submit */}
+        <button
+          onClick={() => mut.mutate()}
+          disabled={!canSubmit}
+          className={`
+            w-full py-4 rounded-2xl text-[15px] font-bold transition-all active:scale-[0.98]
+            ${canSubmit
+              ? 'bg-accent text-accent-text shadow-[0_4px_16px_rgba(99,102,241,0.3)]'
+              : 'bg-border text-muted'
+            }
+          `}
+        >
+          {mut.isPending ? '...' : isEdit ? t('common.save') : t('common.create')}
+        </button>
+
+        {mut.isError && (
+          <p className="text-xs text-destructive text-center">
+            {(mut.error as Error)?.message}
+          </p>
+        )}
+      </div>
+    </BottomSheet>
+  )
+}
+
+/* ─── Main Page ─── */
 export function RecurringPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const { notification } = useHaptic()
   useTgBackButton(() => navigate('/more'))
 
-  const [showForm, setShowForm]     = useState(false)
-  const [type, setType]             = useState<TransactionType>('expense')
-  const [amount, setAmount]         = useState('')
-  const [categoryID, setCategoryID] = useState<number | null>(null)
-  const [note, setNote]             = useState('')
-  const [frequency, setFrequency]   = useState('monthly')
+  const [editingItem, setEditingItem] = useState<RecurringTransaction | null>(null)
+  const [showCreate, setShowCreate] = useState(false)
 
   const recurringQ = useQuery({ queryKey: ['recurring'], queryFn: fetchRecurring })
-  const catsQ      = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list() })
-
-  const createMut = useMutation({
-    mutationFn: () => createRecurring({
-      type, amount_cents: parseCents(amount),
-      currency_code: 'USD', category_id: categoryID!,
-      note: note.trim(), frequency,
-    }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['recurring'] }); resetForm() },
-  })
 
   const toggleMut = useMutation({
     mutationFn: toggleRecurring,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['recurring'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['recurring'] })
+      notification('success')
+    },
   })
 
   const deleteMut = useMutation({
     mutationFn: deleteRecurring,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['recurring'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['recurring'] })
+      notification('success')
+    },
+    onError: () => notification('error'),
   })
 
-  function resetForm() {
-    setShowForm(false); setType('expense'); setAmount(''); setCategoryID(null); setNote(''); setFrequency('monthly')
-  }
-
-  const items      = recurringQ.data?.recurring ?? []
-  const categories = catsQ.data?.categories ?? []
-  const canSubmit  = parseCents(amount) > 0 && categoryID !== null && !createMut.isPending
+  const items = recurringQ.data?.recurring ?? []
 
   if (recurringQ.isPending) return <div className="flex justify-center py-16"><Spinner /></div>
-  if (recurringQ.isError)   return <ErrorMessage onRetry={() => recurringQ.refetch()} />
+  if (recurringQ.isError) return <ErrorMessage onRetry={() => recurringQ.refetch()} />
+
+  const formOpen = showCreate || editingItem !== null
 
   return (
     <PageTransition>
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">{t('recurring.title')}</h1>
-          {!showForm && (
-            <Button size="sm" onClick={() => setShowForm(true)}>
-              <Plus size={15} className="mr-1" /> {t('recurring.create_new')}
-            </Button>
-          )}
+      <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
+
+        {/* Add button */}
+        <div className="shrink-0 px-4 pt-3 pb-2 flex justify-end">
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent text-accent-text text-xs font-bold shadow-[0_2px_12px_rgba(99,102,241,0.4)] active:scale-95 transition-transform"
+          >
+            <Plus size={14} weight="bold" />
+            {t('recurring.create_new')}
+          </button>
         </div>
 
-        {showForm && (
-          <div className="bg-surface rounded-[--radius-card] p-4 space-y-4">
-            <SegmentedControl
-              options={[
-                { value: 'expense', label: t('transactions.expense') },
-                { value: 'income',  label: t('transactions.income') },
-              ]}
-              value={type}
-              onChange={v => { setType(v as TransactionType); setCategoryID(null) }}
-              size="sm"
-            />
-
-            <div>
-              <label className="block text-xs font-semibold text-muted uppercase tracking-widest mb-2">
-                {t('transactions.amount')}
-              </label>
-              <input
-                inputMode="decimal"
-                placeholder="0.00"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                className="w-full bg-bg rounded-[--radius-sm] px-3 py-2.5 text-2xl font-bold outline-none focus:ring-2 focus:ring-accent tabular-nums"
+        {/* Scrollable list */}
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3">
+          {items.length === 0 ? (
+            <div className="mx-4 card-elevated mt-2">
+              <EmptyState
+                icon="🔄"
+                title={t('recurring.no_recurring')}
+                description={t('recurring.setup_recurring')}
               />
             </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-muted uppercase tracking-widest mb-2">
-                {t('recurring.frequency')}
-              </label>
-              <SegmentedControl
-                options={FREQ_OPTIONS.map(o => ({ value: o.value, label: t(o.labelKey) }))}
-                value={frequency}
-                onChange={setFrequency}
-                size="sm"
-              />
+          ) : (
+            <div className="mx-4 card-elevated overflow-hidden divide-y divide-border">
+              {items.map(item => (
+                <RecurringCard
+                  key={item.id}
+                  item={item}
+                  onEdit={setEditingItem}
+                  onToggle={id => toggleMut.mutate(id)}
+                  onDelete={id => deleteMut.mutate(id)}
+                />
+              ))}
             </div>
+          )}
 
-            <div>
-              <label className="block text-xs font-semibold text-muted uppercase tracking-widest mb-2">
-                {t('transactions.category')}
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {categories.map(cat => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setCategoryID(cat.id)}
-                    className={`flex flex-col items-center gap-1 py-2.5 rounded-[--radius-sm] text-xs transition-all active:scale-95
-                      ${categoryID === cat.id ? 'bg-accent-subtle text-accent ring-2 ring-accent ring-inset' : 'text-text active:bg-border'}`}
-                  >
-                    <span className="text-xl">{cat.emoji}</span>
-                    <span className="truncate w-full text-center px-1 font-medium">{cat.name}</span>
-                  </button>
-                ))}
-              </div>
+          {deleteMut.isError && (
+            <div className="mx-4 mt-2">
+              <p className="text-xs text-destructive text-center bg-expense/10 rounded-xl py-2 px-3">
+                {(deleteMut.error as Error)?.message}
+              </p>
             </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-muted uppercase tracking-widest mb-2">
-                {t('transactions.note')}
-              </label>
-              <input
-                type="text"
-                placeholder={t('transactions.note_placeholder')}
-                value={note}
-                onChange={e => setNote(e.target.value)}
-                maxLength={120}
-                className="w-full bg-bg rounded-[--radius-sm] px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-accent"
-              />
-            </div>
-
-            <div className="flex gap-2 pt-1">
-              <Button size="sm" onClick={() => createMut.mutate()} disabled={!canSubmit}>
-                {t('common.create')}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={resetForm}>{t('common.cancel')}</Button>
-            </div>
-
-            {createMut.isError && (
-              <p className="text-xs text-destructive">{(createMut.error as Error)?.message}</p>
-            )}
-          </div>
-        )}
-
-        {items.length > 0 ? (
-          <div className="bg-surface rounded-[--radius-card] overflow-hidden">
-            {items.map(item => (
-              <RecurringCard
-                key={item.id}
-                item={item}
-                onToggle={id => toggleMut.mutate(id)}
-                onDelete={id => deleteMut.mutate(id)}
-              />
-            ))}
-          </div>
-        ) : !showForm ? (
-          <EmptyState icon="🔄" title={t('recurring.no_recurring')} description={t('recurring.setup_recurring')} />
-        ) : null}
+          )}
+        </div>
       </div>
+
+      {/* Bottom sheet form */}
+      <AnimatePresence>
+        {formOpen && (
+          <RecurringForm
+            key={editingItem?.id ?? 'new'}
+            editItem={editingItem}
+            onClose={() => { setShowCreate(false); setEditingItem(null) }}
+          />
+        )}
+      </AnimatePresence>
     </PageTransition>
   )
 }
