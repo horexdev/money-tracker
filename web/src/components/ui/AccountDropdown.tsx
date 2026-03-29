@@ -40,27 +40,20 @@ export function AccountDropdown({ accounts, selectedId, onChange, allLabel, show
     const menuH = Math.min(accounts.length * 56 + (allLabel ? 56 : 0), 280)
 
     const menuWidth = Math.max(160, rect.width)
-    // Align right edge of menu to right edge of trigger, but clamp to viewport
     const rightAligned = rect.right - menuWidth
     const left = Math.max(8, rightAligned)
+    const openUp = spaceBelow < menuH + 8
 
-    if (spaceBelow < menuH + 8) {
-      setMenuStyle({
-        position: 'fixed',
-        bottom: window.innerHeight - rect.top + 6,
-        left,
-        minWidth: menuWidth,
-        zIndex: 9999,
-      })
-    } else {
-      setMenuStyle({
-        position: 'fixed',
-        top: rect.bottom + 6,
-        left,
-        minWidth: menuWidth,
-        zIndex: 9999,
-      })
-    }
+    setMenuStyle({
+      position: 'fixed',
+      ...(openUp
+        ? { bottom: window.innerHeight - rect.top + 6 }
+        : { top: rect.bottom + 6 }
+      ),
+      left,
+      minWidth: menuWidth,
+      zIndex: 9999,
+    })
   }, [open, accounts.length, allLabel])
 
   useEffect(() => {
