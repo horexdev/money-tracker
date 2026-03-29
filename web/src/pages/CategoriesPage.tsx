@@ -87,19 +87,23 @@ function ColorPicker({ selected, onSelect }: { selected: string; onSelect: (c: s
 /* ─── Create / Edit Form (bottom sheet) ─── */
 function CategoryForm({
   editingCat,
+  categoryCount,
   onClose,
 }: {
   editingCat: Category | null
+  categoryCount: number
   onClose: () => void
 }) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const { notification } = useHaptic()
 
+  const defaultColor = editingCat?.color ?? COLOR_SWATCHES[categoryCount % COLOR_SWATCHES.length]
+
   const [name, setName] = useState(editingCat?.name ?? '')
   const [iconId, setIconId] = useState(editingCat?.emoji ?? 'star')
   const [catType, setCatType] = useState(editingCat?.type ?? 'both')
-  const [color, setColor] = useState(editingCat?.color ?? '#6366f1')
+  const [color, setColor] = useState(defaultColor)
 
   const createMut = useMutation({
     mutationFn: () => categoriesApi.create({ name, emoji: iconId, type: catType, color }),
@@ -345,6 +349,7 @@ export function CategoriesPage() {
           <CategoryForm
             key={editingCat?.id ?? 'new'}
             editingCat={editingCat}
+            categoryCount={categories.length}
             onClose={() => { setShowCreate(false); setEditingCat(null) }}
           />
         )}

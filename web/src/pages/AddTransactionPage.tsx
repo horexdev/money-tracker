@@ -1,9 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Check, CaretDown, MagnifyingGlass, X, CalendarBlank } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Check, CalendarBlank } from '@phosphor-icons/react'
+import { AnimatePresence } from 'framer-motion'
 import { categoriesApi } from '../api/categories'
 import { transactionsApi } from '../api/transactions'
 import { balanceApi } from '../api/balance'
@@ -17,23 +17,6 @@ import { PageTransition } from '../components/PageTransition'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { SingleDateModal, fmtDisplay } from '../components/ui/DatePicker'
 import type { TransactionType } from '../types'
-
-const ALL_CURRENCIES = [
-  'AED','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN',
-  'BAM','BBD','BDT','BGN','BHD','BMD','BND','BOB','BRL','BSD',
-  'BWP','BYN','BZD','CAD','CDF','CHF','CLP','CNY','COP','CRC',
-  'CUP','CVE','CZK','DJF','DKK','DOP','DZD','EGP','ETB','EUR',
-  'FJD','GBP','GEL','GHS','GMD','GTQ','GYD','HKD','HNL','HRK',
-  'HTG','HUF','IDR','ILS','INR','IQD','IRR','ISK','JMD','JOD',
-  'JPY','KES','KGS','KHR','KRW','KWD','KZT','LAK','LBP','LKR',
-  'LYD','MAD','MDL','MKD','MMK','MNT','MOP','MRU','MUR','MVR',
-  'MWK','MXN','MYR','MZN','NAD','NGN','NIO','NOK','NPR','NZD',
-  'OMR','PAB','PEN','PGK','PHP','PKR','PLN','PYG','QAR','RON',
-  'RSD','RUB','RWF','SAR','SBD','SCR','SDG','SEK','SGD','SLL',
-  'SOS','SRD','SZL','THB','TJS','TMT','TND','TOP','TRY','TTD',
-  'TWD','TZS','UAH','UGX','USD','UYU','UZS','VES','VND','VUV',
-  'WST','XAF','XCD','XOF','XPF','YER','ZAR','ZMW',
-]
 
 /** Only allow digits and a single dot with up to 2 decimal places */
 function sanitizeAmount(value: string): string {
@@ -66,9 +49,6 @@ export function AddTransactionPage() {
   const [amount, setAmount] = useState('')
   const [categoryID, setCategoryID] = useState<number | null>(null)
   const [note, setNote] = useState('')
-  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false)
-  const [currencySearch, setCurrencySearch] = useState('')
-  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
   const [txDate, setTxDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [showDatePicker, setShowDatePicker] = useState(false)
 
@@ -83,14 +63,7 @@ export function AddTransactionPage() {
   })
 
   const baseCurrency = balanceData?.by_currency?.[0]?.currency_code ?? 'USD'
-  const currencyCode = selectedCurrency ?? baseCurrency
-  const currencySymbol = getCurrencySymbol(currencyCode)
-
-  const filteredCurrencies = useMemo(() => {
-    const q = currencySearch.toUpperCase().trim()
-    if (!q) return ALL_CURRENCIES
-    return ALL_CURRENCIES.filter((c) => c.includes(q))
-  }, [currencySearch])
+  const currencySymbol = getCurrencySymbol(baseCurrency)
 
   const filtered = (catData?.categories ?? []).filter(
     (c) => c.type === type || c.type === 'both'
@@ -118,10 +91,10 @@ export function AddTransactionPage() {
       type,
       amount_cents: parseCents(amount),
       note: note.trim() || undefined,
-      currency_code: currencyCode,
+      currency_code: baseCurrency,
       created_at: txDate !== today ? txDate : undefined,
     })
-  }, [canSubmit, categoryID, type, amount, note, currencyCode, mutation])
+  }, [canSubmit, categoryID, type, amount, note, baseCurrency, mutation])
 
   const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(sanitizeAmount(e.target.value))
@@ -178,13 +151,7 @@ export function AddTransactionPage() {
 
             {/* Amount input */}
             <div className="mt-4 flex items-baseline gap-1">
-              <button
-                onClick={() => setShowCurrencyPicker(true)}
-                className="flex items-center gap-1 text-white/50 hover:text-white/80 transition-colors shrink-0"
-              >
-                <span className="text-3xl font-bold">{currencySymbol}</span>
-                <CaretDown size={14} weight="bold" className="mb-0.5" />
-              </button>
+              <span className="text-3xl font-bold text-white/50 shrink-0">{currencySymbol}</span>
               <input
                 inputMode="decimal"
                 placeholder="0.00"
@@ -194,9 +161,6 @@ export function AddTransactionPage() {
                 className="flex-1 bg-transparent text-white text-4xl font-extrabold outline-none tabular-nums placeholder:text-white/25 min-w-0"
               />
             </div>
-            {selectedCurrency && selectedCurrency !== baseCurrency && (
-              <p className="text-white/40 text-xs font-medium mt-1">{selectedCurrency}</p>
-            )}
           </div>
         </div>
 
@@ -301,95 +265,6 @@ export function AddTransactionPage() {
           </div>
         </div>
       </div>
-      {/* Currency picker bottom sheet */}
-      <AnimatePresence>
-        {showCurrencyPicker && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black/40 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => { setShowCurrencyPicker(false); setCurrencySearch('') }}
-            />
-            <motion.div
-              className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-card flex flex-col"
-              style={{ maxHeight: '75dvh' }}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-              drag="y"
-              dragConstraints={{ top: 0 }}
-              dragElastic={0.1}
-              onDragEnd={(_, info) => {
-                if (info.velocity.y > 300 || info.offset.y > 120) {
-                  setShowCurrencyPicker(false)
-                  setCurrencySearch('')
-                }
-              }}
-            >
-              <div className="flex justify-center pt-3 pb-1 shrink-0">
-                <div className="w-10 h-1 rounded-full bg-border" />
-              </div>
-              <div className="flex items-center justify-between px-5 py-3 shrink-0">
-                <span className="text-base font-bold text-text">{t('add.select_currency')}</span>
-                <button
-                  onClick={() => { setShowCurrencyPicker(false); setCurrencySearch('') }}
-                  className="w-8 h-8 rounded-full bg-accent-subtle flex items-center justify-center text-muted"
-                >
-                  <X size={14} weight="bold" />
-                </button>
-              </div>
-              <div className="px-4 pb-2 shrink-0">
-                <div className="relative">
-                  <MagnifyingGlass size={14} weight="bold" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                  <input
-                    type="text"
-                    value={currencySearch}
-                    onChange={(e) => setCurrencySearch(e.target.value)}
-                    placeholder={`${t('common.search')}...`}
-                    className="w-full bg-bg rounded-2xl pl-9 pr-9 py-2.5 text-xs font-medium outline-none text-text placeholder:text-muted/50 shadow-sm focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow"
-                  />
-                  {currencySearch && (
-                    <button
-                      onClick={() => setCurrencySearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"
-                    >
-                      <X size={12} weight="bold" />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-[var(--tab-bar-h)]">
-                <div className="divide-y divide-border">
-                  {filteredCurrencies.map((c) => {
-                    const isActive = currencyCode === c
-                    return (
-                      <button
-                        key={c}
-                        onClick={() => {
-                          setSelectedCurrency(c)
-                          setShowCurrencyPicker(false)
-                          setCurrencySearch('')
-                          selection()
-                        }}
-                        className={`w-full flex items-center justify-between px-5 py-3 text-left transition-colors active:bg-border ${
-                          isActive ? 'bg-accent-subtle' : ''
-                        }`}
-                      >
-                        <span className="text-[13px] font-semibold text-text">{c}</span>
-                        {isActive && <Check size={14} weight="bold" className="text-accent" />}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
       <AnimatePresence>
         {showDatePicker && (
           <SingleDateModal
