@@ -182,7 +182,14 @@
     "base_currency": "Asosiy valyuta",
     "display_currencies": "Ko'rsatiladigan valyutalar",
     "english": "Inglizcha",
-    "russian": "Ruscha"
+    "russian": "Ruscha",
+    "danger_zone": "Xavfli zona",
+    "reset_data": "Barcha ma'lumotlarni o'chirish",
+    "reset_data_desc": "Barcha tranzaksiyalar, byudjetlar, maqsadlar va takroriy to'lovlarni o'chirish. Hisob va sozlamalar saqlanib qoladi.",
+    "reset_confirm_title": "Barcha ma'lumotlarni o'chirasizmi?",
+    "reset_confirm_desc": "Bu barcha tranzaksiyalar, byudjetlar, jamg'arma maqsadlari va takroriy tranzaksiyalarni butunlay o'chiradi. Bu amalni ortga qaytarib bo'lmaydi.",
+    "reset_confirm_btn": "Ha, hammasini o'chir",
+    "reset_success": "Barcha ma'lumotlar o'chirildi"
   },
   "more": {
     "title": "Ko'proq",

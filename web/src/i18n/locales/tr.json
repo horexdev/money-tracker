@@ -182,7 +182,14 @@
     "base_currency": "Ana Para Birimi",
     "display_currencies": "Görüntülenen Para Birimleri",
     "english": "İngilizce",
-    "russian": "Rusça"
+    "russian": "Rusça",
+    "danger_zone": "Tehlikeli Bölge",
+    "reset_data": "Tüm Verileri Sıfırla",
+    "reset_data_desc": "Tüm işlemler, bütçeler, hedefler ve yinelenen ödemeleri sil. Hesabın ve ayarların korunur.",
+    "reset_confirm_title": "Tüm verileri sıfırla?",
+    "reset_confirm_desc": "Bu, tüm işlemlerinizi, bütçelerinizi, birikim hedeflerinizi ve yinelenen işlemlerinizi kalıcı olarak silecek. Bu işlem geri alınamaz.",
+    "reset_confirm_btn": "Evet, hepsini sil",
+    "reset_success": "Tüm veriler silindi"
   },
   "more": {
     "title": "Daha Fazla",

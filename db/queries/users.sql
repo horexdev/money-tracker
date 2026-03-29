@@ -31,3 +31,18 @@ SET language   = $2,
     updated_at = NOW()
 WHERE id = $1
 RETURNING *;
+
+-- name: DeleteAllUserTransactions :exec
+DELETE FROM transactions WHERE user_id = $1;
+
+-- name: DeleteAllUserBudgets :exec
+DELETE FROM budgets WHERE user_id = $1;
+
+-- name: DeleteAllUserRecurring :exec
+DELETE FROM recurring_transactions WHERE user_id = $1;
+
+-- name: DeleteAllUserGoals :exec
+DELETE FROM savings_goals WHERE user_id = $1;
+
+-- name: DeleteAllUserCategories :exec
+DELETE FROM categories WHERE user_id = $1;

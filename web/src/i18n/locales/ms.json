@@ -182,7 +182,14 @@
     "base_currency": "Mata Wang Asas",
     "display_currencies": "Mata Wang Paparan",
     "english": "Bahasa Inggeris",
-    "russian": "Bahasa Rusia"
+    "russian": "Bahasa Rusia",
+    "danger_zone": "Zon Berbahaya",
+    "reset_data": "Tetapkan Semula Semua Data",
+    "reset_data_desc": "Padam semua transaksi, belanjawan, matlamat dan pembayaran berulang. Akaun dan tetapan anda akan disimpan.",
+    "reset_confirm_title": "Tetapkan semula semua data?",
+    "reset_confirm_desc": "Ini akan memadam secara kekal semua transaksi, belanjawan, matlamat simpanan dan transaksi berulang anda. Tindakan ini tidak boleh dibatalkan.",
+    "reset_confirm_btn": "Ya, padam semua",
+    "reset_success": "Semua data dipadam"
   },
   "more": {
     "title": "Lagi",

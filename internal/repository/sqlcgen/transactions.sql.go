@@ -101,24 +101,6 @@ func (q *Queries) GetBalance(ctx context.Context, userID int64) (GetBalanceRow, 
 	return i, err
 }
 
-const getTotalInBaseCurrency = `-- name: GetTotalInBaseCurrency :one
-SELECT COALESCE(
-    SUM(
-        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
-        * exchange_rate_snapshot
-    ), 0
-)::BIGINT AS total_net_base_cents
-FROM transactions
-WHERE user_id = $1
-`
-
-func (q *Queries) GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, getTotalInBaseCurrency, userID)
-	var totalNetBaseCents int64
-	err := row.Scan(&totalNetBaseCents)
-	return totalNetBaseCents, err
-}
-
 const getBalanceByCurrency = `-- name: GetBalanceByCurrency :many
 SELECT
     currency_code,
@@ -212,6 +194,26 @@ func (q *Queries) GetStatsByCategory(ctx context.Context, arg GetStatsByCategory
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTotalInBaseCurrency = `-- name: GetTotalInBaseCurrency :one
+SELECT COALESCE(
+    SUM(
+        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
+        * exchange_rate_snapshot
+    ), 0
+)::BIGINT AS total_net_base_cents
+FROM transactions
+WHERE user_id = $1
+`
+
+// Returns net balance (income - expense) summed across all transactions converted to the user's
+// base currency using the exchange_rate_snapshot stored at the time each transaction was created.
+func (q *Queries) GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getTotalInBaseCurrency, userID)
+	var total_net_base_cents int64
+	err := row.Scan(&total_net_base_cents)
+	return total_net_base_cents, err
 }
 
 const listTransactions = `-- name: ListTransactions :many

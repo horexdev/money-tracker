@@ -18,6 +18,11 @@ type Querier interface {
 	CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalParams) (SavingsGoal, error)
 	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
 	CreateUserCategory(ctx context.Context, arg CreateUserCategoryParams) (Category, error)
+	DeleteAllUserBudgets(ctx context.Context, userID int64) error
+	DeleteAllUserCategories(ctx context.Context, userID pgtype.Int8) error
+	DeleteAllUserGoals(ctx context.Context, userID int64) error
+	DeleteAllUserRecurring(ctx context.Context, userID int64) error
+	DeleteAllUserTransactions(ctx context.Context, userID int64) error
 	DeleteBudget(ctx context.Context, arg DeleteBudgetParams) error
 	DeleteRecurring(ctx context.Context, arg DeleteRecurringParams) error
 	DeleteSavingsGoal(ctx context.Context, arg DeleteSavingsGoalParams) error
@@ -34,6 +39,8 @@ type Querier interface {
 	GetSavingsGoalByID(ctx context.Context, arg GetSavingsGoalByIDParams) (SavingsGoal, error)
 	GetSpentInPeriod(ctx context.Context, arg GetSpentInPeriodParams) (int64, error)
 	GetStatsByCategory(ctx context.Context, arg GetStatsByCategoryParams) ([]GetStatsByCategoryRow, error)
+	// Returns net balance (income - expense) summed across all transactions converted to the user's
+	// base currency using the exchange_rate_snapshot stored at the time each transaction was created.
 	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error)

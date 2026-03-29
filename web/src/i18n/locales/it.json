@@ -182,7 +182,14 @@
     "base_currency": "Valuta base",
     "display_currencies": "Valute visualizzate",
     "english": "Inglese",
-    "russian": "Russo"
+    "russian": "Russo",
+    "danger_zone": "Zona pericolosa",
+    "reset_data": "Reimposta tutti i dati",
+    "reset_data_desc": "Elimina tutte le transazioni, i budget, gli obiettivi e i pagamenti ricorrenti. Il tuo account e le impostazioni verranno mantenuti.",
+    "reset_confirm_title": "Reimposta tutti i dati?",
+    "reset_confirm_desc": "Questo eliminerà definitivamente tutte le tue transazioni, budget, obiettivi di risparmio e transazioni ricorrenti. Questa azione non può essere annullata.",
+    "reset_confirm_btn": "Sì, elimina tutto",
+    "reset_success": "Tutti i dati eliminati"
   },
   "more": {
     "title": "Altro",

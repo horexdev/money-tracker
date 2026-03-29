@@ -182,7 +182,14 @@
     "base_currency": "Basiswährung",
     "display_currencies": "Angezeigte Währungen",
     "english": "Englisch",
-    "russian": "Russisch"
+    "russian": "Russisch",
+    "danger_zone": "Gefahrenzone",
+    "reset_data": "Alle Daten zurücksetzen",
+    "reset_data_desc": "Alle Transaktionen, Budgets, Ziele und wiederkehrende Zahlungen löschen. Konto und Einstellungen bleiben erhalten.",
+    "reset_confirm_title": "Alle Daten zurücksetzen?",
+    "reset_confirm_desc": "Dadurch werden alle Ihre Transaktionen, Budgets, Sparziele und wiederkehrenden Transaktionen dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "reset_confirm_btn": "Ja, alles löschen",
+    "reset_success": "Alle Daten gelöscht"
   },
   "more": {
     "title": "Mehr",

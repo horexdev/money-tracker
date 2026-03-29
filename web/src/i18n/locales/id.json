@@ -182,7 +182,14 @@
     "base_currency": "Mata Uang Utama",
     "display_currencies": "Mata Uang Tampilan",
     "english": "Inggris",
-    "russian": "Rusia"
+    "russian": "Rusia",
+    "danger_zone": "Zona Berbahaya",
+    "reset_data": "Setel Ulang Semua Data",
+    "reset_data_desc": "Hapus semua transaksi, anggaran, tujuan, dan pembayaran berulang. Akun dan pengaturan Anda akan dipertahankan.",
+    "reset_confirm_title": "Setel ulang semua data?",
+    "reset_confirm_desc": "Ini akan menghapus secara permanen semua transaksi, anggaran, tujuan tabungan, dan transaksi berulang Anda. Tindakan ini tidak dapat dibatalkan.",
+    "reset_confirm_btn": "Ya, hapus semuanya",
+    "reset_success": "Semua data dihapus"
   },
   "more": {
     "title": "Lainnya",

@@ -85,5 +85,8 @@ func NewServer(d Deps) http.Handler {
 	// Data export.
 	mux.Handle("/api/v1/export", protected(exportHandler(d.ExportSvc, d.Log)))
 
+	// User data reset.
+	mux.Handle("/api/v1/user/data", protected(userDataHandler(d.UserSvc, d.Log)))
+
 	return mux
 }

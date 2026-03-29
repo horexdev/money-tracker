@@ -3,9 +3,11 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/horexdev/money-tracker/internal/domain"
@@ -82,6 +84,26 @@ func (r *UserRepository) UpdateLanguage(ctx context.Context, id int64, lang stri
 		return nil, err
 	}
 	return rowToUser(row), nil
+}
+
+// ResetData deletes all user-owned data: transactions, budgets, recurring, goals, and user categories.
+func (r *UserRepository) ResetData(ctx context.Context, userID int64) error {
+	if err := r.q.DeleteAllUserTransactions(ctx, userID); err != nil {
+		return fmt.Errorf("delete transactions: %w", err)
+	}
+	if err := r.q.DeleteAllUserBudgets(ctx, userID); err != nil {
+		return fmt.Errorf("delete budgets: %w", err)
+	}
+	if err := r.q.DeleteAllUserRecurring(ctx, userID); err != nil {
+		return fmt.Errorf("delete recurring: %w", err)
+	}
+	if err := r.q.DeleteAllUserGoals(ctx, userID); err != nil {
+		return fmt.Errorf("delete goals: %w", err)
+	}
+	if err := r.q.DeleteAllUserCategories(ctx, pgtype.Int8{Int64: userID, Valid: true}); err != nil {
+		return fmt.Errorf("delete categories: %w", err)
+	}
+	return nil
 }
 
 func rowToUser(row sqlcgen.User) *domain.User {

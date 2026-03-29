@@ -182,7 +182,14 @@
     "base_currency": "Basisvaluta",
     "display_currencies": "Weergavevaluta's",
     "english": "Engels",
-    "russian": "Russisch"
+    "russian": "Russisch",
+    "danger_zone": "Gevaarzone",
+    "reset_data": "Alle gegevens resetten",
+    "reset_data_desc": "Alle transacties, budgetten, doelen en terugkerende betalingen verwijderen. Uw account en instellingen blijven bewaard.",
+    "reset_confirm_title": "Alle gegevens resetten?",
+    "reset_confirm_desc": "Dit verwijdert permanent al uw transacties, budgetten, spaardoelen en terugkerende transacties. Deze actie kan niet ongedaan worden gemaakt.",
+    "reset_confirm_btn": "Ja, alles verwijderen",
+    "reset_success": "Alle gegevens verwijderd"
   },
   "more": {
     "title": "Meer",

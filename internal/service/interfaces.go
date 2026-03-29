@@ -14,6 +14,7 @@ type UserStorer interface {
 	UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error)
 	UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error)
 	UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error)
+	ResetData(ctx context.Context, userID int64) error
 }
 
 // TransactionStorer is the repository interface consumed by TransactionService and StatsService.

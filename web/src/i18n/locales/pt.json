@@ -182,7 +182,14 @@
     "base_currency": "Moeda base",
     "display_currencies": "Moedas exibidas",
     "english": "Inglês",
-    "russian": "Russo"
+    "russian": "Russo",
+    "danger_zone": "Zona de perigo",
+    "reset_data": "Redefinir todos os dados",
+    "reset_data_desc": "Excluir todas as transações, orçamentos, metas e pagamentos recorrentes. Sua conta e configurações serão mantidas.",
+    "reset_confirm_title": "Redefinir todos os dados?",
+    "reset_confirm_desc": "Isso excluirá permanentemente todas as suas transações, orçamentos, metas de poupança e transações recorrentes. Esta ação não pode ser desfeita.",
+    "reset_confirm_btn": "Sim, excluir tudo",
+    "reset_success": "Todos os dados excluídos"
   },
   "more": {
     "title": "Mais",

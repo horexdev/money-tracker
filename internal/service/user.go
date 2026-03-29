@@ -67,6 +67,15 @@ func (s *UserService) UpdateLanguage(ctx context.Context, id int64, lang string)
 	return u, nil
 }
 
+// ResetData deletes all user-owned data while keeping the user account and settings.
+func (s *UserService) ResetData(ctx context.Context, userID int64) error {
+	if err := s.repo.ResetData(ctx, userID); err != nil {
+		return fmt.Errorf("reset data for user %d: %w", userID, err)
+	}
+	s.log.InfoContext(ctx, "user data reset", slog.Int64("user_id", userID))
+	return nil
+}
+
 // UpdateDisplayCurrencies sets the user's display currencies (max 3).
 func (s *UserService) UpdateDisplayCurrencies(ctx context.Context, id int64, codes []string) (*domain.User, error) {
 	if len(codes) > 3 {

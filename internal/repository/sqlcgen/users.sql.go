@@ -7,7 +7,54 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const deleteAllUserBudgets = `-- name: DeleteAllUserBudgets :exec
+DELETE FROM budgets WHERE user_id = $1
+`
+
+func (q *Queries) DeleteAllUserBudgets(ctx context.Context, userID int64) error {
+	_, err := q.db.Exec(ctx, deleteAllUserBudgets, userID)
+	return err
+}
+
+const deleteAllUserCategories = `-- name: DeleteAllUserCategories :exec
+DELETE FROM categories WHERE user_id = $1
+`
+
+func (q *Queries) DeleteAllUserCategories(ctx context.Context, userID pgtype.Int8) error {
+	_, err := q.db.Exec(ctx, deleteAllUserCategories, userID)
+	return err
+}
+
+const deleteAllUserGoals = `-- name: DeleteAllUserGoals :exec
+DELETE FROM savings_goals WHERE user_id = $1
+`
+
+func (q *Queries) DeleteAllUserGoals(ctx context.Context, userID int64) error {
+	_, err := q.db.Exec(ctx, deleteAllUserGoals, userID)
+	return err
+}
+
+const deleteAllUserRecurring = `-- name: DeleteAllUserRecurring :exec
+DELETE FROM recurring_transactions WHERE user_id = $1
+`
+
+func (q *Queries) DeleteAllUserRecurring(ctx context.Context, userID int64) error {
+	_, err := q.db.Exec(ctx, deleteAllUserRecurring, userID)
+	return err
+}
+
+const deleteAllUserTransactions = `-- name: DeleteAllUserTransactions :exec
+DELETE FROM transactions WHERE user_id = $1
+`
+
+func (q *Queries) DeleteAllUserTransactions(ctx context.Context, userID int64) error {
+	_, err := q.db.Exec(ctx, deleteAllUserTransactions, userID)
+	return err
+}
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language FROM users WHERE id = $1

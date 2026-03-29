@@ -189,7 +189,14 @@
     "russian": "Russian",
     "currency_change_title": "Change currency to {{currency}}?",
     "currency_change_desc": "You have transactions in {{currencies}}. They will stay in their original currency and be converted using the rate at the time they were created. New transactions will use {{newCurrency}}.",
-    "currency_change_confirm": "Change Currency"
+    "currency_change_confirm": "Change Currency",
+    "danger_zone": "Danger Zone",
+    "reset_data": "Reset All Data",
+    "reset_data_desc": "Delete all transactions, budgets, goals and recurring. Your account and settings will be kept.",
+    "reset_confirm_title": "Reset all data?",
+    "reset_confirm_desc": "This will permanently delete all your transactions, budgets, savings goals, and recurring transactions. This action cannot be undone.",
+    "reset_confirm_btn": "Yes, delete everything",
+    "reset_success": "All data deleted"
   },
   "more": {
     "title": "More",

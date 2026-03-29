@@ -8,4 +8,7 @@ export const settingsApi = {
   update(patch: { base_currency?: string; display_currencies?: string[]; language?: string }): Promise<UserSettings> {
     return api.patch('/v1/settings', patch)
   },
+  resetData(): Promise<void> {
+    return api.delete('/v1/user/data')
+  },
 }

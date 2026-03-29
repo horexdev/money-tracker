@@ -220,6 +220,23 @@ export function setupMockFetch() {
       })
     }
 
+    // Handle DELETE /api/v1/user/data — reset all mock user data
+    if (/\/api\/v1\/user\/data$/.test(url.pathname) && init?.method === 'DELETE') {
+      await new Promise((r) => setTimeout(r, 200))
+      mockTransactions.transactions = []
+      mockBudgets.budgets = []
+      mockRecurring.recurring = []
+      mockGoals.goals = []
+      mockBalance.by_currency.forEach((b) => {
+        b.income_cents = 0
+        b.expense_cents = 0
+        b.net_cents = 0
+      })
+      mockBalance.total_in_base_cents = 0
+      mockStats.items = []
+      return new Response(null, { status: 204 })
+    }
+
     // Handle PATCH /api/v1/settings — mutate mockSettings in-place, update balance if currency changed
     if (/\/api\/v1\/settings$/.test(url.pathname) && init?.method === 'PATCH') {
       await new Promise((r) => setTimeout(r, 150))
