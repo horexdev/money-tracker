@@ -2,14 +2,14 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Check, CalendarBlank, ArrowsLeftRight, Bank, PiggyBank, Money, CreditCard, Coins, type Icon } from '@phosphor-icons/react'
+import { Check, CalendarBlank, ArrowsLeftRight } from '@phosphor-icons/react'
 import { AnimatePresence } from 'framer-motion'
 import { categoriesApi } from '../api/categories'
 import { transactionsApi } from '../api/transactions'
 import { transfersApi } from '../api/transfers'
 import { balanceApi } from '../api/balance'
 import { accountsApi } from '../api/accounts'
-import { parseCents, getCurrencySymbol, formatCents } from '../lib/money'
+import { parseCents, getCurrencySymbol } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
 import { useTgMainButton } from '../hooks/useMainButton'
 import { useTgBackButton } from '../hooks/useTelegramApp'
@@ -19,17 +19,9 @@ import { PageTransition } from '../components/PageTransition'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { SingleDateModal, fmtDisplay } from '../components/ui/DatePicker'
 import { AccountDropdown } from '../components/ui/AccountDropdown'
-import type { TransactionType, AccountType } from '../types'
+import type { TransactionType } from '../types'
 
 type Mode = TransactionType | 'transfer'
-
-const ACCOUNT_ICONS: Record<AccountType, Icon> = {
-  checking: Bank,
-  savings: PiggyBank,
-  cash: Money,
-  credit: CreditCard,
-  crypto: Coins,
-}
 
 function sanitizeAmount(value: string): string {
   let cleaned = value.replace(/[^0-9.]/g, '')
@@ -60,8 +52,6 @@ export function AddTransactionPage() {
   const [txDate, setTxDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
-
-  // Transfer-specific state
   const [fromAccountId, setFromAccountId] = useState<number | null>(null)
   const [toAccountId, setToAccountId] = useState<number | null>(null)
 
@@ -101,7 +91,6 @@ export function AddTransactionPage() {
     c => c.type === mode || c.type === 'both'
   )
 
-  // Transaction mutation
   const txMutation = useMutation({
     mutationFn: transactionsApi.create,
     onSuccess: () => {
@@ -114,7 +103,6 @@ export function AddTransactionPage() {
     onError: () => notification('error'),
   })
 
-  // Transfer mutation
   const transferMutation = useMutation({
     mutationFn: transfersApi.create,
     onSuccess: () => {
@@ -130,7 +118,12 @@ export function AddTransactionPage() {
   const isPending = txMutation.isPending || transferMutation.isPending
 
   const canSubmitTx = parseCents(amount) > 0 && categoryID !== null && !isPending
-  const canSubmitTransfer = parseCents(amount) > 0 && fromAccountId !== null && toAccountId !== null && fromAccountId !== toAccountId && !isPending
+  const canSubmitTransfer =
+    parseCents(amount) > 0 &&
+    fromAccountId !== null &&
+    toAccountId !== null &&
+    fromAccountId !== toAccountId &&
+    !isPending
   const canSubmit = isTransfer ? canSubmitTransfer : canSubmitTx
 
   const handleSubmit = useCallback(() => {
@@ -176,7 +169,6 @@ export function AddTransactionPage() {
     loading: isPending,
   })
 
-  // Card gradient
   const cardGradient = isTransfer
     ? 'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #818cf8 100%)'
     : isExpense
@@ -196,7 +188,7 @@ export function AddTransactionPage() {
     <PageTransition>
       <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
 
-        {/* Hero — mode toggle + amount */}
+        {/* Hero card */}
         <div
           className="mx-4 mt-4 rounded-card p-5 pb-6 relative overflow-hidden shrink-0"
           style={{ background: cardGradient, boxShadow: cardShadow }}
@@ -217,7 +209,7 @@ export function AddTransactionPage() {
           )}
 
           <div className="relative z-10">
-            {/* Mode toggle — glass pills */}
+            {/* Mode toggle */}
             <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08]">
               {(['expense', 'income', 'transfer'] as Mode[]).map((m) => (
                 <button
@@ -239,74 +231,35 @@ export function AddTransactionPage() {
               ))}
             </div>
 
-            {/* Transfer: from → to account picker */}
             {isTransfer ? (
-              <div className="mt-4 flex items-center gap-2">
-                {/* From */}
+              /* Transfer: from ⇄ to dropdowns */
+              <div className="mt-4 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">{t('from')}</p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {accounts.map(acc => {
-                      const AccIcon = ACCOUNT_ICONS[acc.type]
-                      const isActive = fromAccountId === acc.id
-                      return (
-                        <button
-                          key={acc.id}
-                          type="button"
-                          onClick={() => setFromAccountId(acc.id)}
-                          disabled={acc.id === toAccountId}
-                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all active:scale-95 ${
-                            isActive
-                              ? 'bg-white/25 text-white'
-                              : acc.id === toAccountId
-                                ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                                : 'bg-white/10 text-white/60'
-                          }`}
-                        >
-                          <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0" style={{ background: acc.color }}>
-                            <AccIcon size={8} weight="fill" className="text-white" />
-                          </div>
-                          <span className="truncate max-w-[5rem]">{acc.name}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
+                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1.5">
+                    {t('from')}
+                  </p>
+                  <AccountDropdown
+                    accounts={accounts.filter(a => a.id !== toAccountId)}
+                    selectedId={fromAccountId}
+                    onChange={id => id !== null && setFromAccountId(id)}
+                    showBalance
+                  />
                 </div>
 
-                {/* Arrow */}
-                <div className="shrink-0 flex flex-col items-center gap-0.5 mt-4">
-                  <ArrowsLeftRight size={18} weight="bold" className="text-white/60" />
+                <div className="shrink-0 mt-5">
+                  <ArrowsLeftRight size={18} weight="bold" className="text-white/50" />
                 </div>
 
-                {/* To */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">{t('to')}</p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {accounts.map(acc => {
-                      const AccIcon = ACCOUNT_ICONS[acc.type]
-                      const isActive = toAccountId === acc.id
-                      return (
-                        <button
-                          key={acc.id}
-                          type="button"
-                          onClick={() => setToAccountId(acc.id)}
-                          disabled={acc.id === fromAccountId}
-                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all active:scale-95 ${
-                            isActive
-                              ? 'bg-white/25 text-white'
-                              : acc.id === fromAccountId
-                                ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                                : 'bg-white/10 text-white/60'
-                          }`}
-                        >
-                          <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0" style={{ background: acc.color }}>
-                            <AccIcon size={8} weight="fill" className="text-white" />
-                          </div>
-                          <span className="truncate max-w-[5rem]">{acc.name}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
+                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1.5">
+                    {t('to')}
+                  </p>
+                  <AccountDropdown
+                    accounts={accounts.filter(a => a.id !== fromAccountId)}
+                    selectedId={toAccountId}
+                    onChange={id => id !== null && setToAccountId(id)}
+                    showBalance
+                  />
                 </div>
               </div>
             ) : (
@@ -326,10 +279,10 @@ export function AddTransactionPage() {
           </div>
         </div>
 
-        {/* Transfer amount input — below card */}
+        {/* Transfer: amount input below card */}
         {isTransfer && (
           <div className="mx-4 mt-3 card-elevated shrink-0">
-            <div className="px-4 py-3 flex items-baseline gap-2">
+            <div className="px-4 py-3 flex items-center gap-2">
               <span className="text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
                 {t('transactions.amount')}
               </span>
@@ -346,11 +299,9 @@ export function AddTransactionPage() {
               </span>
             </div>
             {fromAccount && toAccount && fromAccount.currency_code !== toAccount.currency_code && (
-              <div className="px-4 pb-3 flex items-center gap-2">
-                <span className="text-[10px] text-muted/60 font-medium">
-                  {formatCents(fromAccount.balance_cents, fromAccount.currency_code)} → {toAccount.currency_code}
-                </span>
-              </div>
+              <p className="px-4 pb-3 text-[10px] text-muted/60 font-medium">
+                → {toAccount.currency_code}
+              </p>
             )}
           </div>
         )}
@@ -384,7 +335,7 @@ export function AddTransactionPage() {
           )}
         </div>
 
-        {/* Categories — only shown for expense/income */}
+        {/* Categories — expense/income only */}
         {!isTransfer && (
           <div className="flex-1 min-h-0 mt-3 flex flex-col">
             <p className="px-5 mb-2 text-[11px] font-bold text-muted uppercase tracking-widest shrink-0">
@@ -436,7 +387,6 @@ export function AddTransactionPage() {
                   })}
                 </div>
               )}
-
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
