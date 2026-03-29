@@ -367,10 +367,7 @@ export function AccountsPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
-
-        {/* Scrollable list */}
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-3 pt-3">
+      <div className="pt-3 pb-4">
           {accounts.length === 0 ? (
             <div className="mx-4 card-elevated mt-2">
               <EmptyState
@@ -410,7 +407,6 @@ export function AccountsPage() {
               </p>
             </div>
           )}
-        </div>
       </div>
 
       <FAB onClick={() => { setEditingAccount(null); setShowCreate(true) }} label={t('newAccount')} />

@@ -227,9 +227,7 @@ export function SettingsPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pb-4">
-          <div className="px-4 pt-3 space-y-3">
+      <div className="px-4 pt-3 pb-4 space-y-3">
 
             {/* Language row */}
             <button
@@ -292,8 +290,6 @@ export function SettingsPage() {
               </button>
             </div>
 
-          </div>
-        </div>
       </div>
 
       {/* Language bottom sheet */}
