@@ -34,12 +34,6 @@ const LANGUAGES = [
 
 const POPULAR_CURRENCIES = ['USD', 'EUR', 'GBP', 'UAH', 'RUB', 'TRY', 'KZT', 'UZS', 'BRL', 'JPY']
 
-const LANG_DEFAULT_CURRENCY: Record<string, string> = {
-  en: 'USD', ru: 'RUB', uk: 'UAH', be: 'BYN',
-  kk: 'KZT', uz: 'UZS', tr: 'TRY', ar: 'SAR',
-  es: 'EUR', pt: 'BRL', fr: 'EUR', de: 'EUR',
-  it: 'EUR', nl: 'EUR', ko: 'KRW', ms: 'MYR', id: 'IDR',
-}
 
 const ALL_CURRENCIES = [
   'AED','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN',

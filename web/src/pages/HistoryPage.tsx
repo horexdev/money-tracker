@@ -136,7 +136,7 @@ function DateGroup({
 }
 
 /* ─── Group by date helper ─── */
-function groupByDate(transactions: Transaction[], t: (key: string) => string): [string, Transaction[]][] {
+function groupByDate(transactions: Transaction[], t: (key: string) => string, lang: string): [string, Transaction[]][] {
   const groups = new Map<string, Transaction[]>()
   const now = new Date()
   const today = now.toDateString()
@@ -150,7 +150,7 @@ function groupByDate(transactions: Transaction[], t: (key: string) => string): [
     } else if (txDate === yesterday) {
       label = t('history.yesterday')
     } else {
-      label = formatDate(tx.created_at, i18n.language, { month: 'long', day: 'numeric', year: 'numeric' })
+      label = formatDate(tx.created_at, lang, { month: 'long', day: 'numeric', year: 'numeric' })
     }
     const existing = groups.get(label)
     if (existing) {
@@ -250,7 +250,7 @@ export function HistoryPage() {
     return result
   }, [allItems, typeFilter, searchQuery])
 
-  const grouped = useMemo(() => groupByDate(filtered, t), [filtered, t])
+  const grouped = useMemo(() => groupByDate(filtered, t, i18n.language), [filtered, t, i18n.language])
 
   function toggleSearch() {
     if (showSearch) {

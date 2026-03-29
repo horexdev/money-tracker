@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { Trash } from '@phosphor-icons/react'
 
@@ -12,8 +12,6 @@ export function SwipeToDelete({ onDelete, children }: SwipeToDeleteProps) {
   const [swiped, setSwiped] = useState(false)
   const deleteOpacity = useTransform(x, [-80, -40], [1, 0])
   const deleteScale   = useTransform(x, [-80, -40], [1, 0.8])
-  const startX = useRef<number | null>(null)
-  const isDragging = useRef(false)
 
   function handleDragEnd() {
     const val = x.get()
