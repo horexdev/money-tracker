@@ -13,7 +13,7 @@
   --color-section-bg: var(--tg-section-bg);
   --color-section-header: var(--tg-section-header);
 
-  /* Brand palette from logo */
+  /* Brand palette */
   --color-brand-navy: #0f172a;
   --color-brand-navy-light: #1e293b;
   --color-brand-green: #22c55e;
@@ -26,13 +26,13 @@
   --color-border: color-mix(in srgb, var(--tg-text) 8%, transparent);
   --color-border-strong: color-mix(in srgb, var(--tg-text) 14%, transparent);
   --color-accent-subtle: color-mix(in srgb, var(--tg-button) 12%, var(--tg-secondary-bg));
-  --color-income-subtle: color-mix(in srgb, #22c55e 10%, var(--tg-secondary-bg));
-  --color-expense-subtle: color-mix(in srgb, #ef4444 10%, var(--tg-secondary-bg));
+  --color-income-subtle: color-mix(in srgb, #22c55e 12%, var(--tg-secondary-bg));
+  --color-expense-subtle: color-mix(in srgb, #ef4444 12%, var(--tg-secondary-bg));
 
   /* Radii */
-  --radius-card: 16px;
+  --radius-card: 20px;
   --radius-btn: 12px;
-  --radius-sm: 8px;
+  --radius-sm: 10px;
 }
 
 /* Telegram WebApp CSS variable fallbacks */
@@ -52,7 +52,7 @@
   --tg-destructive:     var(--tg-theme-destructive-text-color, #ff3b30);
 
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tab-bar-h: calc(56px + var(--safe-bottom));
+  --tab-bar-h: calc(64px + var(--safe-bottom));
 }
 
 /* Reset & base */
@@ -87,3 +87,30 @@ body {
 
 /* Tab bar safe area spacer */
 .tab-spacer { height: var(--tab-bar-h); flex-shrink: 0; }
+
+/* Aurora gradient animation */
+@keyframes aurora-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.aurora-bg {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tg-button) 60%, #8b5cf6),
+    color-mix(in srgb, #06b6d4 70%, var(--tg-button)),
+    color-mix(in srgb, #8b5cf6 60%, #ec4899),
+    color-mix(in srgb, var(--tg-button) 50%, #22c55e)
+  );
+  background-size: 300% 300%;
+  animation: aurora-shift 8s ease infinite;
+}
+
+/* Glass card */
+.glass {
+  background: color-mix(in srgb, var(--tg-secondary-bg) 70%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--tg-text) 10%, transparent);
+}
