@@ -7,6 +7,8 @@ import {
   mockRecurring,
   mockGoals,
   mockSettings,
+  mockAccounts,
+  mockTransfers,
 } from './data'
 
 // Approximate exchange rates relative to USD for mock purposes
@@ -156,6 +158,28 @@ const routes: Array<{ pattern: RegExp; handler: RouteHandler }> = [
     handler: () => mockGoals.goals[0],
   },
   {
+    pattern: /\/api\/v1\/accounts$/,
+    handler: () => mockAccounts,
+  },
+  {
+    pattern: /\/api\/v1\/accounts\/\d+$/,
+    handler: (url) => {
+      const id = Number(url.pathname.split('/').pop())
+      return mockAccounts.accounts.find(a => a.id === id) ?? mockAccounts.accounts[0]
+    },
+  },
+  {
+    pattern: /\/api\/v1\/transfers$/,
+    handler: () => mockTransfers,
+  },
+  {
+    pattern: /\/api\/v1\/transfers\/\d+$/,
+    handler: (url) => {
+      const id = Number(url.pathname.split('/').pop())
+      return mockTransfers.transfers.find(t => t.id === id) ?? mockTransfers.transfers[0]
+    },
+  },
+  {
     pattern: /\/api\/v1\/settings$/,
     handler: () => mockSettings,
   },
@@ -234,6 +258,98 @@ export function setupMockFetch() {
       })
       mockBalance.total_in_base_cents = 0
       mockStats.items = []
+      return new Response(null, { status: 204 })
+    }
+
+    // Handle POST /api/v1/accounts — create account
+    if (/\/api\/v1\/accounts$/.test(url.pathname) && init?.method === 'POST') {
+      await new Promise((r) => setTimeout(r, 150))
+      const body = JSON.parse(init.body as string)
+      const newAccount = {
+        id: Date.now(),
+        name: body.name ?? 'Account',
+        icon: body.icon ?? 'wallet',
+        color: body.color ?? '#6366f1',
+        type: body.type ?? 'checking',
+        currency_code: body.currency_code ?? 'USD',
+        is_default: mockAccounts.accounts.length === 0,
+        include_in_total: body.include_in_total ?? true,
+        balance_cents: 0,
+        created_at: new Date().toISOString(),
+      }
+      mockAccounts.accounts.push(newAccount)
+      return new Response(JSON.stringify(newAccount), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Handle PUT /api/v1/accounts/:id — update account
+    if (/\/api\/v1\/accounts\/\d+$/.test(url.pathname) && init?.method === 'PUT') {
+      await new Promise((r) => setTimeout(r, 150))
+      const id = Number(url.pathname.split('/').pop())
+      const body = JSON.parse(init.body as string)
+      const account = mockAccounts.accounts.find(a => a.id === id)
+      if (account) Object.assign(account, body)
+      return new Response(JSON.stringify(account ?? mockAccounts.accounts[0]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Handle POST /api/v1/accounts/:id/set-default — set default account
+    if (/\/api\/v1\/accounts\/\d+\/set-default$/.test(url.pathname) && init?.method === 'POST') {
+      await new Promise((r) => setTimeout(r, 150))
+      const id = Number(url.pathname.split('/').at(-2))
+      mockAccounts.accounts.forEach(a => { a.is_default = a.id === id })
+      const account = mockAccounts.accounts.find(a => a.id === id)
+      return new Response(JSON.stringify(account ?? mockAccounts.accounts[0]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Handle DELETE /api/v1/accounts/:id — delete account
+    if (/\/api\/v1\/accounts\/\d+$/.test(url.pathname) && init?.method === 'DELETE') {
+      await new Promise((r) => setTimeout(r, 150))
+      const id = Number(url.pathname.split('/').pop())
+      mockAccounts.accounts = mockAccounts.accounts.filter(a => a.id !== id)
+      return new Response(null, { status: 204 })
+    }
+
+    // Handle POST /api/v1/transfers — create transfer
+    if (/\/api\/v1\/transfers$/.test(url.pathname) && init?.method === 'POST') {
+      await new Promise((r) => setTimeout(r, 150))
+      const body = JSON.parse(init.body as string)
+      const fromAcc = mockAccounts.accounts.find(a => a.id === body.from_account_id)
+      const toAcc = mockAccounts.accounts.find(a => a.id === body.to_account_id)
+      const newTransfer = {
+        id: Date.now(),
+        from_account_id: body.from_account_id,
+        from_account_name: fromAcc?.name ?? '',
+        to_account_id: body.to_account_id,
+        to_account_name: toAcc?.name ?? '',
+        amount_cents: body.amount_cents,
+        from_currency_code: fromAcc?.currency_code ?? 'USD',
+        to_currency_code: toAcc?.currency_code ?? 'USD',
+        exchange_rate: body.exchange_rate ?? 1,
+        note: body.note ?? '',
+        created_at: new Date().toISOString(),
+      }
+      mockTransfers.transfers.unshift(newTransfer)
+      mockTransfers.total += 1
+      return new Response(JSON.stringify(newTransfer), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Handle DELETE /api/v1/transfers/:id — delete transfer
+    if (/\/api\/v1\/transfers\/\d+$/.test(url.pathname) && init?.method === 'DELETE') {
+      await new Promise((r) => setTimeout(r, 150))
+      const id = Number(url.pathname.split('/').pop())
+      mockTransfers.transfers = mockTransfers.transfers.filter(t => t.id !== id)
+      mockTransfers.total = Math.max(0, mockTransfers.total - 1)
       return new Response(null, { status: 204 })
     }
 

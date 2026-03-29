@@ -35,8 +35,9 @@ export function MorePage() {
   const { t } = useTranslation()
 
   return (
-    <PageTransition>
-      <div className="px-4 pt-4 space-y-4">
+    <PageTransition className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="px-4 pt-4 pb-4 space-y-4">
         {/* Featured full-width tile */}
         <Link
           to={FEATURED.to}
@@ -91,6 +92,7 @@ export function MorePage() {
             )
           })}
         </div>
+      </div>
       </div>
     </PageTransition>
   )

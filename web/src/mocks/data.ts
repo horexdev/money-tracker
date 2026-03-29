@@ -7,6 +7,8 @@ import type {
   RecurringListResponse,
   GoalsResponse,
   UserSettings,
+  Account,
+  Transfer,
 } from '../types'
 
 export const mockBalance: BalanceResponse = {
@@ -112,4 +114,79 @@ export const mockSettings: UserSettings = {
   base_currency: 'USD',
   display_currencies: ['EUR', 'GBP'],
   language: 'en',
+}
+
+export const mockAccounts: { accounts: Account[] } = {
+  accounts: [
+    {
+      id: 1,
+      name: 'Main Card',
+      icon: 'credit-card',
+      color: '#6366f1',
+      type: 'checking',
+      currency_code: 'USD',
+      is_default: true,
+      include_in_total: true,
+      balance_cents: 262500,
+      created_at: daysAgo(90),
+    },
+    {
+      id: 2,
+      name: 'Savings',
+      icon: 'piggy-bank',
+      color: '#10b981',
+      type: 'savings',
+      currency_code: 'USD',
+      is_default: false,
+      include_in_total: true,
+      balance_cents: 500000,
+      created_at: daysAgo(60),
+    },
+    {
+      id: 3,
+      name: 'Cash',
+      icon: 'money',
+      color: '#f59e0b',
+      type: 'cash',
+      currency_code: 'USD',
+      is_default: false,
+      include_in_total: true,
+      balance_cents: 15000,
+      created_at: daysAgo(30),
+    },
+  ],
+}
+
+export const mockTransfers: { transfers: Transfer[]; total: number; limit: number; offset: number } = {
+  transfers: [
+    {
+      id: 1,
+      from_account_id: 1,
+      from_account_name: 'Main Card',
+      to_account_id: 2,
+      to_account_name: 'Savings',
+      amount_cents: 50000,
+      from_currency_code: 'USD',
+      to_currency_code: 'USD',
+      exchange_rate: 1,
+      note: 'Monthly savings',
+      created_at: daysAgo(5),
+    },
+    {
+      id: 2,
+      from_account_id: 1,
+      from_account_name: 'Main Card',
+      to_account_id: 3,
+      to_account_name: 'Cash',
+      amount_cents: 10000,
+      from_currency_code: 'USD',
+      to_currency_code: 'USD',
+      exchange_rate: 1,
+      note: 'ATM withdrawal',
+      created_at: daysAgo(12),
+    },
+  ],
+  total: 2,
+  limit: 50,
+  offset: 0,
 }
