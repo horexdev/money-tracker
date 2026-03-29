@@ -244,7 +244,7 @@ export function AddTransactionPage() {
             {/* Transfer: from ⇄ to row */}
             {isTransfer && (
               <div className="mt-4 flex items-center gap-2">
-                <div className="flex-1 min-w-0">
+                <div className="shrink-0">
                   <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
                     {t('from')}
                   </p>
@@ -258,7 +258,7 @@ export function AddTransactionPage() {
                 <div className="shrink-0 mt-4">
                   <ArrowsLeftRight size={16} weight="bold" className="text-white/40" />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="shrink-0">
                   <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
                     {t('to')}
                   </p>
