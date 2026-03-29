@@ -14,46 +14,53 @@
   --color-section-header: var(--tg-section-header);
 
   /* Brand palette */
-  --color-brand-navy: #0f172a;
-  --color-brand-navy-light: #1e293b;
+  --color-hero-start: #1e1b4b;
+  --color-hero-mid: #312e81;
+  --color-hero-end: #4338ca;
   --color-brand-green: #22c55e;
   --color-brand-gold: #f59e0b;
   --color-brand-cyan: #06b6d4;
+  --color-card-highlight: color-mix(in srgb, #4338ca 8%, var(--tg-secondary-bg));
   --color-income: #22c55e;
   --color-expense: #ef4444;
 
   /* Semantic surface modifiers */
-  --color-border: color-mix(in srgb, var(--tg-text) 8%, transparent);
-  --color-border-strong: color-mix(in srgb, var(--tg-text) 14%, transparent);
-  --color-accent-subtle: color-mix(in srgb, var(--tg-button) 12%, var(--tg-secondary-bg));
-  --color-income-subtle: color-mix(in srgb, #22c55e 12%, var(--tg-secondary-bg));
-  --color-expense-subtle: color-mix(in srgb, #ef4444 12%, var(--tg-secondary-bg));
+  --color-border: color-mix(in srgb, var(--tg-text) 6%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--tg-text) 12%, transparent);
+  --color-accent-subtle: color-mix(in srgb, var(--tg-button) 14%, var(--tg-secondary-bg));
+  --color-income-subtle: color-mix(in srgb, #22c55e 14%, var(--tg-secondary-bg));
+  --color-expense-subtle: color-mix(in srgb, #ef4444 14%, var(--tg-secondary-bg));
 
-  /* Radii */
-  --radius-card: 20px;
-  --radius-btn: 12px;
-  --radius-sm: 10px;
-  --radius-xs: 8px;
+  /* Radii — generous for modern rounded look */
+  --radius-card: 24px;
+  --radius-btn: 16px;
+  --radius-sm: 14px;
+  --radius-xs: 10px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-card-lg: 0 8px 32px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-hero: 0 12px 40px rgba(30, 27, 75, 0.35), 0 4px 12px rgba(30, 27, 75, 0.2);
 }
 
 /* Telegram WebApp CSS variable fallbacks */
 :root {
-  --tg-bg:              var(--tg-theme-bg-color, #ffffff);
-  --tg-secondary-bg:    var(--tg-theme-secondary-bg-color, #f4f4f5);
-  --tg-text:            var(--tg-theme-text-color, #111111);
-  --tg-hint:            var(--tg-theme-hint-color, #999999);
-  --tg-link:            var(--tg-theme-link-color, #2481cc);
-  --tg-button:          var(--tg-theme-button-color, #2481cc);
+  --tg-bg:              var(--tg-theme-bg-color, #f0f0f5);
+  --tg-secondary-bg:    var(--tg-theme-secondary-bg-color, #ffffff);
+  --tg-text:            var(--tg-theme-text-color, #1a1a2e);
+  --tg-hint:            var(--tg-theme-hint-color, #8e8ea0);
+  --tg-link:            var(--tg-theme-link-color, #4338ca);
+  --tg-button:          var(--tg-theme-button-color, #4338ca);
   --tg-button-text:     var(--tg-theme-button-text-color, #ffffff);
   --tg-header-bg:       var(--tg-theme-header-bg-color, #ffffff);
-  --tg-accent:          var(--tg-theme-accent-text-color, #2481cc);
+  --tg-accent:          var(--tg-theme-accent-text-color, #4338ca);
   --tg-section-bg:      var(--tg-theme-section-bg-color, #ffffff);
   --tg-section-header:  var(--tg-theme-section-header-text-color, #6d6d72);
-  --tg-subtitle:        var(--tg-theme-subtitle-text-color, #999999);
+  --tg-subtitle:        var(--tg-theme-subtitle-text-color, #8e8ea0);
   --tg-destructive:     var(--tg-theme-destructive-text-color, #ff3b30);
 
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tab-bar-h: calc(64px + var(--safe-bottom));
+  --tab-bar-h: calc(72px + var(--safe-bottom));
 }
 
 /* Reset & base */
@@ -66,7 +73,7 @@ html {
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'SF Pro Display', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   background-color: var(--color-bg);
@@ -89,44 +96,62 @@ body {
 /* Tab bar safe area spacer */
 .tab-spacer { height: var(--tab-bar-h); flex-shrink: 0; }
 
-/* Aurora gradient animation */
-@keyframes aurora-shift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Hero gradient — deep indigo with animated shimmer */
+.hero-gradient {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 80%, #6366f1 100%);
+  position: relative;
+}
+.hero-gradient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(99,102,241,0.25) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: inherit;
 }
 
-.aurora-bg {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--tg-button) 60%, #8b5cf6),
-    color-mix(in srgb, #06b6d4 70%, var(--tg-button)),
-    color-mix(in srgb, #8b5cf6 60%, #ec4899),
-    color-mix(in srgb, var(--tg-button) 50%, #22c55e)
-  );
-  background-size: 300% 300%;
-  animation: aurora-shift 8s ease infinite;
+/* Card with elevation */
+.card-elevated {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
-/* Glass card */
+/* Glass card — for TabBar */
 .glass {
-  background: color-mix(in srgb, var(--tg-secondary-bg) 80%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: color-mix(in srgb, var(--tg-secondary-bg) 85%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 -1px 20px rgba(0, 0, 0, 0.06);
 }
 
 /* Input base — shared across all text inputs */
 .input-base {
   width: 100%;
-  background: var(--color-surface);
+  background: var(--color-bg);
   border-radius: var(--radius-sm);
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-size: 0.875rem;
   color: var(--color-text);
   outline: none;
-  border: 1.5px solid transparent;
-  transition: border-color 0.15s;
+  border: 1.5px solid var(--color-border);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .input-base:focus {
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tg-button) 15%, transparent);
+}
+
+/* Smooth page background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(180deg, color-mix(in srgb, #4338ca 5%, var(--tg-bg)) 0%, var(--tg-bg) 100%);
+  pointer-events: none;
+  z-index: -1;
 }

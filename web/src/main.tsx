@@ -1,12 +1,24 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { init } from '@tma.js/sdk-react'
 import './i18n/config'
 import './index.css'
 import App from './App'
 
-init()
+let isTelegram = false
+
+try {
+  const { init } = await import('@tma.js/sdk-react')
+  init()
+  isTelegram = true
+} catch {
+  // Not inside Telegram — skip SDK init
+}
+
+if (!isTelegram && import.meta.env.DEV) {
+  const { setupMockFetch } = await import('./mocks/setup')
+  setupMockFetch()
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

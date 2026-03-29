@@ -1,8 +1,11 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { Layout } from './components/Layout'
 import { Spinner } from './components/Spinner'
+import { settingsApi } from './api/settings'
+import { useFirstLaunchSetup } from './hooks/useFirstLaunchSetup'
 
 const DashboardPage      = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const AddTransactionPage = lazy(() => import('./pages/AddTransactionPage').then(m => ({ default: m.AddTransactionPage })))
@@ -46,10 +49,20 @@ function AnimatedRoutes() {
   )
 }
 
+function AppInit() {
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsApi.get,
+    staleTime: 60_000,
+  })
+  useFirstLaunchSetup(settings)
+  return <AnimatedRoutes />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <AnimatedRoutes />
+      <AppInit />
     </BrowserRouter>
   )
 }
