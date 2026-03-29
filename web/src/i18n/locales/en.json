@@ -223,11 +223,13 @@
   "newAccount": "New Account",
   "newTransfer": "New Transfer",
   "accountType": "Account Type",
-  "checking": "Checking",
-  "savings": "Savings",
-  "cash": "Cash",
-  "credit": "Credit",
-  "crypto": "Crypto",
+  "accountTypes": {
+    "checking": "Checking",
+    "savings": "Savings",
+    "cash": "Cash",
+    "credit": "Credit",
+    "crypto": "Crypto"
+  },
   "setDefault": "Set as Default",
   "defaultAccount": "Default",
   "includeInTotal": "Include in Total",

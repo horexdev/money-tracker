@@ -177,7 +177,7 @@ function AccountFormSheet({
                   `}
                 >
                   <TypeIcon size={14} weight="fill" />
-                  {t(at)}
+                  {t(`accountTypes.${at}`)}
                 </button>
               )
             })}
@@ -300,7 +300,7 @@ function AccountRow({
             </div>
             <div className="flex items-center gap-1 text-xs text-muted">
               <TypeIcon size={11} weight="fill" />
-              <span className="capitalize">{t(account.type)}</span>
+              <span className="capitalize">{t(`accountTypes.${account.type}`)}</span>
               <span className="text-muted/40">·</span>
               <span className="font-semibold text-text tabular-nums">
                 {formatCents(account.balance_cents, account.currency_code)}

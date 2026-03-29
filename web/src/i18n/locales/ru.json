@@ -223,11 +223,13 @@
   "newAccount": "Новый счёт",
   "newTransfer": "Новый перевод",
   "accountType": "Тип счёта",
-  "checking": "Текущий",
-  "savings": "Сберегательный",
-  "cash": "Наличные",
-  "credit": "Кредитный",
-  "crypto": "Криптовалюта",
+  "accountTypes": {
+    "checking": "Текущий",
+    "savings": "Сберегательный",
+    "cash": "Наличные",
+    "credit": "Кредитный",
+    "crypto": "Криптовалюта"
+  },
   "setDefault": "Сделать основным",
   "defaultAccount": "Основной",
   "includeInTotal": "Учитывать в балансе",
