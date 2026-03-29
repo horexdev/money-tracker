@@ -53,7 +53,7 @@ JOIN categories c ON c.id = t.category_id
 WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
-GROUP BY c.name, c.emoji, t.type, t.currency_code
+GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
 -- name: ListTransactionsByCategoryPeriod :many
