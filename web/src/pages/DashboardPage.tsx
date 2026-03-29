@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -26,6 +26,14 @@ export function DashboardPage() {
     queryKey: ['accounts'],
     queryFn: accountsApi.list,
   })
+
+  // Pre-select the default account once accounts load
+  useEffect(() => {
+    if (selectedAccountId === null && accounts.length > 0) {
+      const def = accounts.find(a => a.is_default) ?? accounts[0]
+      setSelectedAccountId(def.id)
+    }
+  }, [accounts, selectedAccountId])
 
   const balanceQ = useQuery({
     queryKey: ['balance', selectedAccountId],
@@ -129,10 +137,8 @@ export function DashboardPage() {
                 <AccountDropdown
                   accounts={accounts}
                   selectedId={selectedAccountId}
-                  onChange={id => { setSelectedAccountId(id); setShowCurrencyBreakdown(false) }}
-                  allLabel={t('accounts')}
+                  onChange={id => { if (id !== null) { setSelectedAccountId(id); setShowCurrencyBreakdown(false) } }}
                   showBalance
-                  dropUp
                 />
               </div>
             )}
