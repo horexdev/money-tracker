@@ -1,6 +1,6 @@
 -- name: CreateTransaction :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: GetBalance :one
@@ -20,6 +20,8 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
+    t.exchange_rate_snapshot,
+    t.base_currency_at_creation,
     c.name  AS category_name,
     c.emoji AS category_emoji
 FROM transactions t
@@ -58,3 +60,15 @@ SELECT
 FROM transactions
 WHERE user_id = $1
 GROUP BY currency_code;
+
+-- name: GetTotalInBaseCurrency :one
+-- Returns net balance (income - expense) summed across all transactions converted to the user's
+-- base currency using the exchange_rate_snapshot stored at the time each transaction was created.
+SELECT COALESCE(
+    SUM(
+        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
+        * exchange_rate_snapshot
+    ), 0
+)::BIGINT AS total_net_base_cents
+FROM transactions
+WHERE user_id = $1;

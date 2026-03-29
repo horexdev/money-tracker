@@ -12,17 +12,20 @@ const (
 
 // Transaction is a single financial event recorded by the user.
 // AmountCents stores the value in integer cents to avoid float precision issues.
+// ExchangeRateSnapshot is the rate from CurrencyCode to BaseCurrencyAtCreation at creation time.
 type Transaction struct {
-	ID            int64
-	UserID        int64
-	Type          TransactionType
-	AmountCents   int64
-	CategoryID    int64
-	CategoryName  string
-	CategoryEmoji string
-	Note          string
-	CurrencyCode  string
-	CreatedAt     time.Time
+	ID                    int64
+	UserID                int64
+	Type                  TransactionType
+	AmountCents           int64
+	CategoryID            int64
+	CategoryName          string
+	CategoryEmoji         string
+	Note                  string
+	CurrencyCode          string
+	ExchangeRateSnapshot  float64
+	BaseCurrencyAtCreation string
+	CreatedAt             time.Time
 }
 
 // BalanceByCurrency holds income and expense totals for a single currency.

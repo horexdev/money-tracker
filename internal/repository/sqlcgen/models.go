@@ -104,14 +104,16 @@ type SavingsGoal struct {
 }
 
 type Transaction struct {
-	ID           int64                  `json:"id"`
-	UserID       int64                  `json:"user_id"`
-	Type         domain.TransactionType `json:"type"`
-	AmountCents  int64                  `json:"amount_cents"`
-	CategoryID   int64                  `json:"category_id"`
-	Note         string                 `json:"note"`
-	CreatedAt    pgtype.Timestamptz     `json:"created_at"`
-	CurrencyCode string                 `json:"currency_code"`
+	ID                     int64                  `json:"id"`
+	UserID                 int64                  `json:"user_id"`
+	Type                   domain.TransactionType `json:"type"`
+	AmountCents            int64                  `json:"amount_cents"`
+	CategoryID             int64                  `json:"category_id"`
+	Note                   string                 `json:"note"`
+	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode           string                 `json:"currency_code"`
+	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
+	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
 }
 
 type User struct {

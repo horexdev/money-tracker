@@ -61,8 +61,8 @@ func NewServer(d Deps) http.Handler {
 
 	// Authenticated endpoints.
 	mux.Handle("/api/v1/balance", protected(balanceHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
-	mux.Handle("/api/v1/transactions", protected(transactionHandler(d.TxSvc, d.Log)))
-	mux.Handle("/api/v1/transactions/", protected(transactionHandler(d.TxSvc, d.Log)))
+	mux.Handle("/api/v1/transactions", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
+	mux.Handle("/api/v1/transactions/", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
 	mux.Handle("/api/v1/stats", protected(statsHandler(d.StatsSvc, d.Log)))
 	mux.Handle("/api/v1/settings", protected(settingsHandler(d.UserSvc, d.Log)))
 

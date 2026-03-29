@@ -22,25 +22,29 @@ func NewTransactionRepository(pool *pgxpool.Pool) *TransactionRepository {
 // Create inserts a new transaction and returns the persisted record.
 func (r *TransactionRepository) Create(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error) {
 	row, err := r.q.CreateTransaction(ctx, sqlcgen.CreateTransactionParams{
-		UserID:       t.UserID,
-		Type:         t.Type,
-		AmountCents:  t.AmountCents,
-		CategoryID:   t.CategoryID,
-		Note:         t.Note,
-		CurrencyCode: t.CurrencyCode,
+		UserID:                 t.UserID,
+		Type:                   t.Type,
+		AmountCents:            t.AmountCents,
+		CategoryID:             t.CategoryID,
+		Note:                   t.Note,
+		CurrencyCode:           t.CurrencyCode,
+		ExchangeRateSnapshot:   pgNumeric(t.ExchangeRateSnapshot),
+		BaseCurrencyAtCreation: t.BaseCurrencyAtCreation,
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &domain.Transaction{
-		ID:           row.ID,
-		UserID:       row.UserID,
-		Type:         row.Type,
-		AmountCents:  row.AmountCents,
-		CategoryID:   row.CategoryID,
-		Note:         row.Note,
-		CurrencyCode: row.CurrencyCode,
-		CreatedAt:    goTime(row.CreatedAt),
+		ID:                     row.ID,
+		UserID:                 row.UserID,
+		Type:                   row.Type,
+		AmountCents:            row.AmountCents,
+		CategoryID:             row.CategoryID,
+		Note:                   row.Note,
+		CurrencyCode:           row.CurrencyCode,
+		ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
+		BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
+		CreatedAt:              goTime(row.CreatedAt),
 	}, nil
 }
 
@@ -72,16 +76,18 @@ func (r *TransactionRepository) List(ctx context.Context, userID int64, limit, o
 	txs := make([]*domain.Transaction, 0, len(rows))
 	for _, row := range rows {
 		txs = append(txs, &domain.Transaction{
-			ID:            row.ID,
-			UserID:        row.UserID,
-			Type:          row.Type,
-			AmountCents:   row.AmountCents,
-			CategoryID:    row.CategoryID,
-			CategoryName:  row.CategoryName,
-			CategoryEmoji: row.CategoryEmoji,
-			Note:          row.Note,
-			CurrencyCode:  row.CurrencyCode,
-			CreatedAt:     goTime(row.CreatedAt),
+			ID:                     row.ID,
+			UserID:                 row.UserID,
+			Type:                   row.Type,
+			AmountCents:            row.AmountCents,
+			CategoryID:             row.CategoryID,
+			CategoryName:           row.CategoryName,
+			CategoryEmoji:          row.CategoryEmoji,
+			Note:                   row.Note,
+			CurrencyCode:           row.CurrencyCode,
+			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
+			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
+			CreatedAt:              goTime(row.CreatedAt),
 		})
 	}
 	return txs, nil
@@ -90,6 +96,11 @@ func (r *TransactionRepository) List(ctx context.Context, userID int64, limit, o
 // Count returns the total number of transactions for a user.
 func (r *TransactionRepository) Count(ctx context.Context, userID int64) (int64, error) {
 	return r.q.CountUserTransactions(ctx, userID)
+}
+
+// GetTotalInBaseCurrency returns the net balance in base currency using exchange_rate_snapshot.
+func (r *TransactionRepository) GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error) {
+	return r.q.GetTotalInBaseCurrency(ctx, userID)
 }
 
 // GetBalanceByCurrency returns per-currency income/expense totals for a user.

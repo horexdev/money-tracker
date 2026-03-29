@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/horexdev/money-tracker/internal/domain"
+	"github.com/horexdev/money-tracker/internal/service"
 )
 
 type transactionResponse struct {
@@ -38,8 +39,8 @@ type createTransactionRequest struct {
 }
 
 type transactionManager interface {
-	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string) (*domain.Transaction, error)
-	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string) (*domain.Transaction, error)
+	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64) (*domain.Transaction, error)
+	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64) (*domain.Transaction, error)
 	ListPaged(ctx context.Context, userID int64, page, pageSize int) ([]*domain.Transaction, int, error)
 	Delete(ctx context.Context, id, userID int64) error
 }
@@ -47,7 +48,7 @@ type transactionManager interface {
 const defaultPageSize = 20
 
 // transactionHandler routes GET/POST/DELETE for /api/v1/transactions[/{id}]
-func transactionHandler(txSvc transactionManager, log *slog.Logger) http.HandlerFunc {
+func transactionHandler(txSvc transactionManager, userSvc *service.UserService, exchangeSvc *service.ExchangeService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		userID := userIDFromContext(ctx)
@@ -78,7 +79,7 @@ func transactionHandler(txSvc transactionManager, log *slog.Logger) http.Handler
 		case http.MethodGet:
 			listTransactions(w, r, userID, txSvc, log)
 		case http.MethodPost:
-			createTransaction(w, r, userID, txSvc, log)
+			createTransaction(w, r, userID, txSvc, userSvc, exchangeSvc, log)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -114,7 +115,7 @@ func listTransactions(w http.ResponseWriter, r *http.Request, userID int64, txSv
 	})
 }
 
-func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txSvc transactionManager, log *slog.Logger) {
+func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txSvc transactionManager, userSvc *service.UserService, exchangeSvc *service.ExchangeService, log *slog.Logger) {
 	var req createTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
@@ -131,15 +132,38 @@ func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txS
 	}
 
 	ctx := r.Context()
-	var (
-		tx  *domain.Transaction
-		err error
-	)
+
+	// Resolve base currency and exchange rate snapshot.
+	user, err := userSvc.GetByID(ctx, userID)
+	if err != nil {
+		writeError(w, log, err)
+		return
+	}
+	baseCurrency := user.CurrencyCode
+	if req.CurrencyCode == "" {
+		req.CurrencyCode = baseCurrency
+	}
+
+	exchangeRate := 1.0
+	if req.CurrencyCode != baseCurrency {
+		rate, rateErr := exchangeSvc.GetRate(ctx, req.CurrencyCode, baseCurrency)
+		if rateErr != nil {
+			log.WarnContext(ctx, "exchange rate unavailable, using 1.0",
+				slog.String("from", req.CurrencyCode),
+				slog.String("to", baseCurrency),
+				slog.String("error", rateErr.Error()),
+			)
+		} else {
+			exchangeRate = rate
+		}
+	}
+
+	var tx *domain.Transaction
 	switch req.Type {
 	case "expense":
-		tx, err = txSvc.AddExpense(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode)
+		tx, err = txSvc.AddExpense(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate)
 	case "income":
-		tx, err = txSvc.AddIncome(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode)
+		tx, err = txSvc.AddIncome(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate)
 	default:
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "type must be 'expense' or 'income'"})
 		return

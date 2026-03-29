@@ -34,6 +34,7 @@ type Querier interface {
 	GetSavingsGoalByID(ctx context.Context, arg GetSavingsGoalByIDParams) (SavingsGoal, error)
 	GetSpentInPeriod(ctx context.Context, arg GetSpentInPeriodParams) (int64, error)
 	GetStatsByCategory(ctx context.Context, arg GetStatsByCategoryParams) ([]GetStatsByCategoryRow, error)
+	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error)
 	ListRecurringByUser(ctx context.Context, userID int64) ([]ListRecurringByUserRow, error)

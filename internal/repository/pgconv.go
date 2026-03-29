@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -56,4 +57,24 @@ func goInt64(v pgtype.Int8) int64 {
 		return 0
 	}
 	return v.Int64
+}
+
+// pgNumeric converts a float64 to a pgtype.Numeric.
+func pgNumeric(v float64) pgtype.Numeric {
+	s := strconv.FormatFloat(v, 'f', 8, 64)
+	var num pgtype.Numeric
+	_ = num.Scan(s)
+	return num
+}
+
+// goFloat64 converts a pgtype.Numeric to a float64 (1.0 if invalid).
+func goFloat64(v pgtype.Numeric) float64 {
+	if !v.Valid {
+		return 1.0
+	}
+	f, _ := v.Float64Value()
+	if !f.Valid {
+		return 1.0
+	}
+	return f.Float64
 }

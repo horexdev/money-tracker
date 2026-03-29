@@ -22,12 +22,14 @@ type displayConversion struct {
 }
 
 type balanceResponse struct {
-	ByCurrency         []balanceCurrencyResponse `json:"by_currency"`
+	ByCurrency        []balanceCurrencyResponse `json:"by_currency"`
 	DisplayConversions []displayConversion       `json:"display_conversions"`
+	TotalInBaseCents  int64                     `json:"total_in_base_cents"`
 }
 
 type balanceFetcher interface {
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error)
+	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 }
 
 func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, exchangeSvc *service.ExchangeService, log *slog.Logger) http.HandlerFunc {
@@ -83,9 +85,15 @@ func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, exchange
 			}
 		}
 
+		totalInBase, err := txSvc.GetTotalInBaseCurrency(ctx, userID)
+		if err != nil {
+			log.WarnContext(ctx, "balance: get total in base currency failed", slog.String("error", err.Error()))
+		}
+
 		writeJSON(w, http.StatusOK, balanceResponse{
 			ByCurrency:         byCurrency,
 			DisplayConversions: displayConversions,
+			TotalInBaseCents:   totalInBase,
 		})
 	}
 }

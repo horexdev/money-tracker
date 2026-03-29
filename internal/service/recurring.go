@@ -100,12 +100,14 @@ func (s *RecurringService) ProcessDue(ctx context.Context) (int, error) {
 	var processed int
 	for _, rt := range due {
 		_, err := s.txRepo.Create(ctx, &domain.Transaction{
-			UserID:       rt.UserID,
-			Type:         rt.Type,
-			AmountCents:  rt.AmountCents,
-			CategoryID:   rt.CategoryID,
-			Note:         rt.Note,
-			CurrencyCode: rt.CurrencyCode,
+			UserID:                 rt.UserID,
+			Type:                   rt.Type,
+			AmountCents:            rt.AmountCents,
+			CategoryID:             rt.CategoryID,
+			Note:                   rt.Note,
+			CurrencyCode:           rt.CurrencyCode,
+			ExchangeRateSnapshot:   1.0,
+			BaseCurrencyAtCreation: rt.CurrencyCode,
 		})
 		if err != nil {
 			s.log.ErrorContext(ctx, "failed to create transaction from recurring",
