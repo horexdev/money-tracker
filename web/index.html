@@ -32,9 +32,12 @@
               document.documentElement.style.setProperty('--safe-top', top + 'px');
             }
           } else {
-            // Outside Telegram — use system preference
-            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            // Outside Telegram — use system preference and keep it in sync
+            var mq = window.matchMedia('(prefers-color-scheme: dark)');
+            document.documentElement.setAttribute('data-theme', mq.matches ? 'dark' : 'light');
+            mq.addEventListener('change', function (e) {
+              document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            });
           }
         } catch (e) {}
       })();
