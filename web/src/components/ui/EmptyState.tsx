@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react'
-import type { Icon } from '@phosphor-icons/react'
+import type { IconProps } from '@phosphor-icons/react'
+
+type IconComponent = React.ForwardRefExoticComponent<IconProps & React.RefAttributes<SVGSVGElement>>
 
 interface EmptyStateProps {
-  icon?: typeof Icon
+  icon?: IconComponent
   title: string
   description?: string
   action?: ReactNode
