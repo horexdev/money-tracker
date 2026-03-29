@@ -78,7 +78,7 @@ export function DashboardPage() {
             <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-indigo-400/20 blur-2xl pointer-events-none" />
             <div className="absolute top-1/2 right-1/3 w-20 h-20 rounded-full bg-white/[0.04] pointer-events-none" />
 
-            <div className="relative z-10 pt-14">
+            <div className="relative z-10">
               <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em] mb-1">
                 {t('dashboard.net_balance')}
               </p>
@@ -125,23 +125,23 @@ export function DashboardPage() {
               )}
             </div>
 
-            {/* Top-right actions row */}
-            <div className="absolute top-5 right-5 z-10 flex items-center gap-2">
-              {accounts.length > 0 && (
+            <Link
+              to="/add"
+              className="absolute top-5 right-5 z-10 w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform border border-white/10"
+            >
+              <Plus size={20} weight="bold" className="text-white" />
+            </Link>
+
+            {accounts.length > 0 && (
+              <div className="absolute top-20 right-5 z-10">
                 <AccountDropdown
                   accounts={accounts}
                   selectedId={selectedAccountId}
                   onChange={id => { if (id !== null) { setSelectedAccountId(id); setShowCurrencyBreakdown(false) } }}
                   showBalance
                 />
-              )}
-              <Link
-                to="/add"
-                className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform border border-white/10"
-              >
-                <Plus size={20} weight="bold" className="text-white" />
-              </Link>
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Income / Expense bento cards */}
