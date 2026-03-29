@@ -13,7 +13,8 @@
     "confirm": "Confirm",
     "search": "Search",
     "close": "Close",
-    "done": "Done"
+    "done": "Done",
+    "coming_soon": "Coming soon"
   },
   "tabs": {
     "home": "Home",
@@ -30,6 +31,7 @@
     "recent_transactions": "Recent Transactions",
     "view_all": "View All",
     "budget_alerts": "Budget Alerts",
+    "converted_from_multiple": "converted from multiple currencies",
     "savings_progress": "Savings Progress",
     "quick_add": "Quick Add"
   },
@@ -49,13 +51,22 @@
     "no_transactions": "No transactions yet",
     "start_tracking": "Start tracking your finances"
   },
+  "add": {
+    "select_currency": "Select Currency"
+  },
   "history": {
     "title": "History",
     "today": "Today",
     "yesterday": "Yesterday",
     "filter": "Filter",
     "all_types": "All",
-    "search_placeholder": "Search by note..."
+    "expenses": "Expenses",
+    "incomes": "Incomes",
+    "search_placeholder": "Search by note...",
+    "day_total": "Total",
+    "no_more": "You've seen it all",
+    "swipe_to_delete": "Swipe left to delete",
+    "page_of": "{{page}} of {{total}}"
   },
   "stats": {
     "title": "Statistics",
@@ -68,7 +79,16 @@
     "three_months": "3 Months",
     "no_stats": "No data for this period",
     "total": "Total",
-    "by_category": "By Category"
+    "by_category": "By Category",
+    "custom": "Custom",
+    "transactions_count_one": "{{count}} transaction",
+    "transactions_count_other": "{{count}} transactions",
+    "top_category": "Top Category",
+    "categories_count": "{{count}} categories",
+    "avg_per_tx": "Avg per tx",
+    "date_from": "From",
+    "date_to": "To",
+    "apply": "Apply"
   },
   "categories": {
     "title": "Categories",
@@ -77,13 +97,38 @@
     "create_new": "New Category",
     "name": "Name",
     "emoji": "Emoji",
+    "icon": "Icon",
+    "choose_icon": "Choose an icon",
     "type": "Type",
     "type_expense": "Expense",
     "type_income": "Income",
     "type_both": "Both",
     "cannot_delete_system": "System categories cannot be deleted",
     "has_transactions": "Category has transactions and cannot be deleted",
-    "no_categories": "No custom categories"
+    "no_categories": "No categories yet",
+    "delete_confirm": "Delete this category?",
+    "edit": "Edit",
+    "names": {
+      "Food": "Food",
+      "Transport": "Transport",
+      "Entertainment": "Entertainment",
+      "Shopping": "Shopping",
+      "Health": "Health",
+      "Salary": "Salary",
+      "Freelance": "Freelance",
+      "Rent": "Rent",
+      "Coffee": "Coffee",
+      "Bills": "Bills",
+      "Education": "Education",
+      "Travel": "Travel",
+      "Gifts": "Gifts",
+      "Sport": "Sport",
+      "Beauty": "Beauty",
+      "Pets": "Pets",
+      "Business": "Business",
+      "Investments": "Investments",
+      "Other": "Other"
+    }
   },
   "budgets": {
     "title": "Budgets",
@@ -141,7 +186,10 @@
     "base_currency": "Base Currency",
     "display_currencies": "Display Currencies",
     "english": "English",
-    "russian": "Russian"
+    "russian": "Russian",
+    "currency_change_title": "Change currency to {{currency}}?",
+    "currency_change_desc": "You have transactions in {{currencies}}. They will stay in their original currency and be converted using the rate at the time they were created. New transactions will use {{newCurrency}}.",
+    "currency_change_confirm": "Change Currency"
   },
   "more": {
     "title": "More",

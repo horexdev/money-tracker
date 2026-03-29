@@ -13,7 +13,8 @@
     "confirm": "Подтвердить",
     "search": "Поиск",
     "close": "Закрыть",
-    "done": "Готово"
+    "done": "Готово",
+    "coming_soon": "Скоро"
   },
   "tabs": {
     "home": "Главная",
@@ -30,6 +31,7 @@
     "recent_transactions": "Последние операции",
     "view_all": "Все",
     "budget_alerts": "Бюджет",
+    "converted_from_multiple": "конвертировано из нескольких валют",
     "savings_progress": "Накопления",
     "quick_add": "Быстро добавить"
   },
@@ -49,13 +51,22 @@
     "no_transactions": "Операций пока нет",
     "start_tracking": "Начните отслеживать свои финансы"
   },
+  "add": {
+    "select_currency": "Выбрать валюту"
+  },
   "history": {
     "title": "История",
     "today": "Сегодня",
     "yesterday": "Вчера",
     "filter": "Фильтр",
     "all_types": "Все",
-    "search_placeholder": "Поиск по заметке..."
+    "expenses": "Расходы",
+    "incomes": "Доходы",
+    "search_placeholder": "Поиск по заметке...",
+    "day_total": "Итого",
+    "no_more": "Вы всё просмотрели",
+    "swipe_to_delete": "Свайпните влево для удаления",
+    "page_of": "{{page}} из {{total}}"
   },
   "stats": {
     "title": "Статистика",
@@ -68,7 +79,16 @@
     "three_months": "3 месяца",
     "no_stats": "Нет данных за этот период",
     "total": "Итого",
-    "by_category": "По категориям"
+    "by_category": "По категориям",
+    "custom": "Свой",
+    "transactions_count_one": "{{count}} операция",
+    "transactions_count_other": "{{count}} операций",
+    "top_category": "Топ категория",
+    "categories_count": "{{count}} категорий",
+    "avg_per_tx": "Средн. за тр.",
+    "date_from": "С",
+    "date_to": "По",
+    "apply": "Применить"
   },
   "categories": {
     "title": "Категории",
@@ -77,13 +97,38 @@
     "create_new": "Новая категория",
     "name": "Название",
     "emoji": "Эмодзи",
+    "icon": "Иконка",
+    "choose_icon": "Выберите иконку",
     "type": "Тип",
     "type_expense": "Расход",
     "type_income": "Доход",
     "type_both": "Оба",
     "cannot_delete_system": "Системные категории нельзя удалить",
     "has_transactions": "Категория используется и не может быть удалена",
-    "no_categories": "Нет своих категорий"
+    "no_categories": "Категорий пока нет",
+    "delete_confirm": "Удалить эту категорию?",
+    "edit": "Редактировать",
+    "names": {
+      "Food": "Еда",
+      "Transport": "Транспорт",
+      "Entertainment": "Развлечения",
+      "Shopping": "Покупки",
+      "Health": "Здоровье",
+      "Salary": "Зарплата",
+      "Freelance": "Фриланс",
+      "Rent": "Аренда",
+      "Coffee": "Кофе",
+      "Bills": "Счета",
+      "Education": "Образование",
+      "Travel": "Путешествия",
+      "Gifts": "Подарки",
+      "Sport": "Спорт",
+      "Beauty": "Красота",
+      "Pets": "Питомцы",
+      "Business": "Бизнес",
+      "Investments": "Инвестиции",
+      "Other": "Прочее"
+    }
   },
   "budgets": {
     "title": "Бюджеты",
@@ -141,7 +186,10 @@
     "base_currency": "Основная валюта",
     "display_currencies": "Валюты для отображения",
     "english": "English",
-    "russian": "Русский"
+    "russian": "Русский",
+    "currency_change_title": "Сменить валюту на {{currency}}?",
+    "currency_change_desc": "У вас есть транзакции в {{currencies}}. Они останутся в исходной валюте и будут конвертироваться по курсу на момент создания. Новые транзакции будут в {{newCurrency}}.",
+    "currency_change_confirm": "Сменить валюту"
   },
   "more": {
     "title": "Ещё",
