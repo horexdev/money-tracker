@@ -87,7 +87,12 @@ export function DashboardPage() {
                 {!selectedAccount && isMultiCurrency && (
                   <span className="text-white/50 text-2xl font-bold">≈</span>
                 )}
-                <p className="text-white text-[42px] font-extrabold tabular-nums leading-none tracking-tight">
+                <p className={`text-white font-extrabold tabular-nums leading-none tracking-tight ${
+                  heroAmount.length > 14 ? 'text-[22px]' :
+                  heroAmount.length > 11 ? 'text-[28px]' :
+                  heroAmount.length > 8  ? 'text-[34px]' :
+                  'text-[42px]'
+                }`}>
                   {heroAmount}
                 </p>
               </div>
