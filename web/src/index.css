@@ -162,17 +162,21 @@ body {
 
 /* Card with elevation.
    overflow: clip clips content to the border-radius without clipping box-shadow,
-   unlike overflow: hidden which cuts off shadows too. */
+   unlike overflow: hidden which cuts off shadows too.
+   isolation: isolate + transform: translateZ(0) force a new compositing layer
+   so WebKit correctly clips rounded corners. */
 .card-elevated {
   background: var(--color-surface);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   overflow: clip;
+  isolation: isolate;
+  transform: translateZ(0);
 }
 
 [data-theme="dark"] .card-elevated {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  outline: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Glass card — for TabBar */

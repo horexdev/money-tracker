@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { settingsApi } from '../api/settings'
 import type { UserSettings } from '../types'
 
+// Default currency for each supported language — used only on first launch
+// to set the initial base currency (which determines the default account currency).
+// Language and currency are independent after first launch.
 const LANG_DEFAULT_CURRENCY: Record<string, string> = {
   en: 'USD', ru: 'RUB', uk: 'UAH', be: 'BYN',
   kk: 'KZT', uz: 'UZS', tr: 'TRY', ar: 'SAR',
@@ -14,9 +17,11 @@ const LANG_DEFAULT_CURRENCY: Record<string, string> = {
 const FIRST_LAUNCH_KEY = 'money_tracker_first_launch_done'
 
 /**
- * On first launch: detect language from i18n (Telegram / browser detector
- * already ran) and persist language + default currency to the backend.
- * Runs once per device — guarded by localStorage flag.
+ * On first launch: detect language from Telegram / browser and persist
+ * language + a sensible default currency to the backend.
+ * The currency is only used to create the initial default account — it is
+ * never changed automatically again. Language is changed only by the user
+ * via Settings. Runs once per device — guarded by localStorage flag.
  */
 export function useFirstLaunchSetup(settings: UserSettings | undefined) {
   const { i18n } = useTranslation()
@@ -39,7 +44,7 @@ export function useFirstLaunchSetup(settings: UserSettings | undefined) {
 
     if (!needsLangUpdate && !needsCurrencyUpdate) return
 
-    const patch: Partial<UserSettings> = {}
+    const patch: Record<string, string> = {}
     if (needsLangUpdate) patch.language = detectedLang
     if (needsCurrencyUpdate) patch.base_currency = defaultCurrency
 

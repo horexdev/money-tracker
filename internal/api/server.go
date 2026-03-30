@@ -9,6 +9,23 @@ import (
 	"github.com/horexdev/money-tracker/internal/service"
 )
 
+// defaultAccountCurrency maps Telegram language_code to the most common currency
+// for that locale. Used when creating the first default account for a new user,
+// before the frontend has had a chance to persist a preference.
+var defaultAccountCurrencies = map[string]string{
+	"en": "USD", "ru": "RUB", "uk": "UAH", "be": "BYN",
+	"kk": "KZT", "uz": "UZS", "tr": "TRY", "ar": "SAR",
+	"es": "EUR", "pt": "BRL", "fr": "EUR", "de": "EUR",
+	"it": "EUR", "nl": "EUR", "ko": "KRW", "ms": "MYR", "id": "IDR",
+}
+
+func localizedAccountCurrency(lang string) string {
+	if c, ok := defaultAccountCurrencies[lang]; ok {
+		return c
+	}
+	return "USD"
+}
+
 // defaultAccountName returns a localized name for the first default account.
 // Falls back to English if the language code is not recognized.
 var defaultAccountNames = map[string]string{
@@ -69,13 +86,17 @@ func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error
 		return nil
 	}
 
+	// Prefer the persisted language; fall back to the Telegram-reported one.
 	lang := string(user.Language)
 	if lang == "" {
 		lang = tgUser.LanguageCode
 	}
 	name := localizedAccountName(lang)
+	// Derive currency from the Telegram language_code so the first account
+	// gets a sensible default even before the frontend persists a preference.
+	currency := localizedAccountCurrency(lang)
 
-	if _, err := u.accountSvc.Create(ctx, user.ID, name, "wallet", "#6366f1", domain.AccountTypeChecking, user.CurrencyCode, true); err != nil {
+	if _, err := u.accountSvc.Create(ctx, user.ID, name, "wallet", "#6366f1", domain.AccountTypeChecking, currency, true); err != nil {
 		u.log.WarnContext(ctx, "ensureUser: failed to create default account",
 			slog.Int64("user_id", user.ID),
 			slog.String("error", err.Error()),

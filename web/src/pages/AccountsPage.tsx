@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence } from 'framer-motion'
 import {
-  Bank, PiggyBank, Money, CreditCard, Coins, Star, Plus,
+  Bank, PiggyBank, Money, CreditCard, Coins, Star, Plus, MagnifyingGlass, X, Check,
 } from '@phosphor-icons/react'
 import { accountsApi } from '../api/accounts'
 
@@ -36,10 +36,97 @@ const COLOR_SWATCHES = [
 
 const ACCOUNT_TYPES: AccountType[] = ['checking', 'savings', 'cash', 'credit', 'crypto']
 
-const CURRENCY_OPTIONS = [
-  'USD', 'EUR', 'GBP', 'RUB', 'UAH', 'BYN', 'KZT', 'UZS',
-  'TRY', 'CNY', 'JPY', 'CHF', 'CAD', 'AUD', 'PLN', 'CZK',
+const POPULAR_CURRENCIES = ['USD', 'EUR', 'GBP', 'UAH', 'RUB', 'TRY', 'KZT', 'UZS', 'BRL', 'JPY', 'TJS', 'CNY']
+
+const ALL_CURRENCIES = [
+  'AED','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN',
+  'BAM','BBD','BDT','BGN','BHD','BMD','BND','BOB','BRL','BSD',
+  'BWP','BYN','BZD','CAD','CDF','CHF','CLP','CNY','COP','CRC',
+  'CUP','CVE','CZK','DJF','DKK','DOP','DZD','EGP','ETB','EUR',
+  'FJD','GBP','GEL','GHS','GMD','GTQ','GYD','HKD','HNL','HRK',
+  'HTG','HUF','IDR','ILS','INR','IQD','IRR','ISK','JMD','JOD',
+  'JPY','KES','KGS','KHR','KRW','KWD','KZT','LAK','LBP','LKR',
+  'LYD','MAD','MDL','MKD','MMK','MNT','MOP','MRU','MUR','MVR',
+  'MWK','MXN','MYR','MZN','NAD','NGN','NIO','NOK','NPR','NZD',
+  'OMR','PAB','PEN','PGK','PHP','PKR','PLN','PYG','QAR','RON',
+  'RSD','RUB','RWF','SAR','SBD','SCR','SDG','SEK','SGD','SLL',
+  'SOS','SRD','SZL','THB','TJS','TMT','TND','TOP','TRY','TTD',
+  'TWD','TZS','UAH','UGX','USD','UYU','UZS','VES','VND','VUV',
+  'WST','XAF','XCD','XOF','XPF','YER','ZAR','ZMW',
 ]
+
+/* ─── Currency Picker ─── */
+function CurrencyPicker({ selected, onSelect }: { selected: string; onSelect: (c: string) => void }) {
+  const { t } = useTranslation()
+  const [search, setSearch] = useState('')
+  const filtered = useMemo(() => {
+    const q = search.toUpperCase().trim()
+    if (!q) return ALL_CURRENCIES
+    return ALL_CURRENCIES.filter(c => c.includes(q))
+  }, [search])
+
+  return (
+    <div className="space-y-3">
+      {/* Popular chips */}
+      <div className="flex flex-wrap gap-1.5">
+        {POPULAR_CURRENCIES.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => onSelect(c)}
+            className={`
+              px-3 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150 select-none active:scale-95
+              ${selected === c
+                ? 'bg-accent text-accent-text shadow-[0_2px_8px_rgba(99,102,241,0.4)]'
+                : 'bg-surface text-muted shadow-sm'
+              }
+            `}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <MagnifyingGlass size={14} weight="bold" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder={`${t('common.search')}...`}
+          className="w-full bg-surface rounded-2xl pl-9 pr-9 py-2.5 text-xs font-medium outline-none text-text placeholder:text-muted/50 shadow-sm focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow"
+        />
+        {search && (
+          <button type="button" onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted">
+            <X size={12} weight="bold" />
+          </button>
+        )}
+      </div>
+
+      {/* Full list */}
+      <div className="bg-bg rounded-2xl divide-y divide-border overflow-hidden max-h-48 overflow-y-auto no-scrollbar">
+        {filtered.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted">{t('common.no_data')}</p>
+        ) : (
+          filtered.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => onSelect(c)}
+              className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors active:bg-border ${
+                selected === c ? 'bg-accent-subtle' : ''
+              }`}
+            >
+              <span className="text-[13px] font-semibold text-text">{c}</span>
+              {selected === c && <Check size={14} weight="bold" className="text-accent" />}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
 
 /* ─── Color Picker ─── */
 function ColorPicker({ selected, onSelect }: { selected: string; onSelect: (c: string) => void }) {
@@ -190,24 +277,7 @@ function AccountFormSheet({
           <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
             {t('add.select_currency')}
           </label>
-          <div className="flex flex-wrap gap-1.5">
-            {CURRENCY_OPTIONS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCurrency(c)}
-                className={`
-                  px-3 py-1.5 rounded-2xl text-[12px] font-bold transition-all duration-150 active:scale-95
-                  ${currency === c
-                    ? 'bg-accent text-accent-text shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
-                    : 'bg-accent-subtle text-muted'
-                  }
-                `}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+          <CurrencyPicker selected={currency} onSelect={setCurrency} />
         </div>
 
         {/* Color picker */}

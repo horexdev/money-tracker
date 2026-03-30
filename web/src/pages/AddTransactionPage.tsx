@@ -82,7 +82,8 @@ export function AddTransactionPage() {
     }
   }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const baseCurrency = balanceData?.by_currency?.[0]?.currency_code ?? 'USD'
+  const selectedAccount = accounts.find(a => a.id === selectedAccountId)
+  const baseCurrency = selectedAccount?.currency_code ?? balanceData?.by_currency?.[0]?.currency_code ?? 'USD'
 
   const isTransfer = mode === 'transfer'
   const isExpense = mode === 'expense'
@@ -193,21 +194,10 @@ export function AddTransactionPage() {
           <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/[0.06] blur-xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
-          {/* Account selector — top-right, hidden in transfer mode */}
-          {!isTransfer && accounts.length > 0 && selectedAccountId !== null && (
-            <div className="absolute top-4 right-4 z-20">
-              <AccountDropdown
-                accounts={accounts}
-                selectedId={selectedAccountId}
-                onChange={id => id !== null && setSelectedAccountId(id)}
-                showBalance
-              />
-            </div>
-          )}
-
           <div className="relative z-10">
-            {/* Mode toggle */}
-            <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08]">
+            {/* Mode toggle + account selector row */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08] shrink-0">
               {(['expense', 'income', 'transfer'] as Mode[]).map((m) => (
                 <button
                   key={m}
@@ -226,6 +216,17 @@ export function AddTransactionPage() {
                     : t('transfers')}
                 </button>
               ))}
+            </div>
+
+            {/* Account selector — hidden in transfer mode */}
+            {!isTransfer && accounts.length > 0 && selectedAccountId !== null && (
+              <AccountDropdown
+                accounts={accounts}
+                selectedId={selectedAccountId}
+                onChange={id => id !== null && setSelectedAccountId(id)}
+                showBalance
+              />
+            )}
             </div>
 
             {/* Amount input — always shown */}
