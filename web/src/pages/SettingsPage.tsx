@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Check, MagnifyingGlass, X, Globe, CurrencyDollar, CaretRight, Warning, Trash } from '@phosphor-icons/react'
 import { settingsApi } from '../api/settings'
 import { balanceApi } from '../api/balance'
+import type { BalanceResponse } from '../types'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
@@ -134,7 +135,7 @@ export function SettingsPage() {
     queryFn: settingsApi.get,
   })
 
-  const { data: balance } = useQuery({
+  const { data: balance } = useQuery<BalanceResponse>({
     queryKey: ['balance'],
     queryFn: () => balanceApi.get(),
   })
@@ -194,7 +195,7 @@ export function SettingsPage() {
 
   // Currencies with existing transactions (excluding current base currency)
   const otherCurrencies = (balance?.by_currency ?? []).filter(
-    (b) => b.currency_code !== settings?.base_currency
+    (b: BalanceResponse['by_currency'][number]) => b.currency_code !== settings?.base_currency
   )
 
   function selectCurrency(code: string) {
@@ -421,7 +422,7 @@ export function SettingsPage() {
                   <p className="text-sm text-muted mt-2 leading-relaxed">
                     {t('settings.currency_change_desc', {
                       count: otherCurrencies.length,
-                      currencies: otherCurrencies.map((b) => b.currency_code).join(', '),
+                      currencies: otherCurrencies.map((b: BalanceResponse['by_currency'][number]) => b.currency_code).join(', '),
                       newCurrency: pendingCurrency,
                     })}
                   </p>
