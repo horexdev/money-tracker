@@ -133,7 +133,8 @@
       "Housing": "Жильё",
       "Investments": "Инвестиции",
       "Other": "Прочее",
-      "Savings": "Накопления"
+      "Savings": "Накопления",
+      "Transfer": "Перевод"
     }
   },
   "budgets": {

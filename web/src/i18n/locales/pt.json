@@ -129,7 +129,8 @@
       "Housing": "Moradia",
       "Investments": "Investimentos",
       "Other": "Outros",
-      "Savings": "Poupanças"
+      "Savings": "Poupanças",
+      "Transfer": "Transferência"
     }
   },
   "budgets": {

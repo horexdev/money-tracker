@@ -129,7 +129,8 @@
       "Housing": "Perumahan",
       "Investments": "Pelaburan",
       "Other": "Lain-lain",
-      "Savings": "Simpanan"
+      "Savings": "Simpanan",
+      "Transfer": "Pindahan"
     }
   },
   "budgets": {

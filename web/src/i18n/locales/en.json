@@ -133,7 +133,8 @@
       "Housing": "Housing",
       "Investments": "Investments",
       "Other": "Other",
-      "Savings": "Savings"
+      "Savings": "Savings",
+      "Transfer": "Transfer"
     }
   },
   "budgets": {

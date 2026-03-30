@@ -129,7 +129,8 @@
       "Housing": "سكن",
       "Investments": "استثمارات",
       "Other": "أخرى",
-      "Savings": "المدخرات"
+      "Savings": "المدخرات",
+      "Transfer": "تحويل"
     }
   },
   "budgets": {

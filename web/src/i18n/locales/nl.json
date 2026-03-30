@@ -129,7 +129,8 @@
       "Housing": "Wonen",
       "Investments": "Investeringen",
       "Other": "Overig",
-      "Savings": "Spaargeld"
+      "Savings": "Spaargeld",
+      "Transfer": "Overboeking"
     }
   },
   "budgets": {

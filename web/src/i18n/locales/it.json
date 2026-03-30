@@ -129,7 +129,8 @@
       "Housing": "Abitazione",
       "Investments": "Investimenti",
       "Other": "Altro",
-      "Savings": "Risparmi"
+      "Savings": "Risparmi",
+      "Transfer": "Bonifico"
     }
   },
   "budgets": {

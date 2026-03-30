@@ -129,7 +129,8 @@
       "Housing": "Konut",
       "Investments": "Yatırımlar",
       "Other": "Diğer",
-      "Savings": "Tasarruflar"
+      "Savings": "Tasarruflar",
+      "Transfer": "Transfer"
     }
   },
   "budgets": {

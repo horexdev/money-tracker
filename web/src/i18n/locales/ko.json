@@ -129,7 +129,8 @@
       "Housing": "주거",
       "Investments": "투자",
       "Other": "기타",
-      "Savings": "저축"
+      "Savings": "저축",
+      "Transfer": "이체"
     }
   },
   "budgets": {

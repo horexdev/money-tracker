@@ -129,7 +129,8 @@
       "Housing": "Житло",
       "Investments": "Інвестиції",
       "Other": "Інше",
-      "Savings": "Накопичення"
+      "Savings": "Накопичення",
+      "Transfer": "Переказ"
     }
   },
   "budgets": {
