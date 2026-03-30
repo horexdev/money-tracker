@@ -38,6 +38,8 @@ import {
   ShieldCheck,
   Star,
   Tag,
+  ArrowsLeftRight,
+  PiggyBank,
   type IconWeight,
 } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
@@ -70,10 +72,12 @@ const EMOJI_MAP: Record<string, IconComponent> = {
   '📦': Tag, '📫': Tag, '📬': Tag,
   '☕': Coffee, '⚡': Lightning, '❤️': Heartbeat, '🎓': GraduationCap,
   '✈️': Airplane, '🎁': Gift, '🐾': PawPrint, '👕': TShirt,
-  '💪': Barbell, '🏦': Bank, '👛': Wallet, '🌸': Flower,
+  '💪': Barbell, '🏦': PiggyBank, '👛': Wallet, '🌸': Flower,
   '🌺': Flower, '🐶': PawPrint, '🐱': PawPrint, '👶': Baby,
   '📚': BookOpen, '📖': BookOpen, '🔧': Wrench, '✂️': Scissors,
   '📷': Camera, '📸': Camera, '🔒': ShieldCheck,
+  // Transfer system category
+  '↔️': ArrowsLeftRight, '↔': ArrowsLeftRight,
 }
 
 /** All available icons for the icon picker, keyed by a stable string ID */

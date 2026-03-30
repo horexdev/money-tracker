@@ -14,23 +14,23 @@ import { useHaptic } from '../hooks/useHaptic'
 import { FIRST_LAUNCH_KEY } from '../hooks/useFirstLaunchSetup'
 
 const LANGUAGES = [
-  { code: 'en', label: 'English', native: 'English', flag: '🇬🇧' },
-  { code: 'ru', label: 'Russian', native: 'Русский', flag: '🇷🇺' },
-  { code: 'uk', label: 'Ukrainian', native: 'Українська', flag: '🇺🇦' },
-  { code: 'be', label: 'Belarusian', native: 'Беларуская', flag: '🇧🇾' },
-  { code: 'kk', label: 'Kazakh', native: 'Қазақша', flag: '🇰🇿' },
-  { code: 'uz', label: 'Uzbek', native: "O'zbek", flag: '🇺🇿' },
-  { code: 'tr', label: 'Turkish', native: 'Türkçe', flag: '🇹🇷' },
-  { code: 'ar', label: 'Arabic', native: 'العربية', flag: '🇸🇦' },
-  { code: 'es', label: 'Spanish', native: 'Español', flag: '🇪🇸' },
-  { code: 'pt', label: 'Portuguese', native: 'Português', flag: '🇧🇷' },
-  { code: 'fr', label: 'French', native: 'Français', flag: '🇫🇷' },
-  { code: 'de', label: 'German', native: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', label: 'Italian', native: 'Italiano', flag: '🇮🇹' },
-  { code: 'nl', label: 'Dutch', native: 'Nederlands', flag: '🇳🇱' },
-  { code: 'ko', label: 'Korean', native: '한국어', flag: '🇰🇷' },
-  { code: 'ms', label: 'Malay', native: 'Bahasa Melayu', flag: '🇲🇾' },
-  { code: 'id', label: 'Indonesian', native: 'Bahasa Indonesia', flag: '🇮🇩' },
+  { code: 'en', label: 'English', native: 'English' },
+  { code: 'ru', label: 'Russian', native: 'Русский' },
+  { code: 'uk', label: 'Ukrainian', native: 'Українська' },
+  { code: 'be', label: 'Belarusian', native: 'Беларуская' },
+  { code: 'kk', label: 'Kazakh', native: 'Қазақша' },
+  { code: 'uz', label: 'Uzbek', native: "O'zbek" },
+  { code: 'tr', label: 'Turkish', native: 'Türkçe' },
+  { code: 'ar', label: 'Arabic', native: 'العربية' },
+  { code: 'es', label: 'Spanish', native: 'Español' },
+  { code: 'pt', label: 'Portuguese', native: 'Português' },
+  { code: 'fr', label: 'French', native: 'Français' },
+  { code: 'de', label: 'German', native: 'Deutsch' },
+  { code: 'it', label: 'Italian', native: 'Italiano' },
+  { code: 'nl', label: 'Dutch', native: 'Nederlands' },
+  { code: 'ko', label: 'Korean', native: '한국어' },
+  { code: 'ms', label: 'Malay', native: 'Bahasa Melayu' },
+  { code: 'id', label: 'Indonesian', native: 'Bahasa Indonesia' },
 ]
 
 type Modal = 'none' | 'language' | 'reset-confirm'
@@ -174,7 +174,7 @@ export function SettingsPage() {
                     {t('settings.language')}
                   </p>
                   <p className="text-sm font-semibold text-text mt-0.5">
-                    {currentLangData ? `${currentLangData.flag} ${currentLangData.native}` : currentLang}
+                    {currentLangData ? currentLangData.native : currentLang}
                   </p>
                 </div>
                 <CaretRight size={16} weight="bold" className="text-muted/40 shrink-0" />
@@ -223,7 +223,9 @@ export function SettingsPage() {
                   isActive ? 'bg-accent-subtle' : ''
                 }`}
               >
-                <span className="text-xl">{lang.flag}</span>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isActive ? 'bg-accent/15' : 'bg-border'}`}>
+                  <Globe size={16} weight="fill" className={isActive ? 'text-accent' : 'text-muted'} />
+                </div>
                 <span className="flex-1 text-[13px] font-semibold text-text">{lang.native}</span>
                 {isActive && <Check size={16} weight="bold" className="text-accent shrink-0" />}
               </button>

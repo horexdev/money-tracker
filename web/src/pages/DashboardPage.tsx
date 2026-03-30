@@ -79,9 +79,18 @@ export function DashboardPage() {
             <div className="absolute top-1/2 right-1/3 w-20 h-20 rounded-full bg-white/[0.04] pointer-events-none" />
 
             <div className="relative z-10">
-              <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em] mb-1">
-                {t('dashboard.net_balance')}
-              </p>
+              {/* Top row: label + add button */}
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em]">
+                  {t('dashboard.net_balance')}
+                </p>
+                <Link
+                  to="/add"
+                  className="w-9 h-9 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform border border-white/10"
+                >
+                  <Plus size={18} weight="bold" className="text-white" />
+                </Link>
+              </div>
 
               <div className="flex items-baseline gap-2 mt-1">
                 {!selectedAccount && isMultiCurrency && (
@@ -128,25 +137,19 @@ export function DashboardPage() {
                   ))}
                 </div>
               )}
+
+              {/* Account selector — bottom of card */}
+              {accounts.length > 0 && (
+                <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
+                  <AccountDropdown
+                    accounts={accounts}
+                    selectedId={selectedAccountId}
+                    onChange={id => { if (id !== null) { setSelectedAccountId(id); setShowCurrencyBreakdown(false) } }}
+                    showBalance
+                  />
+                </div>
+              )}
             </div>
-
-            <Link
-              to="/add"
-              className="absolute top-5 right-5 z-10 w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform border border-white/10"
-            >
-              <Plus size={20} weight="bold" className="text-white" />
-            </Link>
-
-            {accounts.length > 0 && (
-              <div className="absolute top-20 right-5 z-10">
-                <AccountDropdown
-                  accounts={accounts}
-                  selectedId={selectedAccountId}
-                  onChange={id => { if (id !== null) { setSelectedAccountId(id); setShowCurrencyBreakdown(false) } }}
-                  showBalance
-                />
-              </div>
-            )}
           </div>
 
           {/* Income / Expense bento cards */}
