@@ -281,37 +281,36 @@ export function StatsPage() {
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/[0.06] blur-xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-indigo-400/15 blur-2xl pointer-events-none" />
 
-          {/* Account selector — top-right, outside z-10 div so it sits over decorative blobs */}
-          {accounts.length > 0 && (
-            <div className="absolute top-5 right-5 z-20">
-              <AccountDropdown
-                accounts={accounts}
-                selectedId={selectedAccountId}
-                onChange={setSelectedAccountId}
-                allLabel={t('accountsAll')}
-                variant="hero"
-              />
-            </div>
-          )}
-
           <div className="relative z-10">
-            {/* Glass type toggle */}
-            <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08]">
-              {(['expense', 'income'] as TransactionType[]).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setType(v)}
-                  className={`
-                    px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 select-none
-                    ${type === v
-                      ? 'bg-white/20 text-white shadow-[0_2px_8px_rgba(0,0,0,0.15)]'
-                      : 'text-white/50'
-                    }
-                  `}
-                >
-                  {v === 'expense' ? t('transactions.expense') : t('transactions.income')}
-                </button>
-              ))}
+            {/* Type toggle + account selector row */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08] shrink-0">
+                {(['expense', 'income'] as TransactionType[]).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setType(v)}
+                    className={`
+                      px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 select-none
+                      ${type === v
+                        ? 'bg-white/20 text-white shadow-[0_2px_8px_rgba(0,0,0,0.15)]'
+                        : 'text-white/50'
+                      }
+                    `}
+                  >
+                    {v === 'expense' ? t('transactions.expense') : t('transactions.income')}
+                  </button>
+                ))}
+              </div>
+
+              {accounts.length > 0 && (
+                <AccountDropdown
+                  accounts={accounts}
+                  selectedId={selectedAccountId}
+                  onChange={setSelectedAccountId}
+                  allLabel={t('accountsAll')}
+                  variant="hero"
+                />
+              )}
             </div>
 
             {/* Animated total + count */}
