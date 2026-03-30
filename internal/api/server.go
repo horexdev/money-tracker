@@ -64,6 +64,11 @@ type userEnsurer struct {
 }
 
 func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error {
+	u.log.InfoContext(ctx, "ensureUser: tg profile",
+		slog.Int64("user_id", tgUser.ID),
+		slog.String("language_code", tgUser.LanguageCode),
+		slog.String("first_name", tgUser.FirstName),
+	)
 	user, err := u.svc.Upsert(ctx, &domain.User{
 		ID:           tgUser.ID,
 		Username:     tgUser.Username,
