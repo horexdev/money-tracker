@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
@@ -238,6 +238,7 @@ export function StatsPage() {
     queryFn: customRange
       ? () => statsApi.getRange(customRange.from, customRange.to, selectedAccountId)
       : () => statsApi.get(period, selectedAccountId),
+    placeholderData: keepPreviousData,
   })
 
   const filtered: CategoryStat[] = data?.items.filter((s) => s.type === type) ?? []

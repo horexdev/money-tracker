@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
@@ -63,11 +63,13 @@ export function DashboardPage() {
   const balanceQ = useQuery({
     queryKey: ['balance', selectedAccountId],
     queryFn: () => balanceApi.get(selectedAccountId),
+    placeholderData: keepPreviousData,
   })
 
   const txQ = useQuery({
     queryKey: ['transactions', 1, selectedAccountId],
     queryFn: () => transactionsApi.list(1, 5, selectedAccountId),
+    placeholderData: keepPreviousData,
   })
 
   const { code: baseCurrency } = useBaseCurrency()
