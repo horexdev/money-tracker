@@ -109,7 +109,7 @@ func (q *Queries) GetCategoryByName(ctx context.Context, arg GetCategoryByNamePa
 
 const listUserCategories = `-- name: ListUserCategories :many
 SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories
-WHERE (user_id IS NULL OR user_id = $1) AND deleted_at IS NULL
+WHERE (user_id IS NULL OR user_id = $1) AND deleted_at IS NULL AND type != 'transfer'
 ORDER BY user_id NULLS FIRST, name
 `
 

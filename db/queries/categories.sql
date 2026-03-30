@@ -1,6 +1,6 @@
 -- name: ListUserCategories :many
 SELECT * FROM categories
-WHERE (user_id IS NULL OR user_id = $1) AND deleted_at IS NULL
+WHERE (user_id IS NULL OR user_id = $1) AND deleted_at IS NULL AND type != 'transfer'
 ORDER BY user_id NULLS FIRST, name;
 
 -- name: ListUserCategoriesByType :many

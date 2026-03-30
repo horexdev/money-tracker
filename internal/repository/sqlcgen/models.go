@@ -201,6 +201,8 @@ type Transfer struct {
 	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
 	Note             string             `json:"note"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromTxID         pgtype.Int8        `json:"from_tx_id"`
+	ToTxID           pgtype.Int8        `json:"to_tx_id"`
 }
 
 type User struct {

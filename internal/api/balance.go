@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/horexdev/money-tracker/internal/domain"
 	"github.com/horexdev/money-tracker/internal/service"
@@ -29,6 +30,7 @@ type balanceResponse struct {
 
 type balanceFetcher interface {
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error)
+	GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error)
 	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 }
 
@@ -41,7 +43,17 @@ func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, exchange
 		ctx := r.Context()
 		userID := userIDFromContext(ctx)
 
-		balances, err := txSvc.GetBalanceByCurrency(ctx, userID)
+		var balances []domain.BalanceByCurrency
+		var err error
+		if accountIDStr := r.URL.Query().Get("account_id"); accountIDStr != "" {
+			if accountID, parseErr := strconv.ParseInt(accountIDStr, 10, 64); parseErr == nil && accountID > 0 {
+				balances, err = txSvc.GetBalanceByCurrencyAndAccount(ctx, userID, accountID)
+			} else {
+				balances, err = txSvc.GetBalanceByCurrency(ctx, userID)
+			}
+		} else {
+			balances, err = txSvc.GetBalanceByCurrency(ctx, userID)
+		}
 		if err != nil {
 			writeError(w, log, err)
 			return

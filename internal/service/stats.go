@@ -28,6 +28,15 @@ func (s *StatsService) ByCategory(ctx context.Context, userID int64, from, to ti
 	return stats, nil
 }
 
+// ByCategoryAndAccount returns stats for a specific account.
+func (s *StatsService) ByCategoryAndAccount(ctx context.Context, userID, accountID int64, from, to time.Time) ([]domain.CategoryStat, error) {
+	stats, err := s.txRepo.StatsByCategoryAndAccount(ctx, userID, accountID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("stats by category for account %d: %w", accountID, err)
+	}
+	return stats, nil
+}
+
 // PeriodRange returns the start and end time for a named period relative to now.
 // Supported: "today", "week", "month", "lastmonth".
 func PeriodRange(period string) (from, to time.Time, err error) {

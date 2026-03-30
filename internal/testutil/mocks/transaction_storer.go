@@ -88,3 +88,32 @@ func (m *MockTransactionStorer) Update(ctx context.Context, t *domain.Transactio
 	}
 	return args.Get(0).(*domain.Transaction), args.Error(1)
 }
+
+func (m *MockTransactionStorer) ListByAccount(ctx context.Context, userID, accountID int64, limit, offset int) ([]*domain.Transaction, error) {
+	args := m.Called(ctx, userID, accountID, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*domain.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionStorer) CountByAccount(ctx context.Context, userID, accountID int64) (int64, error) {
+	args := m.Called(ctx, userID, accountID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockTransactionStorer) StatsByCategoryAndAccount(ctx context.Context, userID, accountID int64, from, to time.Time) ([]domain.CategoryStat, error) {
+	args := m.Called(ctx, userID, accountID, from, to)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]domain.CategoryStat), args.Error(1)
+}
+
+func (m *MockTransactionStorer) GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error) {
+	args := m.Called(ctx, userID, accountID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]domain.BalanceByCurrency), args.Error(1)
+}

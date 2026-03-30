@@ -3,6 +3,7 @@ package api
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/horexdev/money-tracker/internal/domain"
@@ -39,6 +40,20 @@ func statsHandler(statsSvc *service.StatsService, log *slog.Logger) http.Handler
 		fromStr := q.Get("from")
 		toStr := q.Get("to")
 
+		var accountID int64
+		if accountIDStr := q.Get("account_id"); accountIDStr != "" {
+			if id, parseErr := strconv.ParseInt(accountIDStr, 10, 64); parseErr == nil && id > 0 {
+				accountID = id
+			}
+		}
+
+		fetchStats := func(from, to time.Time) ([]domain.CategoryStat, error) {
+			if accountID > 0 {
+				return statsSvc.ByCategoryAndAccount(ctx, userID, accountID, from, to)
+			}
+			return statsSvc.ByCategory(ctx, userID, from, to)
+		}
+
 		if fromStr != "" && toStr != "" {
 			// Custom range: parse ISO date strings (YYYY-MM-DD)
 			f, err := time.Parse("2006-01-02", fromStr)
@@ -52,7 +67,7 @@ func statsHandler(statsSvc *service.StatsService, log *slog.Logger) http.Handler
 				return
 			}
 			// to is inclusive: advance by one day to capture the full end date
-			stats, err := statsSvc.ByCategory(ctx, userID, f, t.AddDate(0, 0, 1))
+			stats, err := fetchStats(f, t.AddDate(0, 0, 1))
 			if err != nil {
 				writeError(w, log, err)
 				return
@@ -73,7 +88,7 @@ func statsHandler(statsSvc *service.StatsService, log *slog.Logger) http.Handler
 			return
 		}
 
-		stats, err := statsSvc.ByCategory(ctx, userID, fromTime, toTime)
+		stats, err := fetchStats(fromTime, toTime)
 		if err != nil {
 			writeError(w, log, err)
 			return

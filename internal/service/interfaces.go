@@ -24,10 +24,14 @@ type TransactionStorer interface {
 	Delete(ctx context.Context, id, userID int64) error
 	GetBalance(ctx context.Context, userID int64) (incomeCents, expenseCents int64, err error)
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error)
+	GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error)
 	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 	List(ctx context.Context, userID int64, limit, offset int) ([]*domain.Transaction, error)
+	ListByAccount(ctx context.Context, userID, accountID int64, limit, offset int) ([]*domain.Transaction, error)
 	Count(ctx context.Context, userID int64) (int64, error)
+	CountByAccount(ctx context.Context, userID, accountID int64) (int64, error)
 	StatsByCategory(ctx context.Context, userID int64, from, to time.Time) ([]domain.CategoryStat, error)
+	StatsByCategoryAndAccount(ctx context.Context, userID, accountID int64, from, to time.Time) ([]domain.CategoryStat, error)
 	ListByCategoryPeriod(ctx context.Context, userID, categoryID int64, from, to time.Time) ([]*domain.Transaction, error)
 	Update(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
 }

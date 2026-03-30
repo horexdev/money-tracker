@@ -104,6 +104,57 @@ SELECT COALESCE(
 FROM transactions
 WHERE user_id = $1;
 
+-- name: ListTransactionsByAccount :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.exchange_rate_snapshot,
+    t.base_currency_at_creation,
+    c.name  AS category_name,
+    c.emoji AS category_emoji,
+    c.color AS category_color
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+WHERE t.user_id = $1 AND t.account_id = $2
+ORDER BY t.created_at DESC
+LIMIT $3 OFFSET $4;
+
+-- name: CountUserTransactionsByAccount :one
+SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2;
+
+-- name: GetStatsByCategoryAndAccount :many
+SELECT
+    c.name              AS category_name,
+    c.emoji             AS category_emoji,
+    c.color             AS category_color,
+    t.type,
+    t.currency_code,
+    SUM(t.amount_cents)::BIGINT AS total_cents,
+    COUNT(*)::BIGINT    AS tx_count
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+WHERE t.user_id    = $1
+  AND t.account_id = $2
+  AND t.created_at >= $3
+  AND t.created_at <  $4
+GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
+ORDER BY total_cents DESC;
+
+-- name: GetBalanceByCurrencyAndAccount :many
+SELECT
+    currency_code,
+    COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
+    COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
+FROM transactions
+WHERE user_id = $1 AND account_id = $2
+GROUP BY currency_code;
+
 -- name: UpdateTransaction :one
 UPDATE transactions
 SET amount_cents = $3,

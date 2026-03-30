@@ -46,6 +46,7 @@ type transactionManager interface {
 	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error)
 	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error)
 	ListPaged(ctx context.Context, userID int64, page, pageSize int) ([]*domain.Transaction, int, error)
+	ListPagedByAccount(ctx context.Context, userID, accountID int64, page, pageSize int) ([]*domain.Transaction, int, error)
 	Delete(ctx context.Context, id, userID int64) error
 	UpdateTransaction(ctx context.Context, userID, id, amountCents, categoryID int64, note string, createdAt time.Time) (*domain.Transaction, error)
 }
@@ -105,7 +106,18 @@ func listTransactions(w http.ResponseWriter, r *http.Request, userID int64, txSv
 		pageSize = defaultPageSize
 	}
 
-	txs, totalPages, err := txSvc.ListPaged(r.Context(), userID, page, pageSize)
+	var txs []*domain.Transaction
+	var totalPages int
+	var err error
+	if accountIDStr := q.Get("account_id"); accountIDStr != "" {
+		if accountID, parseErr := strconv.ParseInt(accountIDStr, 10, 64); parseErr == nil && accountID > 0 {
+			txs, totalPages, err = txSvc.ListPagedByAccount(r.Context(), userID, accountID, page, pageSize)
+		} else {
+			txs, totalPages, err = txSvc.ListPaged(r.Context(), userID, page, pageSize)
+		}
+	} else {
+		txs, totalPages, err = txSvc.ListPaged(r.Context(), userID, page, pageSize)
+	}
 	if err != nil {
 		writeError(w, log, err)
 		return

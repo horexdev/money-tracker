@@ -20,6 +20,7 @@ type Querier interface {
 	CountTransactionsByCategory(ctx context.Context, categoryID int64) (int64, error)
 	CountTransfersByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactions(ctx context.Context, userID int64) (int64, error)
+	CountUserTransactionsByAccount(ctx context.Context, arg CountUserTransactionsByAccountParams) (int64, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateRecurring(ctx context.Context, arg CreateRecurringParams) (RecurringTransaction, error)
@@ -54,6 +55,7 @@ type Querier interface {
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetBalance(ctx context.Context, userID int64) (GetBalanceRow, error)
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]GetBalanceByCurrencyRow, error)
+	GetBalanceByCurrencyAndAccount(ctx context.Context, arg GetBalanceByCurrencyAndAccountParams) ([]GetBalanceByCurrencyAndAccountRow, error)
 	GetBudgetByID(ctx context.Context, arg GetBudgetByIDParams) (Budget, error)
 	GetBudgetByUserCategoryPeriod(ctx context.Context, arg GetBudgetByUserCategoryPeriodParams) (Budget, error)
 	GetCategoryByID(ctx context.Context, id int64) (Category, error)
@@ -64,10 +66,12 @@ type Querier interface {
 	GetSavingsGoalByID(ctx context.Context, arg GetSavingsGoalByIDParams) (SavingsGoal, error)
 	GetSpentInPeriod(ctx context.Context, arg GetSpentInPeriodParams) (int64, error)
 	GetStatsByCategory(ctx context.Context, arg GetStatsByCategoryParams) ([]GetStatsByCategoryRow, error)
+	GetStatsByCategoryAndAccount(ctx context.Context, arg GetStatsByCategoryAndAccountParams) ([]GetStatsByCategoryAndAccountRow, error)
 	// Returns net balance (income - expense) summed across all transactions converted to the user's
 	// base currency using the exchange_rate_snapshot stored at the time each transaction was created.
 	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 	GetTransferByID(ctx context.Context, arg GetTransferByIDParams) (GetTransferByIDRow, error)
+	GetTransferTxIDs(ctx context.Context, arg GetTransferTxIDsParams) (GetTransferTxIDsRow, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	InsertGoalTransaction(ctx context.Context, arg InsertGoalTransactionParams) error
 	ListAccountsByUser(ctx context.Context, userID int64) ([]Account, error)
@@ -79,6 +83,7 @@ type Querier interface {
 	ListRecurringByUser(ctx context.Context, userID int64) ([]ListRecurringByUserRow, error)
 	ListSavingsGoalsByUser(ctx context.Context, userID int64) ([]SavingsGoal, error)
 	ListTransactions(ctx context.Context, arg ListTransactionsParams) ([]ListTransactionsRow, error)
+	ListTransactionsByAccount(ctx context.Context, arg ListTransactionsByAccountParams) ([]ListTransactionsByAccountRow, error)
 	ListTransactionsByCategoryPeriod(ctx context.Context, arg ListTransactionsByCategoryPeriodParams) ([]ListTransactionsByCategoryPeriodRow, error)
 	ListTransfersByAccount(ctx context.Context, arg ListTransfersByAccountParams) ([]ListTransfersByAccountRow, error)
 	ListTransfersByUser(ctx context.Context, arg ListTransfersByUserParams) ([]ListTransfersByUserRow, error)

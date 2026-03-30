@@ -215,6 +215,40 @@ func (s *TransactionService) ListPaged(ctx context.Context, userID int64, page, 
 	return txs, totalPages, nil
 }
 
+// ListPagedByAccount returns a page of transactions for a specific account.
+func (s *TransactionService) ListPagedByAccount(ctx context.Context, userID, accountID int64, page, pageSize int) ([]*domain.Transaction, int, error) {
+	total, err := s.txRepo.CountByAccount(ctx, userID, accountID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count transactions for account %d: %w", accountID, err)
+	}
+
+	totalPages := int(total) / pageSize
+	if int(total)%pageSize != 0 {
+		totalPages++
+	}
+	if totalPages == 0 {
+		totalPages = 1
+	}
+	if page < 1 {
+		page = 1
+	}
+	if page > totalPages {
+		page = totalPages
+	}
+
+	offset := (page - 1) * pageSize
+	txs, err := s.txRepo.ListByAccount(ctx, userID, accountID, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list transactions for account %d: %w", accountID, err)
+	}
+	return txs, totalPages, nil
+}
+
+// GetBalanceByCurrencyAndAccount returns per-currency balance for a specific account.
+func (s *TransactionService) GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error) {
+	return s.txRepo.GetBalanceByCurrencyAndAccount(ctx, userID, accountID)
+}
+
 // ListCategories returns all categories available to a user.
 func (s *TransactionService) ListCategories(ctx context.Context, userID int64) ([]*domain.Category, error) {
 	cats, err := s.catRepo.ListForUser(ctx, userID)

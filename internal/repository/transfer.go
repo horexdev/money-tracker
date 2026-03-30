@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -37,6 +38,8 @@ func transferFromRow(r sqlcgen.Transfer, fromName, toName string) *domain.Transf
 		ExchangeRate:     goFloat64(r.ExchangeRate),
 		Note:             r.Note,
 		CreatedAt:        r.CreatedAt.Time,
+		FromTxID:         goInt64Ptr(r.FromTxID),
+		ToTxID:           goInt64Ptr(r.ToTxID),
 	}
 }
 
@@ -51,6 +54,9 @@ func (r *TransferRepository) Create(ctx context.Context, t *domain.Transfer) (*d
 		ToCurrencyCode:   t.ToCurrencyCode,
 		ExchangeRate:     pgNumeric(t.ExchangeRate),
 		Note:             t.Note,
+		CreatedAt:        pgTimestamptz(time.Now()),
+		FromTxID:         pgOptionalInt8(t.FromTxID),
+		ToTxID:           pgOptionalInt8(t.ToTxID),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create transfer: %w", err)
@@ -80,6 +86,8 @@ func (r *TransferRepository) GetByID(ctx context.Context, id, userID int64) (*do
 		ExchangeRate:     goFloat64(row.ExchangeRate),
 		Note:             row.Note,
 		CreatedAt:        row.CreatedAt.Time,
+		FromTxID:         goInt64Ptr(row.FromTxID),
+		ToTxID:           goInt64Ptr(row.ToTxID),
 	}, nil
 }
 

@@ -1,7 +1,10 @@
 -- name: CreateTransfer :one
-INSERT INTO transfers (user_id, from_account_id, to_account_id, amount_cents, from_currency_code, to_currency_code, exchange_rate, note, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO transfers (user_id, from_account_id, to_account_id, amount_cents, from_currency_code, to_currency_code, exchange_rate, note, created_at, from_tx_id, to_tx_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 RETURNING *;
+
+-- name: GetTransferTxIDs :one
+SELECT from_tx_id, to_tx_id FROM transfers WHERE id = $1 AND user_id = $2;
 
 -- name: GetTransferByID :one
 SELECT

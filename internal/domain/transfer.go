@@ -17,4 +17,8 @@ type Transfer struct {
 	ExchangeRate     float64
 	Note             string
 	CreatedAt        time.Time
+	// FromTxID and ToTxID are the IDs of the auto-created debit/credit transactions.
+	// Nil for transfers created before migration 00020.
+	FromTxID *int64
+	ToTxID   *int64
 }

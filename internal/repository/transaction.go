@@ -240,3 +240,89 @@ func (r *TransactionRepository) StatsByCategory(ctx context.Context, userID int6
 	}
 	return stats, nil
 }
+
+// ListByAccount returns paginated transactions for a specific account.
+func (r *TransactionRepository) ListByAccount(ctx context.Context, userID, accountID int64, limit, offset int) ([]*domain.Transaction, error) {
+	rows, err := r.q.ListTransactionsByAccount(ctx, sqlcgen.ListTransactionsByAccountParams{
+		UserID:    userID,
+		AccountID: pgOptionalInt8(&accountID),
+		Limit:     int32(limit),
+		Offset:    int32(offset),
+	})
+	if err != nil {
+		return nil, err
+	}
+	txs := make([]*domain.Transaction, 0, len(rows))
+	for _, row := range rows {
+		txs = append(txs, &domain.Transaction{
+			ID:                     row.ID,
+			UserID:                 row.UserID,
+			Type:                   row.Type,
+			AmountCents:            row.AmountCents,
+			CategoryID:             row.CategoryID,
+			CategoryName:           row.CategoryName,
+			CategoryEmoji:          row.CategoryEmoji,
+			CategoryColor:          row.CategoryColor,
+			Note:                   row.Note,
+			CurrencyCode:           row.CurrencyCode,
+			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
+			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
+			CreatedAt:              goTime(row.CreatedAt),
+		})
+	}
+	return txs, nil
+}
+
+// CountByAccount returns total transactions count for a specific account.
+func (r *TransactionRepository) CountByAccount(ctx context.Context, userID, accountID int64) (int64, error) {
+	return r.q.CountUserTransactionsByAccount(ctx, sqlcgen.CountUserTransactionsByAccountParams{
+		UserID:    userID,
+		AccountID: pgOptionalInt8(&accountID),
+	})
+}
+
+// StatsByCategoryAndAccount returns stats filtered by account.
+func (r *TransactionRepository) StatsByCategoryAndAccount(ctx context.Context, userID, accountID int64, from, to time.Time) ([]domain.CategoryStat, error) {
+	rows, err := r.q.GetStatsByCategoryAndAccount(ctx, sqlcgen.GetStatsByCategoryAndAccountParams{
+		UserID:      userID,
+		AccountID:   pgOptionalInt8(&accountID),
+		CreatedAt:   pgTimestamptz(from),
+		CreatedAt_2: pgTimestamptz(to),
+	})
+	if err != nil {
+		return nil, err
+	}
+	stats := make([]domain.CategoryStat, 0, len(rows))
+	for _, row := range rows {
+		stats = append(stats, domain.CategoryStat{
+			CategoryName:  row.CategoryName,
+			CategoryEmoji: row.CategoryEmoji,
+			CategoryColor: row.CategoryColor,
+			Type:          row.Type,
+			CurrencyCode:  row.CurrencyCode,
+			TotalCents:    row.TotalCents,
+			TxCount:       row.TxCount,
+		})
+	}
+	return stats, nil
+}
+
+// GetBalanceByCurrencyAndAccount returns per-currency income/expense for a specific account.
+func (r *TransactionRepository) GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error) {
+	rows, err := r.q.GetBalanceByCurrencyAndAccount(ctx, sqlcgen.GetBalanceByCurrencyAndAccountParams{
+		UserID:    userID,
+		AccountID: pgOptionalInt8(&accountID),
+	})
+	if err != nil {
+		return nil, err
+	}
+	result := make([]domain.BalanceByCurrency, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, domain.BalanceByCurrency{
+			CurrencyCode: row.CurrencyCode,
+			IncomeCents:  row.TotalIncome,
+			ExpenseCents: row.TotalExpense,
+		})
+	}
+	return result, nil
+}

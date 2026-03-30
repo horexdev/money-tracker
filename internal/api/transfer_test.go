@@ -18,7 +18,7 @@ import (
 )
 
 func buildTransferHandler(transferRepo *mocks.MockTransferStorer, accountRepo *mocks.MockAccountStorer, goalRepo *mocks.MockSavingsGoalStorer) http.HandlerFunc {
-	svc := service.NewTransferService(transferRepo, accountRepo, goalRepo, testutil.TestLogger())
+	svc := service.NewTransferService(transferRepo, accountRepo, goalRepo, &mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{}, testutil.TestLogger())
 	return api.TransfersHandlerForTest(svc, testutil.TestLogger())
 }
 
@@ -54,6 +54,8 @@ func TestTransferHandler_POST_SameAccount(t *testing.T) {
 
 func TestTransferHandler_DELETE_Success(t *testing.T) {
 	repo := &mocks.MockTransferStorer{}
+	// Delete now calls GetByID first to retrieve linked tx IDs, then Delete.
+	repo.On("GetByID", mock.Anything, int64(5), int64(1)).Return(&domain.Transfer{ID: 5}, nil)
 	repo.On("Delete", mock.Anything, int64(5), int64(1)).Return(nil)
 
 	h := buildTransferHandler(repo, &mocks.MockAccountStorer{}, &mocks.MockSavingsGoalStorer{})

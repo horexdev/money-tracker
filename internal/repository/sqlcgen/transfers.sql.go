@@ -23,9 +23,9 @@ func (q *Queries) CountTransfersByUser(ctx context.Context, userID int64) (int64
 }
 
 const createTransfer = `-- name: CreateTransfer :one
-INSERT INTO transfers (user_id, from_account_id, to_account_id, amount_cents, from_currency_code, to_currency_code, exchange_rate, note, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, user_id, from_account_id, to_account_id, amount_cents, from_currency_code, to_currency_code, exchange_rate, note, created_at
+INSERT INTO transfers (user_id, from_account_id, to_account_id, amount_cents, from_currency_code, to_currency_code, exchange_rate, note, created_at, from_tx_id, to_tx_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+RETURNING id, user_id, from_account_id, to_account_id, amount_cents, from_currency_code, to_currency_code, exchange_rate, note, created_at, from_tx_id, to_tx_id
 `
 
 type CreateTransferParams struct {
@@ -38,6 +38,8 @@ type CreateTransferParams struct {
 	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
 	Note             string             `json:"note"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromTxID         pgtype.Int8        `json:"from_tx_id"`
+	ToTxID           pgtype.Int8        `json:"to_tx_id"`
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
@@ -51,6 +53,8 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 		arg.ExchangeRate,
 		arg.Note,
 		arg.CreatedAt,
+		arg.FromTxID,
+		arg.ToTxID,
 	)
 	var i Transfer
 	err := row.Scan(
@@ -64,6 +68,8 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 		&i.ExchangeRate,
 		&i.Note,
 		&i.CreatedAt,
+		&i.FromTxID,
+		&i.ToTxID,
 	)
 	return i, err
 }
@@ -84,7 +90,7 @@ func (q *Queries) DeleteTransfer(ctx context.Context, arg DeleteTransferParams) 
 
 const getTransferByID = `-- name: GetTransferByID :one
 SELECT
-    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
+    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at, t.from_tx_id, t.to_tx_id,
     fa.name AS from_account_name,
     ta.name AS to_account_name
 FROM transfers t
@@ -109,6 +115,8 @@ type GetTransferByIDRow struct {
 	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
 	Note             string             `json:"note"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromTxID         pgtype.Int8        `json:"from_tx_id"`
+	ToTxID           pgtype.Int8        `json:"to_tx_id"`
 	FromAccountName  string             `json:"from_account_name"`
 	ToAccountName    string             `json:"to_account_name"`
 }
@@ -127,15 +135,38 @@ func (q *Queries) GetTransferByID(ctx context.Context, arg GetTransferByIDParams
 		&i.ExchangeRate,
 		&i.Note,
 		&i.CreatedAt,
+		&i.FromTxID,
+		&i.ToTxID,
 		&i.FromAccountName,
 		&i.ToAccountName,
 	)
 	return i, err
 }
 
+const getTransferTxIDs = `-- name: GetTransferTxIDs :one
+SELECT from_tx_id, to_tx_id FROM transfers WHERE id = $1 AND user_id = $2
+`
+
+type GetTransferTxIDsParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+type GetTransferTxIDsRow struct {
+	FromTxID pgtype.Int8 `json:"from_tx_id"`
+	ToTxID   pgtype.Int8 `json:"to_tx_id"`
+}
+
+func (q *Queries) GetTransferTxIDs(ctx context.Context, arg GetTransferTxIDsParams) (GetTransferTxIDsRow, error) {
+	row := q.db.QueryRow(ctx, getTransferTxIDs, arg.ID, arg.UserID)
+	var i GetTransferTxIDsRow
+	err := row.Scan(&i.FromTxID, &i.ToTxID)
+	return i, err
+}
+
 const listTransfersByAccount = `-- name: ListTransfersByAccount :many
 SELECT
-    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
+    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at, t.from_tx_id, t.to_tx_id,
     fa.name AS from_account_name,
     ta.name AS to_account_name
 FROM transfers t
@@ -162,6 +193,8 @@ type ListTransfersByAccountRow struct {
 	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
 	Note             string             `json:"note"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromTxID         pgtype.Int8        `json:"from_tx_id"`
+	ToTxID           pgtype.Int8        `json:"to_tx_id"`
 	FromAccountName  string             `json:"from_account_name"`
 	ToAccountName    string             `json:"to_account_name"`
 }
@@ -186,6 +219,8 @@ func (q *Queries) ListTransfersByAccount(ctx context.Context, arg ListTransfersB
 			&i.ExchangeRate,
 			&i.Note,
 			&i.CreatedAt,
+			&i.FromTxID,
+			&i.ToTxID,
 			&i.FromAccountName,
 			&i.ToAccountName,
 		); err != nil {
@@ -201,7 +236,7 @@ func (q *Queries) ListTransfersByAccount(ctx context.Context, arg ListTransfersB
 
 const listTransfersByUser = `-- name: ListTransfersByUser :many
 SELECT
-    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
+    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at, t.from_tx_id, t.to_tx_id,
     fa.name AS from_account_name,
     ta.name AS to_account_name
 FROM transfers t
@@ -229,6 +264,8 @@ type ListTransfersByUserRow struct {
 	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
 	Note             string             `json:"note"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromTxID         pgtype.Int8        `json:"from_tx_id"`
+	ToTxID           pgtype.Int8        `json:"to_tx_id"`
 	FromAccountName  string             `json:"from_account_name"`
 	ToAccountName    string             `json:"to_account_name"`
 }
@@ -253,6 +290,8 @@ func (q *Queries) ListTransfersByUser(ctx context.Context, arg ListTransfersByUs
 			&i.ExchangeRate,
 			&i.Note,
 			&i.CreatedAt,
+			&i.FromTxID,
+			&i.ToTxID,
 			&i.FromAccountName,
 			&i.ToAccountName,
 		); err != nil {

@@ -23,6 +23,22 @@ func (q *Queries) CountUserTransactions(ctx context.Context, userID int64) (int6
 	return column_1, err
 }
 
+const countUserTransactionsByAccount = `-- name: CountUserTransactionsByAccount :one
+SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2
+`
+
+type CountUserTransactionsByAccountParams struct {
+	UserID    int64       `json:"user_id"`
+	AccountID pgtype.Int8 `json:"account_id"`
+}
+
+func (q *Queries) CountUserTransactionsByAccount(ctx context.Context, arg CountUserTransactionsByAccountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserTransactionsByAccount, arg.UserID, arg.AccountID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -189,6 +205,47 @@ func (q *Queries) GetBalanceByCurrency(ctx context.Context, userID int64) ([]Get
 	return items, nil
 }
 
+const getBalanceByCurrencyAndAccount = `-- name: GetBalanceByCurrencyAndAccount :many
+SELECT
+    currency_code,
+    COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
+    COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
+FROM transactions
+WHERE user_id = $1 AND account_id = $2
+GROUP BY currency_code
+`
+
+type GetBalanceByCurrencyAndAccountParams struct {
+	UserID    int64       `json:"user_id"`
+	AccountID pgtype.Int8 `json:"account_id"`
+}
+
+type GetBalanceByCurrencyAndAccountRow struct {
+	CurrencyCode string `json:"currency_code"`
+	TotalIncome  int64  `json:"total_income"`
+	TotalExpense int64  `json:"total_expense"`
+}
+
+func (q *Queries) GetBalanceByCurrencyAndAccount(ctx context.Context, arg GetBalanceByCurrencyAndAccountParams) ([]GetBalanceByCurrencyAndAccountRow, error) {
+	rows, err := q.db.Query(ctx, getBalanceByCurrencyAndAccount, arg.UserID, arg.AccountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetBalanceByCurrencyAndAccountRow{}
+	for rows.Next() {
+		var i GetBalanceByCurrencyAndAccountRow
+		if err := rows.Scan(&i.CurrencyCode, &i.TotalIncome, &i.TotalExpense); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getStatsByCategory = `-- name: GetStatsByCategory :many
 SELECT
     c.name              AS category_name,
@@ -232,6 +289,75 @@ func (q *Queries) GetStatsByCategory(ctx context.Context, arg GetStatsByCategory
 	items := []GetStatsByCategoryRow{}
 	for rows.Next() {
 		var i GetStatsByCategoryRow
+		if err := rows.Scan(
+			&i.CategoryName,
+			&i.CategoryEmoji,
+			&i.CategoryColor,
+			&i.Type,
+			&i.CurrencyCode,
+			&i.TotalCents,
+			&i.TxCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStatsByCategoryAndAccount = `-- name: GetStatsByCategoryAndAccount :many
+SELECT
+    c.name              AS category_name,
+    c.emoji             AS category_emoji,
+    c.color             AS category_color,
+    t.type,
+    t.currency_code,
+    SUM(t.amount_cents)::BIGINT AS total_cents,
+    COUNT(*)::BIGINT    AS tx_count
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+WHERE t.user_id    = $1
+  AND t.account_id = $2
+  AND t.created_at >= $3
+  AND t.created_at <  $4
+GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
+ORDER BY total_cents DESC
+`
+
+type GetStatsByCategoryAndAccountParams struct {
+	UserID      int64              `json:"user_id"`
+	AccountID   pgtype.Int8        `json:"account_id"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	CreatedAt_2 pgtype.Timestamptz `json:"created_at_2"`
+}
+
+type GetStatsByCategoryAndAccountRow struct {
+	CategoryName  string                 `json:"category_name"`
+	CategoryEmoji string                 `json:"category_emoji"`
+	CategoryColor string                 `json:"category_color"`
+	Type          domain.TransactionType `json:"type"`
+	CurrencyCode  string                 `json:"currency_code"`
+	TotalCents    int64                  `json:"total_cents"`
+	TxCount       int64                  `json:"tx_count"`
+}
+
+func (q *Queries) GetStatsByCategoryAndAccount(ctx context.Context, arg GetStatsByCategoryAndAccountParams) ([]GetStatsByCategoryAndAccountRow, error) {
+	rows, err := q.db.Query(ctx, getStatsByCategoryAndAccount,
+		arg.UserID,
+		arg.AccountID,
+		arg.CreatedAt,
+		arg.CreatedAt_2,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetStatsByCategoryAndAccountRow{}
+	for rows.Next() {
+		var i GetStatsByCategoryAndAccountRow
 		if err := rows.Scan(
 			&i.CategoryName,
 			&i.CategoryEmoji,
@@ -324,6 +450,90 @@ func (q *Queries) ListTransactions(ctx context.Context, arg ListTransactionsPara
 	items := []ListTransactionsRow{}
 	for rows.Next() {
 		var i ListTransactionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Type,
+			&i.AmountCents,
+			&i.CategoryID,
+			&i.Note,
+			&i.CreatedAt,
+			&i.CurrencyCode,
+			&i.ExchangeRateSnapshot,
+			&i.BaseCurrencyAtCreation,
+			&i.CategoryName,
+			&i.CategoryEmoji,
+			&i.CategoryColor,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTransactionsByAccount = `-- name: ListTransactionsByAccount :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.exchange_rate_snapshot,
+    t.base_currency_at_creation,
+    c.name  AS category_name,
+    c.emoji AS category_emoji,
+    c.color AS category_color
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+WHERE t.user_id = $1 AND t.account_id = $2
+ORDER BY t.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type ListTransactionsByAccountParams struct {
+	UserID    int64       `json:"user_id"`
+	AccountID pgtype.Int8 `json:"account_id"`
+	Limit     int32       `json:"limit"`
+	Offset    int32       `json:"offset"`
+}
+
+type ListTransactionsByAccountRow struct {
+	ID                     int64                  `json:"id"`
+	UserID                 int64                  `json:"user_id"`
+	Type                   domain.TransactionType `json:"type"`
+	AmountCents            int64                  `json:"amount_cents"`
+	CategoryID             int64                  `json:"category_id"`
+	Note                   string                 `json:"note"`
+	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode           string                 `json:"currency_code"`
+	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
+	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
+	CategoryName           string                 `json:"category_name"`
+	CategoryEmoji          string                 `json:"category_emoji"`
+	CategoryColor          string                 `json:"category_color"`
+}
+
+func (q *Queries) ListTransactionsByAccount(ctx context.Context, arg ListTransactionsByAccountParams) ([]ListTransactionsByAccountRow, error) {
+	rows, err := q.db.Query(ctx, listTransactionsByAccount,
+		arg.UserID,
+		arg.AccountID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTransactionsByAccountRow{}
+	for rows.Next() {
+		var i ListTransactionsByAccountRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
