@@ -9,6 +9,8 @@ import {
   mockSettings,
   mockAccounts,
   mockTransfers,
+  mockAdminStats,
+  mockAdminUsers,
 } from './data'
 
 // Approximate exchange rates relative to USD for mock purposes
@@ -203,6 +205,18 @@ const routes: Array<{ pattern: RegExp; handler: RouteHandler }> = [
   {
     pattern: /\/api\/v1\/settings$/,
     handler: () => mockSettings,
+  },
+  {
+    pattern: /\/api\/v1\/admin\/stats$/,
+    handler: () => mockAdminStats,
+  },
+  {
+    pattern: /\/api\/v1\/admin\/users$/,
+    handler: (url) => {
+      const page = Number(url.searchParams.get('page') || '1')
+      const pageSize = Number(url.searchParams.get('page_size') || '20')
+      return { ...mockAdminUsers, page, page_size: pageSize }
+    },
   },
   {
     pattern: /\/api\/v1\/export$/,

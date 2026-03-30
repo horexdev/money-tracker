@@ -208,7 +208,22 @@
     "recurring": "Тұрақты",
     "savings": "Жинақ мақсаттары",
     "export": "Экспорт",
-    "settings": "Баптаулар"
+    "settings": "Баптаулар",
+    "admin_panel": "Админ панель"
+  },
+  "admin": {
+    "title": "Админ панель",
+    "total_users": "Барлық пайдаланушылар",
+    "new_today": "Бүгін жаңа",
+    "new_this_week": "Аптада",
+    "new_this_month": "Айда",
+    "retention": "Ұстау",
+    "retention_day1": "1 күн",
+    "retention_day7": "7 күн",
+    "retention_day30": "30 күн",
+    "user_list": "Пайдаланушылар",
+    "no_users": "Пайдаланушылар табылмады",
+    "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Шоттар",
   "accountsAll": "Барлық шоттар"

@@ -208,7 +208,22 @@
     "recurring": "Регулярні",
     "savings": "Цілі заощаджень",
     "export": "Експорт",
-    "settings": "Налаштування"
+    "settings": "Налаштування",
+    "admin_panel": "Адмін панель"
+  },
+  "admin": {
+    "title": "Адмін панель",
+    "total_users": "Всього користувачів",
+    "new_today": "Нові сьогодні",
+    "new_this_week": "За тиждень",
+    "new_this_month": "За місяць",
+    "retention": "Утримання",
+    "retention_day1": "День 1",
+    "retention_day7": "День 7",
+    "retention_day30": "День 30",
+    "user_list": "Користувачі",
+    "no_users": "Користувачів не знайдено",
+    "page_of": "{{page}} з {{total}}"
   },
   "accounts": "Рахунки",
   "accountsAll": "Всі рахунки"

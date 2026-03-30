@@ -208,7 +208,22 @@
     "recurring": "Terugkerend",
     "savings": "Spaardoelen",
     "export": "Exporteren",
-    "settings": "Instellingen"
+    "settings": "Instellingen",
+    "admin_panel": "Beheerpaneel"
+  },
+  "admin": {
+    "title": "Beheerpaneel",
+    "total_users": "Totaal gebruikers",
+    "new_today": "Nieuw vandaag",
+    "new_this_week": "Deze week",
+    "new_this_month": "Deze maand",
+    "retention": "Retentie",
+    "retention_day1": "Dag 1",
+    "retention_day7": "Dag 7",
+    "retention_day30": "Dag 30",
+    "user_list": "Gebruikers",
+    "no_users": "Geen gebruikers gevonden",
+    "page_of": "{{page}} van {{total}}"
   },
   "accounts": "Rekeningen",
   "accountsAll": "Alle rekeningen"

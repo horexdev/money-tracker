@@ -26,7 +26,7 @@ func (q *Queries) CountUserTransactions(ctx context.Context, userID int64) (int6
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
 `
 
 type CreateTransactionParams struct {
@@ -63,6 +63,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		&i.CurrencyCode,
 		&i.ExchangeRateSnapshot,
 		&i.BaseCurrencyAtCreation,
+		&i.AccountID,
 	)
 	return i, err
 }
@@ -70,7 +71,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 const createTransactionWithDate = `-- name: CreateTransactionWithDate :one
 INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, created_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
 `
 
 type CreateTransactionWithDateParams struct {
@@ -109,6 +110,7 @@ func (q *Queries) CreateTransactionWithDate(ctx context.Context, arg CreateTrans
 		&i.CurrencyCode,
 		&i.ExchangeRateSnapshot,
 		&i.BaseCurrencyAtCreation,
+		&i.AccountID,
 	)
 	return i, err
 }
@@ -437,7 +439,7 @@ SET amount_cents = $3,
     note         = $5,
     created_at   = $6
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
 `
 
 type UpdateTransactionParams struct {
@@ -470,6 +472,7 @@ func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionPa
 		&i.CurrencyCode,
 		&i.ExchangeRateSnapshot,
 		&i.BaseCurrencyAtCreation,
+		&i.AccountID,
 	)
 	return i, err
 }

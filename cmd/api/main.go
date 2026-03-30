@@ -67,6 +67,7 @@ func main() {
 	goalRepo := repository.NewSavingsGoalRepository(pool)
 	accountRepo := repository.NewAccountRepository(pool)
 	transferRepo := repository.NewTransferRepository(pool)
+	adminRepo := repository.NewAdminRepository(pool)
 
 	// Services.
 	userSvc := service.NewUserService(userRepo, log)
@@ -80,6 +81,7 @@ func main() {
 	exportSvc := service.NewExportService(txRepo, log)
 	accountSvc := service.NewAccountService(accountRepo, log)
 	transferSvc := service.NewTransferService(transferRepo, accountRepo, goalRepo, log)
+	adminSvc := service.NewAdminService(adminRepo, log)
 
 	// Wire budget notifier if a bot token is configured.
 	if cfg.BotToken != "" {
@@ -103,6 +105,7 @@ func main() {
 		ExportSvc:      exportSvc,
 		AccountSvc:     accountSvc,
 		TransferSvc:    transferSvc,
+		AdminSvc:       adminSvc,
 		BotToken:       cfg.BotToken,
 		AllowedOrigins: cfg.AllowedOrigins,
 		Log:            log,

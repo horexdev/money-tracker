@@ -208,7 +208,22 @@
     "recurring": "Wiederkehrend",
     "savings": "Sparziele",
     "export": "Exportieren",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "admin_panel": "Admin-Panel"
+  },
+  "admin": {
+    "title": "Admin-Panel",
+    "total_users": "Nutzer gesamt",
+    "new_today": "Heute neu",
+    "new_this_week": "Diese Woche",
+    "new_this_month": "Diesen Monat",
+    "retention": "Bindung",
+    "retention_day1": "Tag 1",
+    "retention_day7": "Tag 7",
+    "retention_day30": "Tag 30",
+    "user_list": "Benutzer",
+    "no_users": "Keine Benutzer gefunden",
+    "page_of": "{{page}} von {{total}}"
   },
   "accounts": "Konten",
   "accountsAll": "Alle Konten"

@@ -34,7 +34,7 @@ func transferFromRow(r sqlcgen.Transfer, fromName, toName string) *domain.Transf
 		AmountCents:      r.AmountCents,
 		FromCurrencyCode: r.FromCurrencyCode,
 		ToCurrencyCode:   r.ToCurrencyCode,
-		ExchangeRate:     r.ExchangeRate,
+		ExchangeRate:     goFloat64(r.ExchangeRate),
 		Note:             r.Note,
 		CreatedAt:        r.CreatedAt.Time,
 	}
@@ -49,7 +49,7 @@ func (r *TransferRepository) Create(ctx context.Context, t *domain.Transfer) (*d
 		AmountCents:      t.AmountCents,
 		FromCurrencyCode: t.FromCurrencyCode,
 		ToCurrencyCode:   t.ToCurrencyCode,
-		ExchangeRate:     t.ExchangeRate,
+		ExchangeRate:     pgNumeric(t.ExchangeRate),
 		Note:             t.Note,
 	})
 	if err != nil {
@@ -67,7 +67,20 @@ func (r *TransferRepository) GetByID(ctx context.Context, id, userID int64) (*do
 		}
 		return nil, fmt.Errorf("get transfer by id: %w", err)
 	}
-	return transferFromRow(row.Transfer, row.FromAccountName, row.ToAccountName), nil
+	return &domain.Transfer{
+		ID:               row.ID,
+		UserID:           row.UserID,
+		FromAccountID:    row.FromAccountID,
+		ToAccountID:      row.ToAccountID,
+		FromAccountName:  row.FromAccountName,
+		ToAccountName:    row.ToAccountName,
+		AmountCents:      row.AmountCents,
+		FromCurrencyCode: row.FromCurrencyCode,
+		ToCurrencyCode:   row.ToCurrencyCode,
+		ExchangeRate:     goFloat64(row.ExchangeRate),
+		Note:             row.Note,
+		CreatedAt:        row.CreatedAt.Time,
+	}, nil
 }
 
 // ListByUser returns paginated transfers for a user.
@@ -82,7 +95,20 @@ func (r *TransferRepository) ListByUser(ctx context.Context, userID int64, limit
 	}
 	out := make([]*domain.Transfer, 0, len(rows))
 	for _, row := range rows {
-		out = append(out, transferFromRow(row.Transfer, row.FromAccountName, row.ToAccountName))
+		out = append(out, &domain.Transfer{
+			ID:               row.ID,
+			UserID:           row.UserID,
+			FromAccountID:    row.FromAccountID,
+			ToAccountID:      row.ToAccountID,
+			FromAccountName:  row.FromAccountName,
+			ToAccountName:    row.ToAccountName,
+			AmountCents:      row.AmountCents,
+			FromCurrencyCode: row.FromCurrencyCode,
+			ToCurrencyCode:   row.ToCurrencyCode,
+			ExchangeRate:     goFloat64(row.ExchangeRate),
+			Note:             row.Note,
+			CreatedAt:        row.CreatedAt.Time,
+		})
 	}
 	return out, nil
 }
@@ -90,15 +116,28 @@ func (r *TransferRepository) ListByUser(ctx context.Context, userID int64, limit
 // ListByAccount returns all transfers involving a specific account.
 func (r *TransferRepository) ListByAccount(ctx context.Context, userID, accountID int64) ([]*domain.Transfer, error) {
 	rows, err := r.q.ListTransfersByAccount(ctx, sqlcgen.ListTransfersByAccountParams{
-		UserID:    userID,
-		AccountID: accountID,
+		UserID:        userID,
+		FromAccountID: accountID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("list transfers by account: %w", err)
 	}
 	out := make([]*domain.Transfer, 0, len(rows))
 	for _, row := range rows {
-		out = append(out, transferFromRow(row.Transfer, row.FromAccountName, row.ToAccountName))
+		out = append(out, &domain.Transfer{
+			ID:               row.ID,
+			UserID:           row.UserID,
+			FromAccountID:    row.FromAccountID,
+			ToAccountID:      row.ToAccountID,
+			FromAccountName:  row.FromAccountName,
+			ToAccountName:    row.ToAccountName,
+			AmountCents:      row.AmountCents,
+			FromCurrencyCode: row.FromCurrencyCode,
+			ToCurrencyCode:   row.ToCurrencyCode,
+			ExchangeRate:     goFloat64(row.ExchangeRate),
+			Note:             row.Note,
+			CreatedAt:        row.CreatedAt.Time,
+		})
 	}
 	return out, nil
 }

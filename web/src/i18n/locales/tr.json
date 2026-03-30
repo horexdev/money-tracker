@@ -208,7 +208,22 @@
     "recurring": "Tekrarlayan",
     "savings": "Birikim Hedefleri",
     "export": "Dışa Aktar",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "admin_panel": "Yönetim Paneli"
+  },
+  "admin": {
+    "title": "Yönetim Paneli",
+    "total_users": "Toplam kullanıcı",
+    "new_today": "Bugün yeni",
+    "new_this_week": "Bu hafta",
+    "new_this_month": "Bu ay",
+    "retention": "Elde tutma",
+    "retention_day1": "Gün 1",
+    "retention_day7": "Gün 7",
+    "retention_day30": "Gün 30",
+    "user_list": "Kullanıcılar",
+    "no_users": "Kullanıcı bulunamadı",
+    "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Hesaplar",
   "accountsAll": "Tüm hesaplar"

@@ -208,7 +208,22 @@
     "recurring": "Recorrentes",
     "savings": "Metas de poupança",
     "export": "Exportar",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "admin_panel": "Painel Admin"
+  },
+  "admin": {
+    "title": "Painel Admin",
+    "total_users": "Total de usuários",
+    "new_today": "Novos hoje",
+    "new_this_week": "Esta semana",
+    "new_this_month": "Este mês",
+    "retention": "Retenção",
+    "retention_day1": "Dia 1",
+    "retention_day7": "Dia 7",
+    "retention_day30": "Dia 30",
+    "user_list": "Usuários",
+    "no_users": "Nenhum usuário encontrado",
+    "page_of": "{{page}} de {{total}}"
   },
   "accounts": "Contas",
   "accountsAll": "Todas as contas"

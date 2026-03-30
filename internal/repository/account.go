@@ -154,7 +154,7 @@ func (r *AccountRepository) Delete(ctx context.Context, id, userID int64) error 
 // CountTransactions returns how many transactions are linked to the account.
 func (r *AccountRepository) CountTransactions(ctx context.Context, accountID, userID int64) (int64, error) {
 	n, err := r.q.CountAccountTransactions(ctx, sqlcgen.CountAccountTransactionsParams{
-		AccountID: accountID,
+		AccountID: pgInt8(accountID),
 		UserID:    userID,
 	})
 	if err != nil {
@@ -166,7 +166,7 @@ func (r *AccountRepository) CountTransactions(ctx context.Context, accountID, us
 // GetBalance returns the net balance (income - expense) for an account.
 func (r *AccountRepository) GetBalance(ctx context.Context, accountID, userID int64) (int64, error) {
 	cents, err := r.q.GetAccountBalance(ctx, sqlcgen.GetAccountBalanceParams{
-		AccountID: accountID,
+		AccountID: pgInt8(accountID),
 		UserID:    userID,
 	})
 	if err != nil {

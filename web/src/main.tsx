@@ -16,6 +16,13 @@ try {
 }
 
 if (!isTelegram && import.meta.env.DEV) {
+  // Simulate admin Telegram user for local development
+  ;(window as unknown as Record<string, unknown>).Telegram = {
+    WebApp: {
+      initDataUnsafe: { user: { id: 6554524765, language_code: 'en' } },
+      colorScheme: 'light',
+    },
+  }
   const { setupMockFetch } = await import('./mocks/setup')
   setupMockFetch()
 }

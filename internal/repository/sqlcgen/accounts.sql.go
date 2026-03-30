@@ -7,7 +7,36 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const clearDefaultAccounts = `-- name: ClearDefaultAccounts :exec
+UPDATE accounts SET is_default = false
+WHERE user_id = $1 AND is_default = true
+`
+
+func (q *Queries) ClearDefaultAccounts(ctx context.Context, userID int64) error {
+	_, err := q.db.Exec(ctx, clearDefaultAccounts, userID)
+	return err
+}
+
+const countAccountTransactions = `-- name: CountAccountTransactions :one
+SELECT COUNT(*)::BIGINT FROM transactions
+WHERE account_id = $1 AND user_id = $2
+`
+
+type CountAccountTransactionsParams struct {
+	AccountID pgtype.Int8 `json:"account_id"`
+	UserID    int64       `json:"user_id"`
+}
+
+func (q *Queries) CountAccountTransactions(ctx context.Context, arg CountAccountTransactionsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countAccountTransactions, arg.AccountID, arg.UserID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
 
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (user_id, name, icon, color, type, currency_code, is_default, include_in_total)
@@ -52,6 +81,42 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const deleteAccount = `-- name: DeleteAccount :exec
+DELETE FROM accounts WHERE id = $1 AND user_id = $2
+`
+
+type DeleteAccountParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteAccount(ctx context.Context, arg DeleteAccountParams) error {
+	_, err := q.db.Exec(ctx, deleteAccount, arg.ID, arg.UserID)
+	return err
+}
+
+const getAccountBalance = `-- name: GetAccountBalance :one
+SELECT COALESCE(
+    SUM(CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END), 0
+)::BIGINT AS balance_cents
+FROM transactions
+WHERE account_id = $1
+  AND user_id    = $2
+  AND type IN ('income', 'expense')
+`
+
+type GetAccountBalanceParams struct {
+	AccountID pgtype.Int8 `json:"account_id"`
+	UserID    int64       `json:"user_id"`
+}
+
+func (q *Queries) GetAccountBalance(ctx context.Context, arg GetAccountBalanceParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAccountBalance, arg.AccountID, arg.UserID)
+	var balance_cents int64
+	err := row.Scan(&balance_cents)
+	return balance_cents, err
 }
 
 const getAccountByID = `-- name: GetAccountByID :one
@@ -146,6 +211,36 @@ func (q *Queries) ListAccountsByUser(ctx context.Context, userID int64) ([]Accou
 	return items, nil
 }
 
+const setAccountDefault = `-- name: SetAccountDefault :one
+UPDATE accounts SET is_default = true, updated_at = now()
+WHERE id = $1 AND user_id = $2
+RETURNING id, user_id, name, icon, color, type, currency_code, is_default, include_in_total, created_at, updated_at
+`
+
+type SetAccountDefaultParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) SetAccountDefault(ctx context.Context, arg SetAccountDefaultParams) (Account, error) {
+	row := q.db.QueryRow(ctx, setAccountDefault, arg.ID, arg.UserID)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Icon,
+		&i.Color,
+		&i.Type,
+		&i.CurrencyCode,
+		&i.IsDefault,
+		&i.IncludeInTotal,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateAccount = `-- name: UpdateAccount :one
 UPDATE accounts
 SET name             = $3,
@@ -196,97 +291,4 @@ func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (A
 		&i.UpdatedAt,
 	)
 	return i, err
-}
-
-const clearDefaultAccounts = `-- name: ClearDefaultAccounts :exec
-UPDATE accounts SET is_default = false
-WHERE user_id = $1 AND is_default = true
-`
-
-func (q *Queries) ClearDefaultAccounts(ctx context.Context, userID int64) error {
-	_, err := q.db.Exec(ctx, clearDefaultAccounts, userID)
-	return err
-}
-
-const setAccountDefault = `-- name: SetAccountDefault :one
-UPDATE accounts SET is_default = true, updated_at = now()
-WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, name, icon, color, type, currency_code, is_default, include_in_total, created_at, updated_at
-`
-
-type SetAccountDefaultParams struct {
-	ID     int64 `json:"id"`
-	UserID int64 `json:"user_id"`
-}
-
-func (q *Queries) SetAccountDefault(ctx context.Context, arg SetAccountDefaultParams) (Account, error) {
-	row := q.db.QueryRow(ctx, setAccountDefault, arg.ID, arg.UserID)
-	var i Account
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Name,
-		&i.Icon,
-		&i.Color,
-		&i.Type,
-		&i.CurrencyCode,
-		&i.IsDefault,
-		&i.IncludeInTotal,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const deleteAccount = `-- name: DeleteAccount :exec
-DELETE FROM accounts WHERE id = $1 AND user_id = $2
-`
-
-type DeleteAccountParams struct {
-	ID     int64 `json:"id"`
-	UserID int64 `json:"user_id"`
-}
-
-func (q *Queries) DeleteAccount(ctx context.Context, arg DeleteAccountParams) error {
-	_, err := q.db.Exec(ctx, deleteAccount, arg.ID, arg.UserID)
-	return err
-}
-
-const countAccountTransactions = `-- name: CountAccountTransactions :one
-SELECT COUNT(*)::BIGINT FROM transactions
-WHERE account_id = $1 AND user_id = $2
-`
-
-type CountAccountTransactionsParams struct {
-	AccountID int64 `json:"account_id"`
-	UserID    int64 `json:"user_id"`
-}
-
-func (q *Queries) CountAccountTransactions(ctx context.Context, arg CountAccountTransactionsParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countAccountTransactions, arg.AccountID, arg.UserID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const getAccountBalance = `-- name: GetAccountBalance :one
-SELECT COALESCE(
-    SUM(CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END), 0
-)::BIGINT AS balance_cents
-FROM transactions
-WHERE account_id = $1
-  AND user_id    = $2
-  AND type IN ('income', 'expense')
-`
-
-type GetAccountBalanceParams struct {
-	AccountID int64 `json:"account_id"`
-	UserID    int64 `json:"user_id"`
-}
-
-func (q *Queries) GetAccountBalance(ctx context.Context, arg GetAccountBalanceParams) (int64, error) {
-	row := q.db.QueryRow(ctx, getAccountBalance, arg.AccountID, arg.UserID)
-	var balanceCents int64
-	err := row.Scan(&balanceCents)
-	return balanceCents, err
 }

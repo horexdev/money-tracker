@@ -9,6 +9,8 @@ import type {
   UserSettings,
   Account,
   Transfer,
+  AdminUsersResponse,
+  AdminStatsResponse,
 } from '../types'
 
 export const mockBalance: BalanceResponse = {
@@ -189,4 +191,32 @@ export const mockTransfers: { transfers: Transfer[]; total: number; limit: numbe
   total: 2,
   limit: 50,
   offset: 0,
+}
+
+export const mockAdminStats: AdminStatsResponse = {
+  total_users: 142,
+  new_today: 3,
+  new_this_week: 17,
+  new_this_month: 54,
+  retention_day1: 68.5,
+  retention_day7: 41.2,
+  retention_day30: 22.8,
+}
+
+export const mockAdminUsers: AdminUsersResponse = {
+  users: [
+    { id: 6554524765, username: 'horexdev', first_name: 'Alex', last_name: 'Dev', currency_code: 'USD', language: 'en', created_at: daysAgo(90) },
+    { id: 123456789, username: 'ivan_petrov', first_name: 'Ivan', last_name: 'Petrov', currency_code: 'RUB', language: 'ru', created_at: daysAgo(45) },
+    { id: 987654321, username: 'maria_k', first_name: 'Maria', last_name: 'Kovaleva', currency_code: 'UAH', language: 'uk', created_at: daysAgo(30) },
+    { id: 111222333, username: '', first_name: 'John', last_name: 'Smith', currency_code: 'USD', language: 'en', created_at: daysAgo(21) },
+    { id: 444555666, username: 'ali_hassan', first_name: 'Ali', last_name: 'Hassan', currency_code: 'USD', language: 'ar', created_at: daysAgo(14) },
+    { id: 777888999, username: 'jung_min', first_name: 'Jung', last_name: 'Min', currency_code: 'USD', language: 'ko', created_at: daysAgo(7) },
+    { id: 100200300, username: 'anna_m', first_name: 'Anna', last_name: 'Müller', currency_code: 'EUR', language: 'de', created_at: daysAgo(5) },
+    { id: 400500600, username: 'pierre_d', first_name: 'Pierre', last_name: 'Dupont', currency_code: 'EUR', language: 'fr', created_at: daysAgo(3) },
+    { id: 700800900, username: '', first_name: 'Sofia', last_name: '', currency_code: 'USD', language: 'es', created_at: daysAgo(2) },
+    { id: 101010101, username: 'test_user', first_name: 'Test', last_name: 'User', currency_code: 'USD', language: 'en', created_at: daysAgo(1) },
+  ],
+  total: 142,
+  page: 1,
+  page_size: 20,
 }

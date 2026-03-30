@@ -13,6 +13,10 @@ import (
 type Querier interface {
 	ClearDefaultAccounts(ctx context.Context, userID int64) error
 	CountAccountTransactions(ctx context.Context, arg CountAccountTransactionsParams) (int64, error)
+	CountActiveUsersInPeriod(ctx context.Context, arg CountActiveUsersInPeriodParams) (int64, error)
+	CountAllUsers(ctx context.Context) (int64, error)
+	CountNewUsers(ctx context.Context, arg CountNewUsersParams) (int64, error)
+	CountRetainedUsers(ctx context.Context, arg CountRetainedUsersParams) (int64, error)
 	CountTransactionsByCategory(ctx context.Context, categoryID int64) (int64, error)
 	CountTransfersByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactions(ctx context.Context, userID int64) (int64, error)
@@ -57,6 +61,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	InsertGoalTransaction(ctx context.Context, arg InsertGoalTransactionParams) error
 	ListAccountsByUser(ctx context.Context, userID int64) ([]Account, error)
+	ListAllUsers(ctx context.Context, arg ListAllUsersParams) ([]User, error)
 	ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error)
 	ListDistinctUsersWithBudgets(ctx context.Context) ([]int64, error)
 	ListGoalTransactions(ctx context.Context, arg ListGoalTransactionsParams) ([]GoalTransaction, error)

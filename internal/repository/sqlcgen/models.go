@@ -12,6 +12,51 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AccountType string
+
+const (
+	AccountTypeChecking AccountType = "checking"
+	AccountTypeSavings  AccountType = "savings"
+	AccountTypeCash     AccountType = "cash"
+	AccountTypeCredit   AccountType = "credit"
+	AccountTypeCrypto   AccountType = "crypto"
+)
+
+func (e *AccountType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AccountType(s)
+	case string:
+		*e = AccountType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AccountType: %T", src)
+	}
+	return nil
+}
+
+type NullAccountType struct {
+	AccountType AccountType `json:"account_type"`
+	Valid       bool        `json:"valid"` // Valid is true if AccountType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAccountType) Scan(value interface{}) error {
+	if value == nil {
+		ns.AccountType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AccountType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAccountType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AccountType), nil
+}
+
 type TransactionType string
 
 const (
@@ -52,6 +97,20 @@ func (ns NullTransactionType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.TransactionType), nil
+}
+
+type Account struct {
+	ID             int64              `json:"id"`
+	UserID         int64              `json:"user_id"`
+	Name           string             `json:"name"`
+	Icon           string             `json:"icon"`
+	Color          string             `json:"color"`
+	Type           AccountType        `json:"type"`
+	CurrencyCode   string             `json:"currency_code"`
+	IsDefault      bool               `json:"is_default"`
+	IncludeInTotal bool               `json:"include_in_total"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Budget struct {
@@ -112,6 +171,7 @@ type SavingsGoal struct {
 	Deadline     pgtype.Date        `json:"deadline"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	AccountID    pgtype.Int8        `json:"account_id"`
 }
 
 type Transaction struct {
@@ -125,6 +185,20 @@ type Transaction struct {
 	CurrencyCode           string                 `json:"currency_code"`
 	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
 	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
+	AccountID              pgtype.Int8            `json:"account_id"`
+}
+
+type Transfer struct {
+	ID               int64              `json:"id"`
+	UserID           int64              `json:"user_id"`
+	FromAccountID    int64              `json:"from_account_id"`
+	ToAccountID      int64              `json:"to_account_id"`
+	AmountCents      int64              `json:"amount_cents"`
+	FromCurrencyCode string             `json:"from_currency_code"`
+	ToCurrencyCode   string             `json:"to_currency_code"`
+	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
+	Note             string             `json:"note"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
 type User struct {
@@ -137,74 +211,4 @@ type User struct {
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
 	DisplayCurrencies string             `json:"display_currencies"`
 	Language          string             `json:"language"`
-}
-
-type AccountType string
-
-const (
-	AccountTypeChecking AccountType = "checking"
-	AccountTypeSavings  AccountType = "savings"
-	AccountTypeCash     AccountType = "cash"
-	AccountTypeCredit   AccountType = "credit"
-	AccountTypeCrypto   AccountType = "crypto"
-)
-
-func (e *AccountType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = AccountType(s)
-	case string:
-		*e = AccountType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for AccountType: %T", src)
-	}
-	return nil
-}
-
-type NullAccountType struct {
-	AccountType AccountType `json:"account_type"`
-	Valid        bool        `json:"valid"`
-}
-
-func (ns *NullAccountType) Scan(value interface{}) error {
-	if value == nil {
-		ns.AccountType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.AccountType.Scan(value)
-}
-
-func (ns NullAccountType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.AccountType), nil
-}
-
-type Account struct {
-	ID             int64              `json:"id"`
-	UserID         int64              `json:"user_id"`
-	Name           string             `json:"name"`
-	Icon           string             `json:"icon"`
-	Color          string             `json:"color"`
-	Type           AccountType        `json:"type"`
-	CurrencyCode   string             `json:"currency_code"`
-	IsDefault      bool               `json:"is_default"`
-	IncludeInTotal bool               `json:"include_in_total"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
-}
-
-type Transfer struct {
-	ID               int64              `json:"id"`
-	UserID           int64              `json:"user_id"`
-	FromAccountID    int64              `json:"from_account_id"`
-	ToAccountID      int64              `json:"to_account_id"`
-	AmountCents      int64              `json:"amount_cents"`
-	FromCurrencyCode string             `json:"from_currency_code"`
-	ToCurrencyCode   string             `json:"to_currency_code"`
-	ExchangeRate     float64            `json:"exchange_rate"`
-	Note             string             `json:"note"`
-	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }

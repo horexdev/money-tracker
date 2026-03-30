@@ -37,6 +37,7 @@ type Deps struct {
 	ExportSvc      *service.ExportService
 	AccountSvc     *service.AccountService
 	TransferSvc    *service.TransferService
+	AdminSvc       *service.AdminService
 	BotToken       string
 	AllowedOrigins string
 	Log            *slog.Logger
@@ -55,6 +56,12 @@ func NewServer(d Deps) http.Handler {
 	// protected wraps a handler with logging + CORS + auth.
 	protected := func(h http.HandlerFunc) http.Handler {
 		return chain(h, logging, cors, auth)
+	}
+
+	// adminProtected wraps a handler with logging + CORS + auth + admin check.
+	admin := adminMiddleware()
+	adminProtected := func(h http.HandlerFunc) http.Handler {
+		return chain(h, logging, cors, auth, admin)
 	}
 
 	// public wraps a handler with logging + CORS only.
@@ -102,6 +109,10 @@ func NewServer(d Deps) http.Handler {
 
 	// User data reset.
 	mux.Handle("/api/v1/user/data", protected(userDataHandler(d.UserSvc, d.Log)))
+
+	// Admin endpoints.
+	mux.Handle("/api/v1/admin/users", adminProtected(adminUsersHandler(d.AdminSvc, d.Log)))
+	mux.Handle("/api/v1/admin/stats", adminProtected(adminStatsHandler(d.AdminSvc, d.Log)))
 
 	return mux
 }

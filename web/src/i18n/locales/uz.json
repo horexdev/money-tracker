@@ -208,7 +208,22 @@
     "recurring": "Muntazam",
     "savings": "Jamg'arma maqsadlari",
     "export": "Eksport",
-    "settings": "Sozlamalar"
+    "settings": "Sozlamalar",
+    "admin_panel": "Admin panel"
+  },
+  "admin": {
+    "title": "Admin panel",
+    "total_users": "Jami foydalanuvchilar",
+    "new_today": "Bugun yangi",
+    "new_this_week": "Haftalik",
+    "new_this_month": "Oylik",
+    "retention": "Saqlab qolish",
+    "retention_day1": "1-kun",
+    "retention_day7": "7-kun",
+    "retention_day30": "30-kun",
+    "user_list": "Foydalanuvchilar",
+    "no_users": "Foydalanuvchilar topilmadi",
+    "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Hisoblar",
   "accountsAll": "Barcha hisoblar"

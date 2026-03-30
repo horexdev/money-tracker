@@ -217,7 +217,22 @@
     "export": "Экспорт",
     "settings": "Настройки",
     "accounts": "Счета",
-    "transfers": "Переводы"
+    "transfers": "Переводы",
+    "admin_panel": "Админ панель"
+  },
+  "admin": {
+    "title": "Админ панель",
+    "total_users": "Всего пользователей",
+    "new_today": "Новые сегодня",
+    "new_this_week": "За неделю",
+    "new_this_month": "За месяц",
+    "retention": "Удержание",
+    "retention_day1": "День 1",
+    "retention_day7": "День 7",
+    "retention_day30": "День 30",
+    "user_list": "Пользователи",
+    "no_users": "Пользователи не найдены",
+    "page_of": "{{page}} из {{total}}"
   },
   "accounts": "Счета",
   "accountsAll": "Все счета",

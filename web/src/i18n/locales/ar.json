@@ -208,7 +208,22 @@
     "recurring": "المتكررة",
     "savings": "أهداف الادخار",
     "export": "تصدير",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "admin_panel": "لوحة الإدارة"
+  },
+  "admin": {
+    "title": "لوحة الإدارة",
+    "total_users": "إجمالي المستخدمين",
+    "new_today": "جدد اليوم",
+    "new_this_week": "هذا الأسبوع",
+    "new_this_month": "هذا الشهر",
+    "retention": "الاحتفاظ",
+    "retention_day1": "اليوم 1",
+    "retention_day7": "اليوم 7",
+    "retention_day30": "اليوم 30",
+    "user_list": "المستخدمون",
+    "no_users": "لم يتم العثور على مستخدمين",
+    "page_of": "{{page}} من {{total}}"
   },
   "accounts": "الحسابات",
   "accountsAll": "جميع الحسابات"

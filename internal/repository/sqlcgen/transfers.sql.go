@@ -7,7 +7,20 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const countTransfersByUser = `-- name: CountTransfersByUser :one
+SELECT COUNT(*)::BIGINT FROM transfers WHERE user_id = $1
+`
+
+func (q *Queries) CountTransfersByUser(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, countTransfersByUser, userID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
 
 const createTransfer = `-- name: CreateTransfer :one
 INSERT INTO transfers (user_id, from_account_id, to_account_id, amount_cents, from_currency_code, to_currency_code, exchange_rate, note, created_at)
@@ -16,14 +29,15 @@ RETURNING id, user_id, from_account_id, to_account_id, amount_cents, from_curren
 `
 
 type CreateTransferParams struct {
-	UserID           int64   `json:"user_id"`
-	FromAccountID    int64   `json:"from_account_id"`
-	ToAccountID      int64   `json:"to_account_id"`
-	AmountCents      int64   `json:"amount_cents"`
-	FromCurrencyCode string  `json:"from_currency_code"`
-	ToCurrencyCode   string  `json:"to_currency_code"`
-	ExchangeRate     float64 `json:"exchange_rate"`
-	Note             string  `json:"note"`
+	UserID           int64              `json:"user_id"`
+	FromAccountID    int64              `json:"from_account_id"`
+	ToAccountID      int64              `json:"to_account_id"`
+	AmountCents      int64              `json:"amount_cents"`
+	FromCurrencyCode string             `json:"from_currency_code"`
+	ToCurrencyCode   string             `json:"to_currency_code"`
+	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
+	Note             string             `json:"note"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
@@ -36,7 +50,7 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 		arg.ToCurrencyCode,
 		arg.ExchangeRate,
 		arg.Note,
-		nil, // created_at defaults to now()
+		arg.CreatedAt,
 	)
 	var i Transfer
 	err := row.Scan(
@@ -54,10 +68,23 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 	return i, err
 }
 
+const deleteTransfer = `-- name: DeleteTransfer :exec
+DELETE FROM transfers WHERE id = $1 AND user_id = $2
+`
+
+type DeleteTransferParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteTransfer(ctx context.Context, arg DeleteTransferParams) error {
+	_, err := q.db.Exec(ctx, deleteTransfer, arg.ID, arg.UserID)
+	return err
+}
+
 const getTransferByID = `-- name: GetTransferByID :one
 SELECT
-    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents,
-    t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
+    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
     fa.name AS from_account_name,
     ta.name AS to_account_name
 FROM transfers t
@@ -72,9 +99,18 @@ type GetTransferByIDParams struct {
 }
 
 type GetTransferByIDRow struct {
-	Transfer
-	FromAccountName string `json:"from_account_name"`
-	ToAccountName   string `json:"to_account_name"`
+	ID               int64              `json:"id"`
+	UserID           int64              `json:"user_id"`
+	FromAccountID    int64              `json:"from_account_id"`
+	ToAccountID      int64              `json:"to_account_id"`
+	AmountCents      int64              `json:"amount_cents"`
+	FromCurrencyCode string             `json:"from_currency_code"`
+	ToCurrencyCode   string             `json:"to_currency_code"`
+	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
+	Note             string             `json:"note"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromAccountName  string             `json:"from_account_name"`
+	ToAccountName    string             `json:"to_account_name"`
 }
 
 func (q *Queries) GetTransferByID(ctx context.Context, arg GetTransferByIDParams) (GetTransferByIDRow, error) {
@@ -97,10 +133,75 @@ func (q *Queries) GetTransferByID(ctx context.Context, arg GetTransferByIDParams
 	return i, err
 }
 
+const listTransfersByAccount = `-- name: ListTransfersByAccount :many
+SELECT
+    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
+    fa.name AS from_account_name,
+    ta.name AS to_account_name
+FROM transfers t
+JOIN accounts fa ON fa.id = t.from_account_id
+JOIN accounts ta ON ta.id = t.to_account_id
+WHERE t.user_id = $1
+  AND (t.from_account_id = $2 OR t.to_account_id = $2)
+ORDER BY t.created_at DESC
+`
+
+type ListTransfersByAccountParams struct {
+	UserID        int64 `json:"user_id"`
+	FromAccountID int64 `json:"from_account_id"`
+}
+
+type ListTransfersByAccountRow struct {
+	ID               int64              `json:"id"`
+	UserID           int64              `json:"user_id"`
+	FromAccountID    int64              `json:"from_account_id"`
+	ToAccountID      int64              `json:"to_account_id"`
+	AmountCents      int64              `json:"amount_cents"`
+	FromCurrencyCode string             `json:"from_currency_code"`
+	ToCurrencyCode   string             `json:"to_currency_code"`
+	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
+	Note             string             `json:"note"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromAccountName  string             `json:"from_account_name"`
+	ToAccountName    string             `json:"to_account_name"`
+}
+
+func (q *Queries) ListTransfersByAccount(ctx context.Context, arg ListTransfersByAccountParams) ([]ListTransfersByAccountRow, error) {
+	rows, err := q.db.Query(ctx, listTransfersByAccount, arg.UserID, arg.FromAccountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTransfersByAccountRow{}
+	for rows.Next() {
+		var i ListTransfersByAccountRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.FromAccountID,
+			&i.ToAccountID,
+			&i.AmountCents,
+			&i.FromCurrencyCode,
+			&i.ToCurrencyCode,
+			&i.ExchangeRate,
+			&i.Note,
+			&i.CreatedAt,
+			&i.FromAccountName,
+			&i.ToAccountName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransfersByUser = `-- name: ListTransfersByUser :many
 SELECT
-    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents,
-    t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
+    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents, t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
     fa.name AS from_account_name,
     ta.name AS to_account_name
 FROM transfers t
@@ -118,9 +219,18 @@ type ListTransfersByUserParams struct {
 }
 
 type ListTransfersByUserRow struct {
-	Transfer
-	FromAccountName string `json:"from_account_name"`
-	ToAccountName   string `json:"to_account_name"`
+	ID               int64              `json:"id"`
+	UserID           int64              `json:"user_id"`
+	FromAccountID    int64              `json:"from_account_id"`
+	ToAccountID      int64              `json:"to_account_id"`
+	AmountCents      int64              `json:"amount_cents"`
+	FromCurrencyCode string             `json:"from_currency_code"`
+	ToCurrencyCode   string             `json:"to_currency_code"`
+	ExchangeRate     pgtype.Numeric     `json:"exchange_rate"`
+	Note             string             `json:"note"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	FromAccountName  string             `json:"from_account_name"`
+	ToAccountName    string             `json:"to_account_name"`
 }
 
 func (q *Queries) ListTransfersByUser(ctx context.Context, arg ListTransfersByUserParams) ([]ListTransfersByUserRow, error) {
@@ -154,87 +264,4 @@ func (q *Queries) ListTransfersByUser(ctx context.Context, arg ListTransfersByUs
 		return nil, err
 	}
 	return items, nil
-}
-
-const listTransfersByAccount = `-- name: ListTransfersByAccount :many
-SELECT
-    t.id, t.user_id, t.from_account_id, t.to_account_id, t.amount_cents,
-    t.from_currency_code, t.to_currency_code, t.exchange_rate, t.note, t.created_at,
-    fa.name AS from_account_name,
-    ta.name AS to_account_name
-FROM transfers t
-JOIN accounts fa ON fa.id = t.from_account_id
-JOIN accounts ta ON ta.id = t.to_account_id
-WHERE t.user_id = $1
-  AND (t.from_account_id = $2 OR t.to_account_id = $2)
-ORDER BY t.created_at DESC
-`
-
-type ListTransfersByAccountParams struct {
-	UserID    int64 `json:"user_id"`
-	AccountID int64 `json:"account_id"`
-}
-
-type ListTransfersByAccountRow struct {
-	Transfer
-	FromAccountName string `json:"from_account_name"`
-	ToAccountName   string `json:"to_account_name"`
-}
-
-func (q *Queries) ListTransfersByAccount(ctx context.Context, arg ListTransfersByAccountParams) ([]ListTransfersByAccountRow, error) {
-	rows, err := q.db.Query(ctx, listTransfersByAccount, arg.UserID, arg.AccountID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ListTransfersByAccountRow{}
-	for rows.Next() {
-		var i ListTransfersByAccountRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.FromAccountID,
-			&i.ToAccountID,
-			&i.AmountCents,
-			&i.FromCurrencyCode,
-			&i.ToCurrencyCode,
-			&i.ExchangeRate,
-			&i.Note,
-			&i.CreatedAt,
-			&i.FromAccountName,
-			&i.ToAccountName,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const countTransfersByUser = `-- name: CountTransfersByUser :one
-SELECT COUNT(*)::BIGINT FROM transfers WHERE user_id = $1
-`
-
-func (q *Queries) CountTransfersByUser(ctx context.Context, userID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, countTransfersByUser, userID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const deleteTransfer = `-- name: DeleteTransfer :exec
-DELETE FROM transfers WHERE id = $1 AND user_id = $2
-`
-
-type DeleteTransferParams struct {
-	ID     int64 `json:"id"`
-	UserID int64 `json:"user_id"`
-}
-
-func (q *Queries) DeleteTransfer(ctx context.Context, arg DeleteTransferParams) error {
-	_, err := q.db.Exec(ctx, deleteTransfer, arg.ID, arg.UserID)
-	return err
 }

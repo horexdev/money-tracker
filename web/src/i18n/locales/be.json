@@ -208,7 +208,22 @@
     "recurring": "Рэгулярныя",
     "savings": "Мэты зберажэнняў",
     "export": "Экспарт",
-    "settings": "Налады"
+    "settings": "Налады",
+    "admin_panel": "Адмін панэль"
+  },
+  "admin": {
+    "title": "Адмін панэль",
+    "total_users": "Усяго карыстальнікаў",
+    "new_today": "Новыя сёння",
+    "new_this_week": "За тыдзень",
+    "new_this_month": "За месяц",
+    "retention": "Утрыманне",
+    "retention_day1": "Дзень 1",
+    "retention_day7": "Дзень 7",
+    "retention_day30": "Дзень 30",
+    "user_list": "Карыстальнікі",
+    "no_users": "Карыстальнікаў не знойдзена",
+    "page_of": "{{page}} з {{total}}"
   },
   "accounts": "Рахункі",
   "accountsAll": "Усе рахункі"

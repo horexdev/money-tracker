@@ -1,8 +1,11 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ArrowsHorizontal } from '@phosphor-icons/react'
+import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ArrowsHorizontal, ShieldStar } from '@phosphor-icons/react'
 import { PageTransition } from '../components/PageTransition'
 import type { ReactNode } from 'react'
+
+const ADMIN_USER_ID = 6554524765
 
 interface MenuItem {
   to: string
@@ -31,8 +34,31 @@ const GRID_ITEMS: MenuItem[] = [
   { to: '/settings',  icon: <GearSix size={22} weight="fill" />,           labelKey: 'more.settings',  gradient: 'from-slate-400 to-slate-600' },
 ]
 
+function getTelegramUserId(): number | undefined {
+  try {
+    return (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id?: number } } } } })
+      ?.Telegram?.WebApp?.initDataUnsafe?.user?.id
+  } catch {
+    return undefined
+  }
+}
+
 export function MorePage() {
   const { t } = useTranslation()
+  const isAdmin = getTelegramUserId() === ADMIN_USER_ID
+
+  const gridItems = useMemo(() => {
+    const items = [...GRID_ITEMS]
+    if (isAdmin) {
+      items.splice(items.length - 1, 0, {
+        to: '/admin',
+        icon: <ShieldStar size={22} weight="fill" />,
+        labelKey: 'more.admin_panel',
+        gradient: 'from-red-400 to-rose-600',
+      })
+    }
+    return items
+  }, [isAdmin])
 
   return (
     <PageTransition>
@@ -58,7 +84,7 @@ export function MorePage() {
 
         {/* 2-column grid — elevated cards with colored icon containers */}
         <div className="grid grid-cols-2 gap-3">
-          {GRID_ITEMS.map(item => {
+          {gridItems.map(item => {
             const inner = (
               <>
                 <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-accent/[0.04] pointer-events-none" />

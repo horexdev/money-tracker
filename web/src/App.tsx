@@ -20,6 +20,7 @@ const SavingsPage        = lazy(() => import('./pages/SavingsPage').then(m => ({
 const ExportPage         = lazy(() => import('./pages/ExportPage').then(m => ({ default: m.ExportPage })))
 const AccountsPage       = lazy(() => import('./pages/AccountsPage').then(m => ({ default: m.AccountsPage })))
 const TransfersPage      = lazy(() => import('./pages/TransfersPage').then(m => ({ default: m.TransfersPage })))
+const AdminPage          = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })))
 
 function PageLoader() {
   return <div className="flex justify-center items-center h-48"><Spinner /></div>
@@ -46,6 +47,7 @@ function AnimatedRoutes() {
             <Route path="export" element={<ExportPage />} />
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="transfers" element={<TransfersPage />} />
+            <Route path="admin" element={<AdminPage />} />
           </Route>
         </Routes>
       </Suspense>

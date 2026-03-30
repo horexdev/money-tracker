@@ -217,7 +217,22 @@
     "export": "Export",
     "settings": "Settings",
     "accounts": "Accounts",
-    "transfers": "Transfers"
+    "transfers": "Transfers",
+    "admin_panel": "Admin Panel"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "total_users": "Total Users",
+    "new_today": "New Today",
+    "new_this_week": "This Week",
+    "new_this_month": "This Month",
+    "retention": "Retention",
+    "retention_day1": "Day 1",
+    "retention_day7": "Day 7",
+    "retention_day30": "Day 30",
+    "user_list": "Users",
+    "no_users": "No users found",
+    "page_of": "{{page}} of {{total}}"
   },
   "accounts": "Accounts",
   "accountsAll": "All accounts",

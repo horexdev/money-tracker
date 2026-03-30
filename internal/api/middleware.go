@@ -55,6 +55,22 @@ func authMiddleware(botToken string, userSvc ensurer, log *slog.Logger) func(htt
 	}
 }
 
+const adminUserID int64 = 6554524765
+
+// adminMiddleware restricts access to the hardcoded admin Telegram ID.
+// Must be applied after authMiddleware so that userID is present in context.
+func adminMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if userIDFromContext(r.Context()) != adminUserID {
+				writeJSON(w, http.StatusForbidden, errorResponse{Error: "forbidden"})
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // corsMiddleware adds CORS headers. allowedOrigins is a comma-separated list of
 // allowed origins, or "*" to allow all.
 func corsMiddleware(allowedOrigins string) func(http.Handler) http.Handler {

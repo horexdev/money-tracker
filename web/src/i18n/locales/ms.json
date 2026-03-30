@@ -208,7 +208,22 @@
     "recurring": "Berulang",
     "savings": "Matlamat Simpanan",
     "export": "Eksport",
-    "settings": "Tetapan"
+    "settings": "Tetapan",
+    "admin_panel": "Panel Admin"
+  },
+  "admin": {
+    "title": "Panel Admin",
+    "total_users": "Jumlah pengguna",
+    "new_today": "Baharu hari ini",
+    "new_this_week": "Minggu ini",
+    "new_this_month": "Bulan ini",
+    "retention": "Pengekalan",
+    "retention_day1": "Hari 1",
+    "retention_day7": "Hari 7",
+    "retention_day30": "Hari 30",
+    "user_list": "Pengguna",
+    "no_users": "Tiada pengguna ditemui",
+    "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Akaun",
   "accountsAll": "Semua akaun"

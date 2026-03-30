@@ -154,6 +154,34 @@ export interface Account {
   created_at: string
 }
 
+// Admin
+export interface AdminUser {
+  id: number
+  username: string
+  first_name: string
+  last_name: string
+  currency_code: string
+  language: string
+  created_at: string
+}
+
+export interface AdminUsersResponse {
+  users: AdminUser[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface AdminStatsResponse {
+  total_users: number
+  new_today: number
+  new_this_week: number
+  new_this_month: number
+  retention_day1: number
+  retention_day7: number
+  retention_day30: number
+}
+
 // Transfers
 export interface Transfer {
   id: number

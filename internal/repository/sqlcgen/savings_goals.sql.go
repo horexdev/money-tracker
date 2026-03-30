@@ -14,7 +14,7 @@ import (
 const createSavingsGoal = `-- name: CreateSavingsGoal :one
 INSERT INTO savings_goals (user_id, name, target_cents, currency_code, deadline)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at
+RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id
 `
 
 type CreateSavingsGoalParams struct {
@@ -44,6 +44,7 @@ func (q *Queries) CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalPa
 		&i.Deadline,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
@@ -67,7 +68,7 @@ UPDATE savings_goals
 SET current_cents = current_cents + $3,
     updated_at    = now()
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at
+RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id
 `
 
 type DepositToGoalParams struct {
@@ -89,12 +90,13 @@ func (q *Queries) DepositToGoal(ctx context.Context, arg DepositToGoalParams) (S
 		&i.Deadline,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
 
 const getSavingsGoalByID = `-- name: GetSavingsGoalByID :one
-SELECT id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at FROM savings_goals WHERE id = $1 AND user_id = $2
+SELECT id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id FROM savings_goals WHERE id = $1 AND user_id = $2
 `
 
 type GetSavingsGoalByIDParams struct {
@@ -115,12 +117,13 @@ func (q *Queries) GetSavingsGoalByID(ctx context.Context, arg GetSavingsGoalByID
 		&i.Deadline,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
 
 const listSavingsGoalsByUser = `-- name: ListSavingsGoalsByUser :many
-SELECT id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at FROM savings_goals
+SELECT id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id FROM savings_goals
 WHERE user_id = $1
 ORDER BY created_at DESC
 `
@@ -144,6 +147,7 @@ func (q *Queries) ListSavingsGoalsByUser(ctx context.Context, userID int64) ([]S
 			&i.Deadline,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AccountID,
 		); err != nil {
 			return nil, err
 		}
@@ -163,7 +167,7 @@ SET name          = $3,
     deadline      = $6,
     updated_at    = now()
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at
+RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id
 `
 
 type UpdateSavingsGoalParams struct {
@@ -195,6 +199,7 @@ func (q *Queries) UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalPa
 		&i.Deadline,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
@@ -204,7 +209,7 @@ UPDATE savings_goals
 SET current_cents = current_cents - $3,
     updated_at    = now()
 WHERE id = $1 AND user_id = $2 AND current_cents >= $3
-RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at
+RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id
 `
 
 type WithdrawFromGoalParams struct {
@@ -226,6 +231,7 @@ func (q *Queries) WithdrawFromGoal(ctx context.Context, arg WithdrawFromGoalPara
 		&i.Deadline,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
