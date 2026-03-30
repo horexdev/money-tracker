@@ -12,18 +12,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUserService_Upsert_DefaultCurrency(t *testing.T) {
+func TestUserService_Upsert_PassesThroughAsIs(t *testing.T) {
 	repo := &mocks.MockUserStorer{}
 	svc := service.NewUserService(repo, testutil.TestLogger())
 
-	input := &domain.User{ID: 1, FirstName: "Alice"} // no currency
-	expected := &domain.User{ID: 1, FirstName: "Alice", CurrencyCode: "USD"}
-
-	repo.On("Upsert", context.Background(), expected).Return(expected, nil)
+	// Currency is now set by the caller (ensureUser derives it from language);
+	// the service no longer injects a default.
+	input := &domain.User{ID: 1, FirstName: "Alice", CurrencyCode: "UAH", Language: "uk"}
+	repo.On("Upsert", context.Background(), input).Return(input, nil)
 
 	got, err := svc.Upsert(context.Background(), input)
 	require.NoError(t, err)
-	assert.Equal(t, "USD", got.CurrencyCode)
+	assert.Equal(t, "UAH", got.CurrencyCode)
 	repo.AssertExpectations(t)
 }
 
