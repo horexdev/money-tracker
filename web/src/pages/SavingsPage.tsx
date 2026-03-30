@@ -30,7 +30,7 @@ function sanitizeAmount(value: string): string {
   return cleaned
 }
 
-/* ─── Goal Row ─── */
+/* ─── Goal Card ─── */
 function GoalRow({
   goal,
   onDeposit,
@@ -49,78 +49,70 @@ function GoalRow({
   const { t, i18n } = useTranslation()
   const { code: baseCurrency } = useBaseCurrency()
   const pct = Math.min(goal.progress_percent, 100)
-  const color = goal.is_completed ? 'var(--color-income)' : 'var(--color-accent)'
+  const isCompleted = goal.is_completed
+  const progressColor = isCompleted ? 'var(--color-income)' : 'var(--color-accent)'
 
   return (
     <SwipeToDelete onDelete={() => onDelete(goal.id)}>
-      <div className="px-4 py-4 flex items-center gap-3">
-        {/* Circular progress — tappable to edit */}
-        <button
-          onClick={() => onEdit(goal)}
-          className="relative w-12 h-12 shrink-0 active:opacity-70 transition-opacity"
-        >
-          <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-            <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-border)" strokeWidth="3.5" />
-            <circle
-              cx="18" cy="18" r="15.5" fill="none"
-              stroke={color}
-              strokeWidth="3.5"
-              strokeDasharray={`${pct * 0.975} 100`}
-              strokeLinecap="round"
-              className="transition-all duration-700"
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[9px] font-bold tabular-nums" style={{ color }}>{pct.toFixed(0)}%</span>
-          </div>
-        </button>
-
-        {/* Info — tappable to edit */}
-        <button
-          onClick={() => onEdit(goal)}
-          className="flex-1 min-w-0 text-left active:opacity-70 transition-opacity"
-        >
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="text-[13px] font-bold text-text truncate">{goal.name}</span>
-            {goal.is_completed && <CheckCircle size={14} weight="fill" className="text-income shrink-0" />}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted">
-            <span className="font-semibold text-text tabular-nums">{formatCents(goal.current_cents, baseCurrency)}</span>
-            <span className="text-muted/40">·</span>
-            <span className="tabular-nums">{formatCents(goal.target_cents, baseCurrency)}</span>
-            {goal.deadline && (
-              <>
-                <span className="text-muted/40">·</span>
-                <span>{formatDate(goal.deadline, i18n.language)}</span>
-              </>
-            )}
-          </div>
-        </button>
-
-        {/* Action buttons */}
-        <div className="flex gap-1 shrink-0">
-          <button
-            onClick={() => onWithdraw(goal.id)}
-            className="w-10 h-10 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-muted active:text-expense active:bg-expense/10 transition-colors"
-          >
-            <ArrowCircleUp size={18} weight="fill" />
-            <span className="text-[8px] font-bold leading-none">{t('savings.withdraw')}</span>
-          </button>
-          <button
-            onClick={() => onDeposit(goal.id)}
-            className="w-10 h-10 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-muted active:text-income active:bg-income/10 transition-colors"
-          >
-            <ArrowCircleDown size={18} weight="fill" />
-            <span className="text-[8px] font-bold leading-none">{t('savings.deposit')}</span>
-          </button>
-          <button
-            onClick={() => onHistory(goal.id)}
-            className="w-10 h-10 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-muted active:text-accent active:bg-accent-subtle transition-colors"
-          >
-            <ClockCounterClockwise size={18} weight="fill" />
-            <span className="text-[8px] font-bold leading-none">{t('savings.history')}</span>
-          </button>
+      <button
+        onClick={() => onEdit(goal)}
+        className="w-full text-left px-4 pt-4 pb-3 active:opacity-70 transition-opacity"
+      >
+        {/* Header row: name + completion badge */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[14px] font-bold text-text flex-1 min-w-0 truncate">{goal.name}</span>
+          {isCompleted && <CheckCircle size={16} weight="fill" className="text-income shrink-0" />}
+          {goal.deadline && (
+            <span className="text-[10px] font-semibold text-muted shrink-0">
+              {formatDate(goal.deadline, i18n.language)}
+            </span>
+          )}
         </div>
+
+        {/* Amounts */}
+        <div className="flex items-baseline gap-1 mb-2.5">
+          <span className="text-[18px] font-bold tabular-nums" style={{ color: progressColor }}>
+            {formatCents(goal.current_cents, baseCurrency)}
+          </span>
+          <span className="text-[13px] text-muted font-medium tabular-nums">
+            / {formatCents(goal.target_cents, baseCurrency)}
+          </span>
+          <span className="ml-auto text-[12px] font-bold tabular-nums" style={{ color: progressColor }}>
+            {pct.toFixed(0)}%
+          </span>
+        </div>
+
+        {/* Horizontal progress bar */}
+        <div className="h-2 rounded-full bg-border overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${pct}%`, background: progressColor }}
+          />
+        </div>
+      </button>
+
+      {/* Action buttons row */}
+      <div className="flex gap-2 px-4 pb-4">
+        <button
+          onClick={() => onWithdraw(goal.id)}
+          className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 bg-expense/8 text-expense active:bg-expense/20 transition-colors"
+        >
+          <ArrowCircleUp size={20} weight="fill" />
+          <span className="text-[13px] font-bold">{t('savings.withdraw')}</span>
+        </button>
+        <button
+          onClick={() => onDeposit(goal.id)}
+          className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 bg-income/8 text-income active:bg-income/20 transition-colors"
+        >
+          <ArrowCircleDown size={20} weight="fill" />
+          <span className="text-[13px] font-bold">{t('savings.deposit')}</span>
+        </button>
+        <button
+          onClick={() => onHistory(goal.id)}
+          className="w-12 h-12 rounded-2xl flex items-center justify-center bg-accent-subtle text-muted active:bg-accent/15 transition-colors shrink-0"
+        >
+          <ClockCounterClockwise size={20} weight="fill" />
+        </button>
       </div>
     </SwipeToDelete>
   )
@@ -465,6 +457,8 @@ export function SavingsPage() {
     onSuccess: () => {
       notification('success')
       qc.invalidateQueries({ queryKey: ['goals'] })
+      qc.invalidateQueries({ queryKey: ['accounts'] })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
       setAmountFor(null)
     },
     onError: () => notification('error'),
@@ -475,6 +469,8 @@ export function SavingsPage() {
     onSuccess: () => {
       notification('success')
       qc.invalidateQueries({ queryKey: ['goals'] })
+      qc.invalidateQueries({ queryKey: ['accounts'] })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
       setAmountFor(null)
     },
     onError: () => notification('error'),
@@ -516,17 +512,18 @@ export function SavingsPage() {
               />
             </div>
           ) : (
-            <div className="mx-4 card-elevated divide-y divide-border">
+            <div className="mx-4 space-y-3">
               {goals.map(goal => (
-                <GoalRow
-                  key={goal.id}
-                  goal={goal}
-                  onEdit={g => { setShowForm(false); setAmountFor(null); setHistoryFor(null); setEditingGoal(g) }}
-                  onDeposit={id => { setShowForm(false); setEditingGoal(null); setHistoryFor(null); setAmountFor({ id, action: 'deposit' }) }}
-                  onWithdraw={id => { setShowForm(false); setEditingGoal(null); setHistoryFor(null); setAmountFor({ id, action: 'withdraw' }) }}
-                  onHistory={id => { setShowForm(false); setEditingGoal(null); setAmountFor(null); setHistoryFor(id) }}
-                  onDelete={id => deleteMut.mutate(id)}
-                />
+                <div key={goal.id} className="card-elevated overflow-hidden">
+                  <GoalRow
+                    goal={goal}
+                    onEdit={g => { setShowForm(false); setAmountFor(null); setHistoryFor(null); setEditingGoal(g) }}
+                    onDeposit={id => { setShowForm(false); setEditingGoal(null); setHistoryFor(null); setAmountFor({ id, action: 'deposit' }) }}
+                    onWithdraw={id => { setShowForm(false); setEditingGoal(null); setHistoryFor(null); setAmountFor({ id, action: 'withdraw' }) }}
+                    onHistory={id => { setShowForm(false); setEditingGoal(null); setAmountFor(null); setHistoryFor(id) }}
+                    onDelete={id => deleteMut.mutate(id)}
+                  />
+                </div>
               ))}
             </div>
           )}

@@ -14,7 +14,7 @@ import (
 )
 
 func newGoalService(repo *mocks.MockSavingsGoalStorer) *service.SavingsGoalService {
-	return service.NewSavingsGoalService(repo, testutil.TestLogger())
+	return service.NewSavingsGoalService(repo, &mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{}, &mocks.MockAccountStorer{}, testutil.TestLogger())
 }
 
 func TestSavingsGoalService_Create_ZeroTarget(t *testing.T) {
@@ -46,7 +46,10 @@ func TestSavingsGoalService_Deposit_ValidAmount(t *testing.T) {
 	repo := &mocks.MockSavingsGoalStorer{}
 	svc := newGoalService(repo)
 
+	// No linked account → no transaction created.
+	goal := &domain.SavingsGoal{ID: 1, AccountID: nil}
 	updated := &domain.SavingsGoal{ID: 1, CurrentCents: 5000}
+	repo.On("GetByID", mock.Anything, int64(1), int64(42)).Return(goal, nil)
 	repo.On("Deposit", mock.Anything, int64(1), int64(42), int64(5000)).Return(updated, nil)
 
 	got, err := svc.Deposit(context.Background(), 1, 42, 5000)
@@ -64,6 +67,9 @@ func TestSavingsGoalService_Withdraw_InsufficientFunds(t *testing.T) {
 	repo := &mocks.MockSavingsGoalStorer{}
 	svc := newGoalService(repo)
 
+	// No linked account → no transaction created.
+	goal := &domain.SavingsGoal{ID: 1, AccountID: nil}
+	repo.On("GetByID", mock.Anything, int64(1), int64(42)).Return(goal, nil)
 	repo.On("Withdraw", mock.Anything, int64(1), int64(42), int64(99999)).Return(nil, domain.ErrInsufficientGoalFunds)
 
 	_, err := svc.Withdraw(context.Background(), 1, 42, 99999)

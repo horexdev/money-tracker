@@ -35,6 +35,7 @@ type TransactionStorer interface {
 // CategoryStorer is the repository interface for category operations.
 type CategoryStorer interface {
 	GetByID(ctx context.Context, id int64) (*domain.Category, error)
+	GetByName(ctx context.Context, userID int64, name string) (*domain.Category, error)
 	ListForUser(ctx context.Context, userID int64) ([]*domain.Category, error)
 	ListForUserByType(ctx context.Context, userID int64, catType string) ([]*domain.Category, error)
 	CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error)

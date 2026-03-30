@@ -49,6 +49,21 @@ func (r *CategoryRepository) ListForUserByType(ctx context.Context, userID int64
 	return cats, nil
 }
 
+// GetByName returns a category by name for a user (includes system categories).
+func (r *CategoryRepository) GetByName(ctx context.Context, userID int64, name string) (*domain.Category, error) {
+	row, err := r.q.GetCategoryByName(ctx, sqlcgen.GetCategoryByNameParams{
+		UserID: pgInt8(userID),
+		Lower:  name,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrCategoryNotFound
+		}
+		return nil, err
+	}
+	return rowToCategory(row), nil
+}
+
 // GetByID returns the category with the given ID.
 func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*domain.Category, error) {
 	row, err := r.q.GetCategoryByID(ctx, id)

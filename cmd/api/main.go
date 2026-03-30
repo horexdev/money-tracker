@@ -81,7 +81,7 @@ func main() {
 	categorySvc := service.NewCategoryService(catRepo, log)
 	budgetSvc := service.NewBudgetService(budgetRepo, txRepo, log)
 	recurringSvc := service.NewRecurringService(recurringRepo, txRepo, log)
-	goalSvc := service.NewSavingsGoalService(goalRepo, log)
+	goalSvc := service.NewSavingsGoalService(goalRepo, txRepo, catRepo, accountRepo, log)
 	exportSvc := service.NewExportService(txRepo, log)
 	accountSvc := service.NewAccountService(accountRepo, exchangeSvc, log)
 	transferSvc := service.NewTransferService(transferRepo, accountRepo, goalRepo, log)

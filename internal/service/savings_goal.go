@@ -8,14 +8,19 @@ import (
 	"github.com/horexdev/money-tracker/internal/domain"
 )
 
+const savingsCategoryName = "Savings"
+
 // SavingsGoalService handles business logic for savings goals.
 type SavingsGoalService struct {
-	repo SavingsGoalStorer
-	log  *slog.Logger
+	repo        SavingsGoalStorer
+	txRepo      TransactionStorer
+	catRepo     CategoryStorer
+	accountRepo AccountStorer
+	log         *slog.Logger
 }
 
-func NewSavingsGoalService(repo SavingsGoalStorer, log *slog.Logger) *SavingsGoalService {
-	return &SavingsGoalService{repo: repo, log: log}
+func NewSavingsGoalService(repo SavingsGoalStorer, txRepo TransactionStorer, catRepo CategoryStorer, accountRepo AccountStorer, log *slog.Logger) *SavingsGoalService {
+	return &SavingsGoalService{repo: repo, txRepo: txRepo, catRepo: catRepo, accountRepo: accountRepo, log: log}
 }
 
 // Create adds a new savings goal.
@@ -61,12 +66,24 @@ func (s *SavingsGoalService) Update(ctx context.Context, g *domain.SavingsGoal) 
 }
 
 // Deposit adds funds to a savings goal.
+// If the goal has a linked account, an expense transaction is created on that account.
 func (s *SavingsGoalService) Deposit(ctx context.Context, id, userID, amountCents int64) (*domain.SavingsGoal, error) {
 	if amountCents <= 0 {
 		return nil, domain.ErrInvalidAmount
 	}
 
-	goal, err := s.repo.Deposit(ctx, id, userID, amountCents)
+	goal, err := s.repo.GetByID(ctx, id, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get goal %d: %w", id, err)
+	}
+
+	if goal.AccountID != nil {
+		if err := s.createLinkedTransaction(ctx, userID, *goal.AccountID, amountCents, domain.TransactionTypeExpense, goal.Name); err != nil {
+			return nil, err
+		}
+	}
+
+	updated, err := s.repo.Deposit(ctx, id, userID, amountCents)
 	if err != nil {
 		return nil, fmt.Errorf("deposit to goal %d: %w", id, err)
 	}
@@ -75,16 +92,28 @@ func (s *SavingsGoalService) Deposit(ctx context.Context, id, userID, amountCent
 		slog.Int64("goal_id", id),
 		slog.Int64("amount_cents", amountCents),
 	)
-	return goal, nil
+	return updated, nil
 }
 
 // Withdraw removes funds from a savings goal.
+// If the goal has a linked account, an income transaction is created on that account.
 func (s *SavingsGoalService) Withdraw(ctx context.Context, id, userID, amountCents int64) (*domain.SavingsGoal, error) {
 	if amountCents <= 0 {
 		return nil, domain.ErrInvalidAmount
 	}
 
-	goal, err := s.repo.Withdraw(ctx, id, userID, amountCents)
+	goal, err := s.repo.GetByID(ctx, id, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get goal %d: %w", id, err)
+	}
+
+	if goal.AccountID != nil {
+		if err := s.createLinkedTransaction(ctx, userID, *goal.AccountID, amountCents, domain.TransactionTypeIncome, goal.Name); err != nil {
+			return nil, err
+		}
+	}
+
+	updated, err := s.repo.Withdraw(ctx, id, userID, amountCents)
 	if err != nil {
 		return nil, fmt.Errorf("withdraw from goal %d: %w", id, err)
 	}
@@ -93,7 +122,36 @@ func (s *SavingsGoalService) Withdraw(ctx context.Context, id, userID, amountCen
 		slog.Int64("goal_id", id),
 		slog.Int64("amount_cents", amountCents),
 	)
-	return goal, nil
+	return updated, nil
+}
+
+// createLinkedTransaction creates a real expense/income transaction on the linked account.
+func (s *SavingsGoalService) createLinkedTransaction(ctx context.Context, userID, accountID, amountCents int64, txType domain.TransactionType, note string) error {
+	cat, err := s.catRepo.GetByName(ctx, userID, savingsCategoryName)
+	if err != nil {
+		return fmt.Errorf("get savings category: %w", err)
+	}
+
+	currency, err := s.accountRepo.GetBaseCurrency(ctx, accountID, userID)
+	if err != nil {
+		currency = "USD"
+	}
+
+	tx := &domain.Transaction{
+		UserID:               userID,
+		AmountCents:          amountCents,
+		CategoryID:           cat.ID,
+		Type:                 txType,
+		Note:                 note,
+		CurrencyCode:           currency,
+		BaseCurrencyAtCreation: currency,
+		ExchangeRateSnapshot: 1.0,
+		AccountID:            accountID,
+	}
+	if _, err := s.txRepo.Create(ctx, tx); err != nil {
+		return fmt.Errorf("create linked transaction for goal: %w", err)
+	}
+	return nil
 }
 
 // Delete removes a savings goal.

@@ -12,6 +12,14 @@ type MockCategoryStorer struct {
 	mock.Mock
 }
 
+func (m *MockCategoryStorer) GetByName(ctx context.Context, userID int64, name string) (*domain.Category, error) {
+	args := m.Called(ctx, userID, name)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.Category), args.Error(1)
+}
+
 func (m *MockCategoryStorer) GetByID(ctx context.Context, id int64) (*domain.Category, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {

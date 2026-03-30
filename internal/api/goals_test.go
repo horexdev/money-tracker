@@ -18,7 +18,7 @@ import (
 )
 
 func buildGoalsHandler(repo *mocks.MockSavingsGoalStorer) http.HandlerFunc {
-	svc := service.NewSavingsGoalService(repo, testutil.TestLogger())
+	svc := service.NewSavingsGoalService(repo, &mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{}, &mocks.MockAccountStorer{}, testutil.TestLogger())
 	return api.GoalsHandlerForTest(svc, testutil.TestLogger())
 }
 
