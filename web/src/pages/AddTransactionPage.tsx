@@ -98,6 +98,7 @@ export function AddTransactionPage() {
       notification('success')
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['balance'] })
+      qc.invalidateQueries({ queryKey: ['accounts'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
       navigate('/')
     },
