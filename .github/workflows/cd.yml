@@ -46,12 +46,13 @@ jobs:
         working-directory: web
         run: npm ci && npm run build
 
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY_B64 }}" | base64 -d > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Configure SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Add server to known_hosts
+        run: ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Copy artifacts to server
         run: |
@@ -69,7 +70,7 @@ jobs:
             bin/bot bin/api bin/goose db/migrations web/dist \
             deployments/moneytracker.service deployments/moneytracker-api.service \
             deployments/docker-compose.yml deployments/nginx.conf deployments/deploy.sh \
-            | ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            | ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
                 'tar xzf - -C /opt/moneytracker \
                  && mv /opt/moneytracker/moneytracker.service /tmp/ \
                  && mv /opt/moneytracker/moneytracker-api.service /tmp/ \
@@ -85,7 +86,7 @@ jobs:
           ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
           ADMIN_USER_ID: ${{ secrets.ADMIN_USER_ID }}
         run: |
-          ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" \
+          ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "BOT_TOKEN='${BOT_TOKEN}' DATABASE_URL='${DATABASE_URL}' REDIS_URL='${REDIS_URL}' \
              MINI_APP_URL='${MINI_APP_URL}' API_PORT='${API_PORT}' ALLOWED_ORIGINS='${ALLOWED_ORIGINS}' \
              ADMIN_USER_ID='${ADMIN_USER_ID}' \
@@ -93,7 +94,7 @@ jobs:
 
       - name: Verify service is running
         run: |
-          ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" 'bash -s' < deployments/smoke-test.sh
+          ssh "${DEPLOY_USER}@${DEPLOY_HOST}" 'bash -s' < deployments/smoke-test.sh
 
       - name: Write deployment summary
         if: always()
