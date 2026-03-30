@@ -62,6 +62,37 @@ func (n *TelegramNotifier) SendMessage(ctx context.Context, chatID int64, text s
 	return nil
 }
 
+// categoryNames maps English category keys to their localized names.
+var categoryNames = map[string]map[string]string{
+	"en": {"Food": "Food", "Transport": "Transport", "Entertainment": "Entertainment", "Shopping": "Shopping", "Health": "Health", "Salary": "Salary", "Freelance": "Freelance", "Rent": "Rent", "Coffee": "Coffee", "Bills": "Bills", "Education": "Education", "Travel": "Travel", "Gifts": "Gifts", "Sport": "Sport", "Beauty": "Beauty", "Pets": "Pets", "Business": "Business", "Housing": "Housing", "Investments": "Investments", "Other": "Other", "Savings": "Savings"},
+	"ru": {"Food": "Еда", "Transport": "Транспорт", "Entertainment": "Развлечения", "Shopping": "Покупки", "Health": "Здоровье", "Salary": "Зарплата", "Freelance": "Фриланс", "Rent": "Аренда", "Coffee": "Кофе", "Bills": "Счета", "Education": "Образование", "Travel": "Путешествия", "Gifts": "Подарки", "Sport": "Спорт", "Beauty": "Красота", "Pets": "Питомцы", "Business": "Бизнес", "Housing": "Жильё", "Investments": "Инвестиции", "Other": "Прочее", "Savings": "Накопления"},
+	"uk": {"Food": "Їжа", "Transport": "Транспорт", "Entertainment": "Розваги", "Shopping": "Покупки", "Health": "Здоров'я", "Salary": "Зарплата", "Freelance": "Фриланс", "Rent": "Оренда", "Coffee": "Кава", "Bills": "Рахунки", "Education": "Освіта", "Travel": "Подорожі", "Gifts": "Подарунки", "Sport": "Спорт", "Beauty": "Краса", "Pets": "Домашні тварини", "Business": "Бізнес", "Housing": "Житло", "Investments": "Інвестиції", "Other": "Інше", "Savings": "Накопичення"},
+	"be": {"Food": "Ежа", "Transport": "Транспарт", "Entertainment": "Забавы", "Shopping": "Пакупкі", "Health": "Здароўе", "Salary": "Зарплата", "Freelance": "Фрыланс", "Rent": "Арэнда", "Coffee": "Кава", "Bills": "Рахункі", "Education": "Адукацыя", "Travel": "Падарожжы", "Gifts": "Падарункі", "Sport": "Спорт", "Beauty": "Краса", "Pets": "Хатнія жывёлы", "Business": "Бізнес", "Housing": "Жыллё", "Investments": "Інвестыцыі", "Other": "Іншае", "Savings": "Назапашванні"},
+	"kk": {"Food": "Тамақ", "Transport": "Көлік", "Entertainment": "Ойын-сауық", "Shopping": "Сауда", "Health": "Денсаулық", "Salary": "Жалақы", "Freelance": "Фриланс", "Rent": "Жалдау", "Coffee": "Кофе", "Bills": "Шоттар", "Education": "Білім", "Travel": "Саяхат", "Gifts": "Сыйлықтар", "Sport": "Спорт", "Beauty": "Сұлулық", "Pets": "Үй жануарлары", "Business": "Бизнес", "Housing": "Тұрғын үй", "Investments": "Инвестициялар", "Other": "Басқа", "Savings": "Жинақтар"},
+	"uz": {"Food": "Oziq-ovqat", "Transport": "Transport", "Entertainment": "Ko'ngil ochar", "Shopping": "Xarid", "Health": "Salomatlik", "Salary": "Maosh", "Freelance": "Frilanser", "Rent": "Ijara", "Coffee": "Qahva", "Bills": "To'lovlar", "Education": "Ta'lim", "Travel": "Sayohat", "Gifts": "Sovg'alar", "Sport": "Sport", "Beauty": "Go'zallik", "Pets": "Uy hayvonlari", "Business": "Biznes", "Housing": "Uy-joy", "Investments": "Investitsiyalar", "Other": "Boshqa", "Savings": "Jamg'armalar"},
+	"es": {"Food": "Comida", "Transport": "Transporte", "Entertainment": "Entretenimiento", "Shopping": "Compras", "Health": "Salud", "Salary": "Salario", "Freelance": "Freelance", "Rent": "Alquiler", "Coffee": "Café", "Bills": "Facturas", "Education": "Educación", "Travel": "Viajes", "Gifts": "Regalos", "Sport": "Deporte", "Beauty": "Belleza", "Pets": "Mascotas", "Business": "Negocios", "Housing": "Vivienda", "Investments": "Inversiones", "Other": "Otros", "Savings": "Ahorros"},
+	"de": {"Food": "Essen", "Transport": "Transport", "Entertainment": "Unterhaltung", "Shopping": "Einkaufen", "Health": "Gesundheit", "Salary": "Gehalt", "Freelance": "Freelance", "Rent": "Miete", "Coffee": "Kaffee", "Bills": "Rechnungen", "Education": "Bildung", "Travel": "Reisen", "Gifts": "Geschenke", "Sport": "Sport", "Beauty": "Schönheit", "Pets": "Haustiere", "Business": "Geschäft", "Housing": "Wohnen", "Investments": "Investitionen", "Other": "Sonstiges", "Savings": "Ersparnisse"},
+	"it": {"Food": "Cibo", "Transport": "Trasporti", "Entertainment": "Intrattenimento", "Shopping": "Shopping", "Health": "Salute", "Salary": "Stipendio", "Freelance": "Freelance", "Rent": "Affitto", "Coffee": "Caffè", "Bills": "Bollette", "Education": "Istruzione", "Travel": "Viaggi", "Gifts": "Regali", "Sport": "Sport", "Beauty": "Bellezza", "Pets": "Animali", "Business": "Affari", "Housing": "Abitazione", "Investments": "Investimenti", "Other": "Altro", "Savings": "Risparmi"},
+	"fr": {"Food": "Alimentation", "Transport": "Transport", "Entertainment": "Divertissement", "Shopping": "Shopping", "Health": "Santé", "Salary": "Salaire", "Freelance": "Freelance", "Rent": "Loyer", "Coffee": "Café", "Bills": "Factures", "Education": "Éducation", "Travel": "Voyages", "Gifts": "Cadeaux", "Sport": "Sport", "Beauty": "Beauté", "Pets": "Animaux", "Business": "Affaires", "Housing": "Logement", "Investments": "Investissements", "Other": "Autre", "Savings": "Épargne"},
+	"pt": {"Food": "Alimentação", "Transport": "Transporte", "Entertainment": "Entretenimento", "Shopping": "Compras", "Health": "Saúde", "Salary": "Salário", "Freelance": "Freelance", "Rent": "Aluguel", "Coffee": "Café", "Bills": "Contas", "Education": "Educação", "Travel": "Viagens", "Gifts": "Presentes", "Sport": "Esporte", "Beauty": "Beleza", "Pets": "Animais de estimação", "Business": "Negócios", "Housing": "Moradia", "Investments": "Investimentos", "Other": "Outros", "Savings": "Poupanças"},
+	"nl": {"Food": "Eten", "Transport": "Vervoer", "Entertainment": "Vermaak", "Shopping": "Winkelen", "Health": "Gezondheid", "Salary": "Salaris", "Freelance": "Freelance", "Rent": "Huur", "Coffee": "Koffie", "Bills": "Rekeningen", "Education": "Onderwijs", "Travel": "Reizen", "Gifts": "Cadeaus", "Sport": "Sport", "Beauty": "Schoonheid", "Pets": "Huisdieren", "Business": "Zakelijk", "Housing": "Wonen", "Investments": "Investeringen", "Other": "Overig", "Savings": "Spaargeld"},
+	"ar": {"Food": "طعام", "Transport": "مواصلات", "Entertainment": "ترفيه", "Shopping": "تسوق", "Health": "صحة", "Salary": "راتب", "Freelance": "عمل حر", "Rent": "إيجار", "Coffee": "قهوة", "Bills": "فواتير", "Education": "تعليم", "Travel": "سفر", "Gifts": "هدايا", "Sport": "رياضة", "Beauty": "جمال", "Pets": "حيوانات أليفة", "Business": "أعمال", "Housing": "سكن", "Investments": "استثمارات", "Other": "أخرى", "Savings": "المدخرات"},
+	"tr": {"Food": "Yemek", "Transport": "Ulaşım", "Entertainment": "Eğlence", "Shopping": "Alışveriş", "Health": "Sağlık", "Salary": "Maaş", "Freelance": "Serbest çalışma", "Rent": "Kira", "Coffee": "Kahve", "Bills": "Faturalar", "Education": "Eğitim", "Travel": "Seyahat", "Gifts": "Hediyeler", "Sport": "Spor", "Beauty": "Güzellik", "Pets": "Evcil hayvanlar", "Business": "İş", "Housing": "Konut", "Investments": "Yatırımlar", "Other": "Diğer", "Savings": "Tasarruflar"},
+	"ko": {"Food": "음식", "Transport": "교통", "Entertainment": "오락", "Shopping": "쇼핑", "Health": "건강", "Salary": "급여", "Freelance": "프리랜서", "Rent": "임대료", "Coffee": "커피", "Bills": "청구서", "Education": "교육", "Travel": "여행", "Gifts": "선물", "Sport": "스포츠", "Beauty": "미용", "Pets": "반려동물", "Business": "비즈니스", "Housing": "주거", "Investments": "투자", "Other": "기타", "Savings": "저축"},
+	"ms": {"Food": "Makanan", "Transport": "Pengangkutan", "Entertainment": "Hiburan", "Shopping": "Membeli-belah", "Health": "Kesihatan", "Salary": "Gaji", "Freelance": "Bebas", "Rent": "Sewa", "Coffee": "Kopi", "Bills": "Bil", "Education": "Pendidikan", "Travel": "Pelancongan", "Gifts": "Hadiah", "Sport": "Sukan", "Beauty": "Kecantikan", "Pets": "Haiwan peliharaan", "Business": "Perniagaan", "Housing": "Perumahan", "Investments": "Pelaburan", "Other": "Lain-lain", "Savings": "Simpanan"},
+	"id": {"Food": "Makanan", "Transport": "Transportasi", "Entertainment": "Hiburan", "Shopping": "Belanja", "Health": "Kesehatan", "Salary": "Gaji", "Freelance": "Lepas", "Rent": "Sewa", "Coffee": "Kopi", "Bills": "Tagihan", "Education": "Pendidikan", "Travel": "Perjalanan", "Gifts": "Hadiah", "Sport": "Olahraga", "Beauty": "Kecantikan", "Pets": "Hewan peliharaan", "Business": "Bisnis", "Housing": "Perumahan", "Investments": "Investasi", "Other": "Lainnya", "Savings": "Tabungan"},
+}
+
+// translateCategory returns the localized category name, falling back to the English key.
+func translateCategory(lang, englishName string) string {
+	if names, ok := categoryNames[lang]; ok {
+		if translated, ok := names[englishName]; ok {
+			return translated
+		}
+	}
+	return englishName
+}
+
 // budgetAlertTexts holds localized strings for budget alerts.
 // Keys are language codes matching domain.Language constants.
 var budgetAlertTexts = map[string][4]string{
@@ -114,6 +145,7 @@ func (n *TelegramNotifier) SendBudgetAlert(ctx context.Context, chatID int64, la
 		labels = budgetAlertTexts["en"]
 	}
 
+	localizedCategory := translateCategory(lang, categoryName)
 	emoji := alertEmoji(spentPercent)
 	remainingCents := limitCents - spentCents
 	if remainingCents < 0 {
@@ -136,7 +168,7 @@ func (n *TelegramNotifier) SendBudgetAlert(ctx context.Context, chatID int64, la
 	text := fmt.Sprintf(
 		"%s *%s*\n\n%s: %s\n%s %d%%\n\n%s: %s\n%s: %s",
 		emoji, labels[0],
-		labels[1], categoryName,
+		labels[1], localizedCategory,
 		progressBar, spentPercent,
 		labels[2], formatMoney(spentCents, currencyCode),
 		labels[3], formatMoney(remainingCents, currencyCode),
