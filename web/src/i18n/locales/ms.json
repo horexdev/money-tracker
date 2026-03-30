@@ -14,7 +14,8 @@
     "search": "Cari",
     "close": "Tutup",
     "done": "Selesai",
-    "coming_soon": "Akan datang"
+    "coming_soon": "Akan datang",
+    "none": "Tiada"
   },
   "tabs": {
     "home": "Utama",
@@ -208,5 +209,7 @@
     "savings": "Matlamat Simpanan",
     "export": "Eksport",
     "settings": "Tetapan"
-  }
+  },
+  "accounts": "Akaun",
+  "accountsAll": "Semua akaun"
 }

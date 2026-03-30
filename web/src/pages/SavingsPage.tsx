@@ -8,6 +8,7 @@ import { fetchGoals, createGoal, updateGoal, depositGoal, withdrawGoal, deleteGo
 import type { GoalTransaction } from '../api/goals'
 import { accountsApi } from '../api/accounts'
 import { formatCents, parseCents, formatDate } from '../lib/money'
+import { CurrencyBadge } from '../lib/currencyIcons'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
@@ -129,7 +130,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
   const { t } = useTranslation()
   const qc = useQueryClient()
   const { notification } = useHaptic()
-  const { code: currencyCode, symbol } = useBaseCurrency()
+  const { code: currencyCode } = useBaseCurrency()
 
   const isEdit = editGoal !== undefined
   const [name, setName] = useState(editGoal?.name ?? '')
@@ -210,7 +211,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
               {t('savings.target')}
             </label>
             <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow">
-              <span className="text-3xl font-bold text-muted/40 tabular-nums">{symbol}</span>
+              <CurrencyBadge currency={currencyCode} className="text-muted/40" />
               <input
                 inputMode="decimal"
                 placeholder="0.00"
@@ -251,7 +252,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
           {accounts.length > 0 && (
             <div>
               <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
-                {t('accounts.title')}
+                {t('accounts')}
               </label>
               <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 <button
@@ -294,7 +295,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
               }
             `}
           >
-            {isPending ? '...' : isEdit ? t('common.save') : t('common.create')}
+            {isPending ? t('common.loading') : isEdit ? t('common.save') : t('common.create')}
           </button>
 
           {isError && (
@@ -334,7 +335,7 @@ function AmountSheet({
   error: Error | null
 }) {
   const { t } = useTranslation()
-  const { symbol } = useBaseCurrency()
+  const { code: amountCurrency } = useBaseCurrency()
   const [amountStr, setAmountStr] = useState('')
   const cents = parseCents(amountStr)
   const isDeposit = action === 'deposit'
@@ -355,7 +356,7 @@ function AmountSheet({
         </div>
 
         <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow">
-          <span className="text-3xl font-bold text-muted/40 tabular-nums">{symbol}</span>
+          <CurrencyBadge currency={amountCurrency} className="text-muted/40" />
           <input
             inputMode="decimal"
             placeholder="0.00"
@@ -379,7 +380,7 @@ function AmountSheet({
             }
           `}
         >
-          {isPending ? '...' : t('common.confirm')}
+          {isPending ? t('common.loading') : t('common.confirm')}
         </button>
 
         {isError && (

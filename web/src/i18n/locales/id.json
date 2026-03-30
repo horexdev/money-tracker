@@ -14,7 +14,8 @@
     "search": "Cari",
     "close": "Tutup",
     "done": "Selesai",
-    "coming_soon": "Segera hadir"
+    "coming_soon": "Segera hadir",
+    "none": "Tidak ada"
   },
   "tabs": {
     "home": "Beranda",
@@ -208,5 +209,7 @@
     "savings": "Target Tabungan",
     "export": "Ekspor",
     "settings": "Pengaturan"
-  }
+  },
+  "accounts": "Akun",
+  "accountsAll": "Semua akun"
 }

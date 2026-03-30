@@ -14,7 +14,8 @@
     "search": "검색",
     "close": "닫기",
     "done": "완료",
-    "coming_soon": "곧 출시"
+    "coming_soon": "곧 출시",
+    "none": "없음"
   },
   "tabs": {
     "home": "홈",
@@ -208,5 +209,7 @@
     "savings": "저축 목표",
     "export": "내보내기",
     "settings": "설정"
-  }
+  },
+  "accounts": "계좌",
+  "accountsAll": "모든 계좌"
 }

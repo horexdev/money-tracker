@@ -14,7 +14,8 @@
     "search": "Search",
     "close": "Close",
     "done": "Done",
-    "coming_soon": "Coming soon"
+    "coming_soon": "Coming soon",
+    "none": "None"
   },
   "tabs": {
     "home": "Home",
@@ -219,6 +220,7 @@
     "transfers": "Transfers"
   },
   "accounts": "Accounts",
+  "accountsAll": "All accounts",
   "transfers": "Transfers",
   "newAccount": "New Account",
   "newTransfer": "New Transfer",

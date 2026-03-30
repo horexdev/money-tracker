@@ -14,7 +14,8 @@
     "search": "Zoeken",
     "close": "Sluiten",
     "done": "Klaar",
-    "coming_soon": "Binnenkort"
+    "coming_soon": "Binnenkort",
+    "none": "Geen"
   },
   "tabs": {
     "home": "Home",
@@ -208,5 +209,7 @@
     "savings": "Spaardoelen",
     "export": "Exporteren",
     "settings": "Instellingen"
-  }
+  },
+  "accounts": "Rekeningen",
+  "accountsAll": "Alle rekeningen"
 }

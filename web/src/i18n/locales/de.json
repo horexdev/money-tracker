@@ -14,7 +14,8 @@
     "search": "Suchen",
     "close": "Schließen",
     "done": "Fertig",
-    "coming_soon": "Demnächst"
+    "coming_soon": "Demnächst",
+    "none": "Keine"
   },
   "tabs": {
     "home": "Start",
@@ -208,5 +209,7 @@
     "savings": "Sparziele",
     "export": "Exportieren",
     "settings": "Einstellungen"
-  }
+  },
+  "accounts": "Konten",
+  "accountsAll": "Alle Konten"
 }

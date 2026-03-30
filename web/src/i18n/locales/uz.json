@@ -14,7 +14,8 @@
     "search": "Qidirish",
     "close": "Yopish",
     "done": "Tayyor",
-    "coming_soon": "Tez kunda"
+    "coming_soon": "Tez kunda",
+    "none": "Yo'q"
   },
   "tabs": {
     "home": "Bosh sahifa",
@@ -208,5 +209,7 @@
     "savings": "Jamg'arma maqsadlari",
     "export": "Eksport",
     "settings": "Sozlamalar"
-  }
+  },
+  "accounts": "Hisoblar",
+  "accountsAll": "Barcha hisoblar"
 }

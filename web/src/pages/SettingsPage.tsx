@@ -136,7 +136,7 @@ export function SettingsPage() {
 
   const { data: balance } = useQuery({
     queryKey: ['balance'],
-    queryFn: balanceApi.get,
+    queryFn: () => balanceApi.get(),
   })
 
   const currencyMutation = useMutation({
@@ -482,7 +482,7 @@ export function SettingsPage() {
                     disabled={resetMutation.isPending}
                     className="w-full py-3.5 rounded-2xl bg-destructive text-white font-bold text-sm disabled:opacity-50"
                   >
-                    {resetMutation.isPending ? '...' : t('settings.reset_confirm_btn')}
+                    {resetMutation.isPending ? t('common.loading') : t('settings.reset_confirm_btn')}
                   </button>
                   <button
                     onClick={closeModal}

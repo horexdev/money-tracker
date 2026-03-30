@@ -245,7 +245,7 @@ function AccountFormSheet({
             }
           `}
         >
-          {isPending ? '...' : isEdit ? t('common.save') : t('common.create')}
+          {isPending ? t('common.loading') : isEdit ? t('common.save') : t('common.create')}
         </button>
 
         {isError && (

@@ -17,7 +17,7 @@ interface TransactionRowProps {
 export function TransactionRow({ tx, compact = false, onDelete, onEdit, isDeleting = false }: TransactionRowProps) {
   const isIncome = tx.type === 'income'
   const tCategory = useCategoryName()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const date = formatDate(tx.created_at, i18n.language)
 
   return (
@@ -60,7 +60,7 @@ export function TransactionRow({ tx, compact = false, onDelete, onEdit, isDeleti
           onClick={(e) => { e.stopPropagation(); onDelete(tx.id) }}
           className="shrink-0 w-8 h-8 flex items-center justify-center rounded-2xl
             text-muted hover:text-destructive hover:bg-expense-subtle transition-all"
-          aria-label="Delete"
+          aria-label={t('common.delete')}
         >
           <Trash size={16} weight="bold" />
         </button>

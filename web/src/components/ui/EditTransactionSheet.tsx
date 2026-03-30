@@ -5,8 +5,9 @@ import { AnimatePresence } from 'framer-motion'
 import { CalendarBlank, Check, CaretDown } from '@phosphor-icons/react'
 import { transactionsApi } from '../../api/transactions'
 import { categoriesApi } from '../../api/categories'
-import { parseCents, getCurrencySymbol } from '../../lib/money'
+import { parseCents } from '../../lib/money'
 import { CategoryIcon } from '../../lib/categoryIcons'
+import { CurrencyBadge } from '../../lib/currencyIcons'
 import { useCategoryName } from '../../hooks/useCategoryName'
 import { useBaseCurrency } from '../../hooks/useBaseCurrency'
 import { useHaptic } from '../../hooks/useHaptic'
@@ -37,7 +38,7 @@ export function EditTransactionSheet({
   const { notification } = useHaptic()
   const tCategory = useCategoryName()
   const { code: baseCurrency } = useBaseCurrency()
-  const symbol = getCurrencySymbol(tx.currency_code || baseCurrency)
+  const txCurrency = tx.currency_code || baseCurrency
 
   const [amount, setAmount] = useState(String(tx.amount_cents / 100))
   const [categoryID, setCategoryID] = useState<number>(tx.category_id)
@@ -82,7 +83,7 @@ export function EditTransactionSheet({
             {t('transactions.amount')}
           </label>
           <div className="flex items-baseline gap-1.5 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow">
-            <span className="text-3xl font-bold text-muted/40 tabular-nums">{symbol}</span>
+            <CurrencyBadge currency={txCurrency} className="text-muted/40" />
             <input
               inputMode="decimal"
               placeholder="0.00"
@@ -172,7 +173,7 @@ export function EditTransactionSheet({
             }
           `}
         >
-          {updateMut.isPending ? '...' : t('common.save')}
+          {updateMut.isPending ? t('common.loading') : t('common.save')}
         </button>
 
         {updateMut.isError && (

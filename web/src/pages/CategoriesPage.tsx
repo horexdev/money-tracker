@@ -203,7 +203,7 @@ function CategoryForm({
             }
           `}
         >
-          {isPending ? '...' : editingCat ? t('common.save') : t('common.create')}
+          {isPending ? t('common.loading') : editingCat ? t('common.save') : t('common.create')}
         </button>
 
         {(createMut.isError || updateMut.isError) && (

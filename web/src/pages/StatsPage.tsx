@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
 import { CalendarDots, ChartBar } from '@phosphor-icons/react'
 import { statsApi } from '../api/stats'
+import { accountsApi } from '../api/accounts'
 import { formatCents } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { EmptyState, RangeDateModal } from '../components/ui'
+import { AccountDropdown } from '../components/ui/AccountDropdown'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { TransactionType, CategoryStat } from '../types'
@@ -193,6 +195,12 @@ export function StatsPage() {
   const [period, setPeriod] = useState<Period>('month')
   const [customRange, setCustomRange] = useState<CustomRange | null>(null)
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
+
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: accountsApi.list,
+  })
 
   const isCustom = customRange !== null
 
@@ -206,11 +214,11 @@ export function StatsPage() {
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: customRange
-      ? ['stats', 'custom', customRange.from, customRange.to]
-      : ['stats', period],
+      ? ['stats', 'custom', customRange.from, customRange.to, selectedAccountId]
+      : ['stats', period, selectedAccountId],
     queryFn: customRange
-      ? () => statsApi.getRange(customRange.from, customRange.to)
-      : () => statsApi.get(period),
+      ? () => statsApi.getRange(customRange.from, customRange.to, selectedAccountId)
+      : () => statsApi.get(period, selectedAccountId),
   })
 
   const filtered: CategoryStat[] = data?.items.filter((s) => s.type === type) ?? []
@@ -229,7 +237,7 @@ export function StatsPage() {
 
   const topCategory = withPercent[0] ?? null
   const avgPerTx = txCount > 0 ? Math.round(total / txCount) : 0
-  const animationKey = `${type}-${period}-${customRange?.from ?? ''}-${customRange?.to ?? ''}`
+  const animationKey = `${type}-${period}-${customRange?.from ?? ''}-${customRange?.to ?? ''}-${selectedAccountId ?? 'all'}`
 
   function handlePeriodChange(v: Period | 'custom') {
     if (v === 'custom') {
@@ -253,6 +261,19 @@ export function StatsPage() {
              style={{ boxShadow: 'var(--shadow-hero)' }}>
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/[0.06] blur-xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-indigo-400/15 blur-2xl pointer-events-none" />
+
+          {/* Account selector — top-right, outside z-10 div so it sits over decorative blobs */}
+          {accounts.length > 1 && (
+            <div className="absolute top-5 right-5 z-20">
+              <AccountDropdown
+                accounts={accounts}
+                selectedId={selectedAccountId}
+                onChange={setSelectedAccountId}
+                allLabel={t('accountsAll')}
+                variant="hero"
+              />
+            </div>
+          )}
 
           <div className="relative z-10">
             {/* Glass type toggle */}

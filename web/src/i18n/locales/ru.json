@@ -14,7 +14,8 @@
     "search": "Поиск",
     "close": "Закрыть",
     "done": "Готово",
-    "coming_soon": "Скоро"
+    "coming_soon": "Скоро",
+    "none": "Нет"
   },
   "tabs": {
     "home": "Главная",
@@ -219,6 +220,7 @@
     "transfers": "Переводы"
   },
   "accounts": "Счета",
+  "accountsAll": "Все счета",
   "transfers": "Переводы",
   "newAccount": "Новый счёт",
   "newTransfer": "Новый перевод",

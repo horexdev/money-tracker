@@ -9,8 +9,9 @@ import { transactionsApi } from '../api/transactions'
 import { transfersApi } from '../api/transfers'
 import { balanceApi } from '../api/balance'
 import { accountsApi } from '../api/accounts'
-import { parseCents, getCurrencySymbol } from '../lib/money'
+import { parseCents } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
+import { CurrencyBadge } from '../lib/currencyIcons'
 import { useTgMainButton } from '../hooks/useMainButton'
 import { useTgBackButton } from '../hooks/useTelegramApp'
 import { useHaptic } from '../hooks/useHaptic'
@@ -82,7 +83,6 @@ export function AddTransactionPage() {
   }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const baseCurrency = balanceData?.by_currency?.[0]?.currency_code ?? 'USD'
-  const currencySymbol = getCurrencySymbol(baseCurrency)
 
   const isTransfer = mode === 'transfer'
   const isExpense = mode === 'expense'
@@ -230,7 +230,7 @@ export function AddTransactionPage() {
 
             {/* Amount input — always shown */}
             <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-3xl font-bold text-white/50 shrink-0">{currencySymbol}</span>
+              <CurrencyBadge currency={baseCurrency} className="text-white/50" />
               <input
                 inputMode="decimal"
                 placeholder="0.00"

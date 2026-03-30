@@ -14,7 +14,8 @@
     "search": "بحث",
     "close": "إغلاق",
     "done": "تم",
-    "coming_soon": "قريباً"
+    "coming_soon": "قريباً",
+    "none": "لا شيء"
   },
   "tabs": {
     "home": "الرئيسية",
@@ -208,5 +209,7 @@
     "savings": "أهداف الادخار",
     "export": "تصدير",
     "settings": "الإعدادات"
-  }
+  },
+  "accounts": "الحسابات",
+  "accountsAll": "جميع الحسابات"
 }

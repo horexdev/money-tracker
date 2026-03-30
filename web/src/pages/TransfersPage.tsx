@@ -7,6 +7,7 @@ import { ArrowRight, ArrowsHorizontal } from '@phosphor-icons/react'
 import { transfersApi } from '../api/transfers'
 import { accountsApi } from '../api/accounts'
 import { formatCents, formatDate, parseCents } from '../lib/money'
+import { CurrencyBadge } from '../lib/currencyIcons'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
@@ -191,9 +192,7 @@ function TransferFormSheet({
             {t('transactions.amount')}
           </label>
           <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow">
-            <span className="text-3xl font-bold text-muted/40 tabular-nums">
-              {fromAccount?.currency_code ?? ''}
-            </span>
+            {fromAccount && <CurrencyBadge currency={fromAccount.currency_code} className="text-muted/40" />}
             <input
               inputMode="decimal"
               placeholder="0.00"
@@ -255,7 +254,7 @@ function TransferFormSheet({
             }
           `}
         >
-          {createMut.isPending ? '...' : t('common.create')}
+          {createMut.isPending ? t('common.loading') : t('common.create')}
         </button>
 
         {createMut.isError && (

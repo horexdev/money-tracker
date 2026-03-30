@@ -14,7 +14,8 @@
     "search": "Ara",
     "close": "Kapat",
     "done": "Tamam",
-    "coming_soon": "Yakında"
+    "coming_soon": "Yakında",
+    "none": "Hiçbiri"
   },
   "tabs": {
     "home": "Ana Sayfa",
@@ -208,5 +209,7 @@
     "savings": "Birikim Hedefleri",
     "export": "Dışa Aktar",
     "settings": "Ayarlar"
-  }
+  },
+  "accounts": "Hesaplar",
+  "accountsAll": "Tüm hesaplar"
 }

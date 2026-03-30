@@ -16,6 +16,7 @@ import { useHaptic } from '../hooks/useHaptic'
 import { Badge, EmptyState, SwipeToDelete, FAB, BottomSheet } from '../components/ui'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
+import { CurrencyBadge } from '../lib/currencyIcons'
 import type { RecurringTransaction, TransactionType } from '../types'
 
 function sanitizeAmount(value: string): string {
@@ -110,7 +111,7 @@ function RecurringForm({
   const qc = useQueryClient()
   const { notification } = useHaptic()
   const tCategory = useCategoryName()
-  const { code: currencyCode, symbol } = useBaseCurrency()
+  const { code: currencyCode } = useBaseCurrency()
 
   const isEdit = editItem !== null
 
@@ -190,7 +191,7 @@ function RecurringForm({
             {t('transactions.amount')}
           </label>
           <div className="flex items-baseline gap-1.5 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-shadow">
-            <span className="text-3xl font-bold text-muted/40 tabular-nums">{symbol}</span>
+            <CurrencyBadge currency={currencyCode} className="text-muted/40" />
             <input
               inputMode="decimal"
               placeholder="0.00"
@@ -287,7 +288,7 @@ function RecurringForm({
             }
           `}
         >
-          {mut.isPending ? '...' : isEdit ? t('common.save') : t('common.create')}
+          {mut.isPending ? t('common.loading') : isEdit ? t('common.save') : t('common.create')}
         </button>
 
         {mut.isError && (

@@ -14,7 +14,8 @@
     "search": "Pesquisar",
     "close": "Fechar",
     "done": "Pronto",
-    "coming_soon": "Em breve"
+    "coming_soon": "Em breve",
+    "none": "Nenhum"
   },
   "tabs": {
     "home": "Início",
@@ -208,5 +209,7 @@
     "savings": "Metas de poupança",
     "export": "Exportar",
     "settings": "Configurações"
-  }
+  },
+  "accounts": "Contas",
+  "accountsAll": "Todas as contas"
 }
