@@ -27,18 +27,18 @@ func NewTransactionService(
 // AddExpense records a new expense transaction.
 // exchangeRate is the rate from currencyCode to baseCurrency at creation time (1.0 if same currency).
 // createdAt is optional; when nil the DB defaults to NOW().
-func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, createdAt)
+func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, accountID, createdAt)
 }
 
 // AddIncome records a new income transaction.
 // exchangeRate is the rate from currencyCode to baseCurrency at creation time (1.0 if same currency).
 // createdAt is optional; when nil the DB defaults to NOW().
-func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, createdAt)
+func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, accountID, createdAt)
 }
 
-func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error) {
+func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error) {
 	if amountCents <= 0 {
 		return nil, domain.ErrInvalidAmount
 	}
@@ -61,6 +61,10 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		return nil, domain.ErrCategoryNotFound
 	}
 
+	var aid int64
+	if accountID != nil {
+		aid = *accountID
+	}
 	t := &domain.Transaction{
 		UserID:                 userID,
 		Type:                   txType,
@@ -70,6 +74,7 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		CurrencyCode:           currencyCode,
 		ExchangeRateSnapshot:   exchangeRate,
 		BaseCurrencyAtCreation: baseCurrency,
+		AccountID:              aid,
 	}
 
 	var tx *domain.Transaction

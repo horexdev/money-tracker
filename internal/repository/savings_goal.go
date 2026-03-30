@@ -31,6 +31,7 @@ func (r *SavingsGoalRepository) Create(ctx context.Context, g *domain.SavingsGoa
 		TargetCents:  g.TargetCents,
 		CurrencyCode: g.CurrencyCode,
 		Deadline:     pgDate(g.Deadline),
+		AccountID:    pgOptionalInt8(g.AccountID),
 	})
 	if err != nil {
 		return nil, err
@@ -75,6 +76,7 @@ func (r *SavingsGoalRepository) Update(ctx context.Context, g *domain.SavingsGoa
 		TargetCents:  g.TargetCents,
 		CurrencyCode: g.CurrencyCode,
 		Deadline:     pgDate(g.Deadline),
+		AccountID:    pgOptionalInt8(g.AccountID),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -188,18 +190,18 @@ func (r *SavingsGoalRepository) ListHistory(ctx context.Context, goalID, userID 
 }
 
 func rowToGoal(row sqlcgen.SavingsGoal) *domain.SavingsGoal {
-	g := &domain.SavingsGoal{
+	return &domain.SavingsGoal{
 		ID:           row.ID,
 		UserID:       row.UserID,
 		Name:         row.Name,
 		TargetCents:  row.TargetCents,
 		CurrentCents: row.CurrentCents,
 		CurrencyCode: row.CurrencyCode,
+		AccountID:    goInt64Ptr(row.AccountID),
 		Deadline:     goDatePtr(row.Deadline),
 		CreatedAt:    goTime(row.CreatedAt),
 		UpdatedAt:    goTime(row.UpdatedAt),
 	}
-	return g
 }
 
 // GetByAccountID returns all goals linked to the given account.

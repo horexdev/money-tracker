@@ -20,13 +20,13 @@ func newTxService(txRepo *mocks.MockTransactionStorer, catRepo *mocks.MockCatego
 
 func TestTransactionService_AddExpense_ZeroAmount(t *testing.T) {
 	svc := newTxService(&mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{})
-	_, err := svc.AddExpense(context.Background(), 1, 0, 1, "", "USD", "USD", 1.0, nil)
+	_, err := svc.AddExpense(context.Background(), 1, 0, 1, "", "USD", "USD", 1.0, nil, nil)
 	assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 }
 
 func TestTransactionService_AddExpense_NegativeAmount(t *testing.T) {
 	svc := newTxService(&mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{})
-	_, err := svc.AddExpense(context.Background(), 1, -100, 1, "", "USD", "USD", 1.0, nil)
+	_, err := svc.AddExpense(context.Background(), 1, -100, 1, "", "USD", "USD", 1.0, nil, nil)
 	assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 }
 
@@ -37,7 +37,7 @@ func TestTransactionService_AddExpense_CategoryNotFound(t *testing.T) {
 
 	catRepo.On("GetByID", mock.Anything, int64(99)).Return(nil, domain.ErrCategoryNotFound)
 
-	_, err := svc.AddExpense(context.Background(), 1, 1000, 99, "", "USD", "USD", 1.0, nil)
+	_, err := svc.AddExpense(context.Background(), 1, 1000, 99, "", "USD", "USD", 1.0, nil, nil)
 	assert.Error(t, err)
 }
 
@@ -50,7 +50,7 @@ func TestTransactionService_AddExpense_WrongUser(t *testing.T) {
 	cat := &domain.Category{ID: 5, UserID: 2}
 	catRepo.On("GetByID", mock.Anything, int64(5)).Return(cat, nil)
 
-	_, err := svc.AddExpense(context.Background(), 1, 1000, 5, "", "USD", "USD", 1.0, nil)
+	_, err := svc.AddExpense(context.Background(), 1, 1000, 5, "", "USD", "USD", 1.0, nil, nil)
 	assert.ErrorIs(t, err, domain.ErrCategoryNotFound)
 }
 
@@ -66,7 +66,7 @@ func TestTransactionService_AddExpense_SystemCategoryAllowed(t *testing.T) {
 	tx := &domain.Transaction{ID: 1, AmountCents: 1000}
 	txRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(tx, nil)
 
-	got, err := svc.AddExpense(context.Background(), 1, 1000, 5, "", "USD", "USD", 1.0, nil)
+	got, err := svc.AddExpense(context.Background(), 1, 1000, 5, "", "USD", "USD", 1.0, nil, nil)
 	require.NoError(t, err)
 	assert.Equal(t, int64(1), got.ID)
 }
@@ -85,7 +85,7 @@ func TestTransactionService_AddExpense_DefaultCurrency(t *testing.T) {
 		Run(func(args mock.Arguments) { capturedTx = args.Get(1).(*domain.Transaction) }).
 		Return(tx, nil)
 
-	_, err := svc.AddExpense(context.Background(), 1, 1000, 1, "", "", "", 1.0, nil)
+	_, err := svc.AddExpense(context.Background(), 1, 1000, 1, "", "", "", 1.0, nil, nil)
 	require.NoError(t, err)
 	assert.Equal(t, "USD", capturedTx.CurrencyCode)
 }
@@ -104,7 +104,7 @@ func TestTransactionService_AddExpense_NegativeExchangeRateForcedToOne(t *testin
 		Run(func(args mock.Arguments) { capturedTx = args.Get(1).(*domain.Transaction) }).
 		Return(tx, nil)
 
-	_, err := svc.AddExpense(context.Background(), 1, 1000, 1, "", "USD", "USD", -5.0, nil)
+	_, err := svc.AddExpense(context.Background(), 1, 1000, 1, "", "USD", "USD", -5.0, nil, nil)
 	require.NoError(t, err)
 	assert.Equal(t, 1.0, capturedTx.ExchangeRateSnapshot)
 }
@@ -121,7 +121,7 @@ func TestTransactionService_AddExpense_WithCustomDate(t *testing.T) {
 	txRepo.On("CreateWithDate", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(tx, nil)
 
 	customTime := time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC)
-	_, err := svc.AddExpense(context.Background(), 1, 1000, 1, "", "USD", "USD", 1.0, &customTime)
+	_, err := svc.AddExpense(context.Background(), 1, 1000, 1, "", "USD", "USD", 1.0, nil, &customTime)
 	require.NoError(t, err)
 	txRepo.AssertNotCalled(t, "Create")
 	txRepo.AssertCalled(t, "CreateWithDate", mock.Anything, mock.Anything)

@@ -1,6 +1,6 @@
 -- name: CreateSavingsGoal :one
-INSERT INTO savings_goals (user_id, name, target_cents, currency_code, deadline)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO savings_goals (user_id, name, target_cents, currency_code, deadline, account_id)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetSavingsGoalByID :one
@@ -17,6 +17,7 @@ SET name          = $3,
     target_cents  = $4,
     currency_code = $5,
     deadline      = $6,
+    account_id    = $7,
     updated_at    = now()
 WHERE id = $1 AND user_id = $2
 RETURNING *;

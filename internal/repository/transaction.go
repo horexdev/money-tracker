@@ -30,22 +30,12 @@ func (r *TransactionRepository) Create(ctx context.Context, t *domain.Transactio
 		CurrencyCode:           t.CurrencyCode,
 		ExchangeRateSnapshot:   pgNumeric(t.ExchangeRateSnapshot),
 		BaseCurrencyAtCreation: t.BaseCurrencyAtCreation,
+		AccountID:              pgOptionalInt8(nonZeroInt64(t.AccountID)),
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &domain.Transaction{
-		ID:                     row.ID,
-		UserID:                 row.UserID,
-		Type:                   row.Type,
-		AmountCents:            row.AmountCents,
-		CategoryID:             row.CategoryID,
-		Note:                   row.Note,
-		CurrencyCode:           row.CurrencyCode,
-		ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-		BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-		CreatedAt:              goTime(row.CreatedAt),
-	}, nil
+	return rowToTransaction(row), nil
 }
 
 // CreateWithDate inserts a new transaction with an explicit created_at timestamp.
@@ -60,10 +50,15 @@ func (r *TransactionRepository) CreateWithDate(ctx context.Context, t *domain.Tr
 		ExchangeRateSnapshot:   pgNumeric(t.ExchangeRateSnapshot),
 		BaseCurrencyAtCreation: t.BaseCurrencyAtCreation,
 		CreatedAt:              pgTimestamptz(t.CreatedAt),
+		AccountID:              pgOptionalInt8(nonZeroInt64(t.AccountID)),
 	})
 	if err != nil {
 		return nil, err
 	}
+	return rowToTransaction(row), nil
+}
+
+func rowToTransaction(row sqlcgen.Transaction) *domain.Transaction {
 	return &domain.Transaction{
 		ID:                     row.ID,
 		UserID:                 row.UserID,
@@ -75,7 +70,16 @@ func (r *TransactionRepository) CreateWithDate(ctx context.Context, t *domain.Tr
 		ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
 		BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
 		CreatedAt:              goTime(row.CreatedAt),
-	}, nil
+		AccountID:              goInt64(row.AccountID),
+	}
+}
+
+// nonZeroInt64 returns a pointer to v if non-zero, otherwise nil (maps to SQL NULL).
+func nonZeroInt64(v int64) *int64 {
+	if v == 0 {
+		return nil
+	}
+	return &v
 }
 
 // Delete removes a transaction by ID, scoped to the owning user.

@@ -18,6 +18,7 @@ type goalResponse struct {
 	TargetCents     int64   `json:"target_cents"`
 	CurrentCents    int64   `json:"current_cents"`
 	CurrencyCode    string  `json:"currency_code"`
+	AccountID       *int64  `json:"account_id"`
 	Deadline        *string `json:"deadline"`
 	ProgressPercent float64 `json:"progress_percent"`
 	IsCompleted     bool    `json:"is_completed"`
@@ -30,12 +31,14 @@ type createGoalRequest struct {
 	TargetCents  int64  `json:"target_cents"`
 	CurrencyCode string `json:"currency_code"`
 	Deadline     string `json:"deadline"`
+	AccountID    *int64 `json:"account_id"`
 }
 
 type updateGoalRequest struct {
 	Name        string `json:"name"`
 	TargetCents *int64 `json:"target_cents"`
 	Deadline    string `json:"deadline"`
+	AccountID   *int64 `json:"account_id"`
 }
 
 type depositWithdrawRequest struct {
@@ -137,6 +140,7 @@ func createGoal(w http.ResponseWriter, r *http.Request, userID int64, svc *servi
 		Name:         req.Name,
 		TargetCents:  req.TargetCents,
 		CurrencyCode: req.CurrencyCode,
+		AccountID:    req.AccountID,
 	}
 
 	if req.Deadline != "" {
@@ -183,6 +187,10 @@ func updateGoal(w http.ResponseWriter, r *http.Request, userID, id int64, svc *s
 			return
 		}
 		existing.Deadline = &t
+	}
+	// account_id: explicit null in JSON clears the link; omitted field leaves it unchanged.
+	if req.AccountID != nil || existing.AccountID != nil {
+		existing.AccountID = req.AccountID
 	}
 
 	result, err := svc.Update(ctx, existing)
@@ -261,6 +269,7 @@ func goalToResponse(g *domain.SavingsGoal) goalResponse {
 		TargetCents:     g.TargetCents,
 		CurrentCents:    g.CurrentCents,
 		CurrencyCode:    g.CurrencyCode,
+		AccountID:       g.AccountID,
 		Deadline:        deadline,
 		ProgressPercent: g.ProgressPercent(),
 		IsCompleted:     g.IsCompleted(),

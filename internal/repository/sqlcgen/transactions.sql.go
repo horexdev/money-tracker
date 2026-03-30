@@ -24,8 +24,8 @@ func (q *Queries) CountUserTransactions(ctx context.Context, userID int64) (int6
 }
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
 `
 
@@ -38,6 +38,7 @@ type CreateTransactionParams struct {
 	CurrencyCode           string                 `json:"currency_code"`
 	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
 	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
+	AccountID              pgtype.Int8            `json:"account_id"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
@@ -50,6 +51,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		arg.CurrencyCode,
 		arg.ExchangeRateSnapshot,
 		arg.BaseCurrencyAtCreation,
+		arg.AccountID,
 	)
 	var i Transaction
 	err := row.Scan(
@@ -69,8 +71,8 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 }
 
 const createTransactionWithDate = `-- name: CreateTransactionWithDate :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, created_at, account_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
 `
 
@@ -84,6 +86,7 @@ type CreateTransactionWithDateParams struct {
 	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
 	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
 	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
+	AccountID              pgtype.Int8            `json:"account_id"`
 }
 
 func (q *Queries) CreateTransactionWithDate(ctx context.Context, arg CreateTransactionWithDateParams) (Transaction, error) {
@@ -97,6 +100,7 @@ func (q *Queries) CreateTransactionWithDate(ctx context.Context, arg CreateTrans
 		arg.ExchangeRateSnapshot,
 		arg.BaseCurrencyAtCreation,
 		arg.CreatedAt,
+		arg.AccountID,
 	)
 	var i Transaction
 	err := row.Scan(

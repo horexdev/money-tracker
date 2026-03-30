@@ -51,6 +51,23 @@ func pgInt8(v int64) pgtype.Int8 {
 	return pgtype.Int8{Int64: v, Valid: true}
 }
 
+// pgOptionalInt8 converts a *int64 to a pgtype.Int8 (invalid/null when nil).
+func pgOptionalInt8(v *int64) pgtype.Int8 {
+	if v == nil {
+		return pgtype.Int8{}
+	}
+	return pgtype.Int8{Int64: *v, Valid: true}
+}
+
+// goInt64Ptr converts a pgtype.Int8 to a *int64 (nil if invalid).
+func goInt64Ptr(v pgtype.Int8) *int64 {
+	if !v.Valid {
+		return nil
+	}
+	x := v.Int64
+	return &x
+}
+
 // goInt64 converts a pgtype.Int8 to an int64 (0 if invalid).
 func goInt64(v pgtype.Int8) int64 {
 	if !v.Valid {

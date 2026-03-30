@@ -38,12 +38,13 @@ type createTransactionRequest struct {
 	CategoryID   int64   `json:"category_id"`
 	Note         string  `json:"note"`
 	CurrencyCode string  `json:"currency_code"`
+	AccountID    *int64  `json:"account_id"`
 	CreatedAt    *string `json:"created_at"`
 }
 
 type transactionManager interface {
-	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error)
-	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, createdAt *time.Time) (*domain.Transaction, error)
+	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error)
+	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error)
 	ListPaged(ctx context.Context, userID int64, page, pageSize int) ([]*domain.Transaction, int, error)
 	Delete(ctx context.Context, id, userID int64) error
 	UpdateTransaction(ctx context.Context, userID, id, amountCents, categoryID int64, note string, createdAt time.Time) (*domain.Transaction, error)
@@ -178,9 +179,9 @@ func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txS
 	var tx *domain.Transaction
 	switch req.Type {
 	case "expense":
-		tx, err = txSvc.AddExpense(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate, customTime)
+		tx, err = txSvc.AddExpense(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate, req.AccountID, customTime)
 	case "income":
-		tx, err = txSvc.AddIncome(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate, customTime)
+		tx, err = txSvc.AddIncome(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate, req.AccountID, customTime)
 	default:
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "type must be 'expense' or 'income'"})
 		return

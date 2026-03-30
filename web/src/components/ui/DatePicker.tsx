@@ -220,14 +220,14 @@ export function SingleDateModal({
   return (
     <>
       <motion.div
-        className="fixed inset-0 bg-black/40 z-[60]"
+        className="fixed inset-0 bg-black/40 z-[70]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-[24px] px-5 pt-4 pb-8 max-h-[70dvh] overflow-y-auto"
+        className="fixed bottom-0 left-0 right-0 z-[70] bg-surface rounded-t-[24px] px-5 pt-4 pb-8 max-h-[70dvh] overflow-y-auto"
         style={{ boxShadow: '0 -8px 40px rgba(0,0,0,0.15)' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
@@ -287,14 +287,14 @@ export function RangeDateModal({
   return (
     <>
       <motion.div
-        className="fixed inset-0 bg-black/40 z-[60]"
+        className="fixed inset-0 bg-black/40 z-[70]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-[24px] px-5 pt-4 pb-5 max-h-[70dvh] overflow-y-auto"
+        className="fixed bottom-0 left-0 right-0 z-[70] bg-surface rounded-t-[24px] px-5 pt-4 pb-5 max-h-[70dvh] overflow-y-auto"
         style={{ boxShadow: '0 -8px 40px rgba(0,0,0,0.15)' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}

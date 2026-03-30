@@ -12,8 +12,8 @@ import (
 )
 
 const createSavingsGoal = `-- name: CreateSavingsGoal :one
-INSERT INTO savings_goals (user_id, name, target_cents, currency_code, deadline)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO savings_goals (user_id, name, target_cents, currency_code, deadline, account_id)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id
 `
 
@@ -23,6 +23,7 @@ type CreateSavingsGoalParams struct {
 	TargetCents  int64       `json:"target_cents"`
 	CurrencyCode string      `json:"currency_code"`
 	Deadline     pgtype.Date `json:"deadline"`
+	AccountID    pgtype.Int8 `json:"account_id"`
 }
 
 func (q *Queries) CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalParams) (SavingsGoal, error) {
@@ -32,6 +33,7 @@ func (q *Queries) CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalPa
 		arg.TargetCents,
 		arg.CurrencyCode,
 		arg.Deadline,
+		arg.AccountID,
 	)
 	var i SavingsGoal
 	err := row.Scan(
@@ -165,6 +167,7 @@ SET name          = $3,
     target_cents  = $4,
     currency_code = $5,
     deadline      = $6,
+    account_id    = $7,
     updated_at    = now()
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, target_cents, current_cents, currency_code, deadline, created_at, updated_at, account_id
@@ -177,6 +180,7 @@ type UpdateSavingsGoalParams struct {
 	TargetCents  int64       `json:"target_cents"`
 	CurrencyCode string      `json:"currency_code"`
 	Deadline     pgtype.Date `json:"deadline"`
+	AccountID    pgtype.Int8 `json:"account_id"`
 }
 
 func (q *Queries) UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalParams) (SavingsGoal, error) {
@@ -187,6 +191,7 @@ func (q *Queries) UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalPa
 		arg.TargetCents,
 		arg.CurrencyCode,
 		arg.Deadline,
+		arg.AccountID,
 	)
 	var i SavingsGoal
 	err := row.Scan(
