@@ -14,8 +14,13 @@ type userEnsurer struct {
 	svc *service.UserService
 }
 
-func (u *userEnsurer) ensureUser(ctx context.Context, userID int64) error {
-	_, err := u.svc.Upsert(ctx, &domain.User{ID: userID})
+func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error {
+	_, err := u.svc.Upsert(ctx, &domain.User{
+		ID:        tgUser.ID,
+		Username:  tgUser.Username,
+		FirstName: tgUser.FirstName,
+		LastName:  tgUser.LastName,
+	})
 	return err
 }
 

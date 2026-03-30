@@ -42,11 +42,10 @@ func AutoRegisterMiddleware(userSvc *service.UserService, log *slog.Logger) bot.
 			tgUser := extractTelegramUser(update)
 			if tgUser != nil {
 				u := &domain.User{
-					ID:           tgUser.ID,
-					Username:     tgUser.Username,
-					FirstName:    tgUser.FirstName,
-					LastName:     tgUser.LastName,
-					CurrencyCode: "USD",
+					ID:        tgUser.ID,
+					Username:  tgUser.Username,
+					FirstName: tgUser.FirstName,
+					LastName:  tgUser.LastName,
 				}
 				if _, err := userSvc.Upsert(ctx, u); err != nil {
 					log.ErrorContext(ctx, "auto-register failed",

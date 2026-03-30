@@ -21,16 +21,17 @@ func userIDFromContext(ctx context.Context) int64 {
 
 // ensurer is a minimal interface for ensuring a user exists before handling a request.
 type ensurer interface {
-	ensureUser(ctx context.Context, userID int64) error
+	ensureUser(ctx context.Context, tgUser TelegramUser) error
 }
 
 // authMiddleware validates the Telegram initData header and injects userID into the context.
-// It also upserts the user on first contact, reusing the existing UserService.
+// It also upserts the user profile (username, first/last name) on every request so that
+// profile data is always kept up to date.
 func authMiddleware(botToken string, userSvc ensurer, log *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			initData := r.Header.Get("X-Telegram-Init-Data")
-			userID, err := ValidateInitData(botToken, initData)
+			tgUser, err := ValidateInitData(botToken, initData)
 			if err != nil {
 				if errors.Is(err, ErrInvalidInitData) {
 					writeJSON(w, http.StatusUnauthorized, errorResponse{Error: "unauthorized"})
@@ -41,14 +42,14 @@ func authMiddleware(botToken string, userSvc ensurer, log *slog.Logger) func(htt
 				return
 			}
 
-			// Ensure the user exists in the database.
-			if err := userSvc.ensureUser(r.Context(), userID); err != nil {
-				log.ErrorContext(r.Context(), "auth: failed to ensure user", slog.Int64("user_id", userID), slog.String("error", err.Error()))
+			// Upsert user so profile fields (username, names) are always fresh.
+			if err := userSvc.ensureUser(r.Context(), tgUser); err != nil {
+				log.ErrorContext(r.Context(), "auth: failed to ensure user", slog.Int64("user_id", tgUser.ID), slog.String("error", err.Error()))
 				writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "internal server error"})
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), contextKeyUserID, userID)
+			ctx := context.WithValue(r.Context(), contextKeyUserID, tgUser.ID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
