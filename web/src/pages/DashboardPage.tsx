@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence } from 'framer-motion'
 import { formatDate, formatCents } from '../lib/money'
-import { TrendUp, TrendDown, ArrowRight, Plus, CaretDown } from '@phosphor-icons/react'
+import { TrendUp, TrendDown, ArrowRight, Plus, CaretDown, Receipt } from '@phosphor-icons/react'
 import { balanceApi } from '../api/balance'
 import { transactionsApi } from '../api/transactions'
 import { accountsApi } from '../api/accounts'
@@ -12,7 +12,7 @@ import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
-import { TransactionRow, EditTransactionSheet, AccountDropdown } from '../components/ui'
+import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState } from '../components/ui'
 import type { Transaction } from '../types'
 
 export function DashboardPage() {
@@ -66,7 +66,7 @@ export function DashboardPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
+      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h))]">
 
         {/* Fixed top section */}
         <div className="px-4 pt-4 flex flex-col gap-3 shrink-0">
@@ -209,9 +209,11 @@ export function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-center text-sm text-muted py-12">
-                {t('transactions.no_transactions')}
-              </p>
+              <EmptyState
+                icon={Receipt}
+                title={t('transactions.no_transactions')}
+                description={t('transactions.start_tracking')}
+              />
             )}
           </div>
         </div>

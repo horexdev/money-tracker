@@ -16,11 +16,12 @@ import (
 
 // UserRepository handles persistence of User entities.
 type UserRepository struct {
-	q *sqlcgen.Queries
+	pool *pgxpool.Pool
+	q    *sqlcgen.Queries
 }
 
 func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
-	return &UserRepository{q: sqlcgen.New(pool)}
+	return &UserRepository{pool: pool, q: sqlcgen.New(pool)}
 }
 
 // Upsert creates a new user or updates username/name fields if already exists.
@@ -86,22 +87,41 @@ func (r *UserRepository) UpdateLanguage(ctx context.Context, id int64, lang stri
 	return rowToUser(row), nil
 }
 
-// ResetData deletes all user-owned data: transactions, budgets, recurring, goals, and user categories.
+// ResetData deletes all user-owned data atomically. Deletion order respects FK constraints:
+// transfers → transactions → budgets → recurring → savings_goals → categories → accounts.
 func (r *UserRepository) ResetData(ctx context.Context, userID int64) error {
-	if err := r.q.DeleteAllUserTransactions(ctx, userID); err != nil {
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck
+
+	q := r.q.WithTx(tx)
+
+	if err := q.DeleteAllUserTransfers(ctx, userID); err != nil {
+		return fmt.Errorf("delete transfers: %w", err)
+	}
+	if err := q.DeleteAllUserTransactions(ctx, userID); err != nil {
 		return fmt.Errorf("delete transactions: %w", err)
 	}
-	if err := r.q.DeleteAllUserBudgets(ctx, userID); err != nil {
+	if err := q.DeleteAllUserBudgets(ctx, userID); err != nil {
 		return fmt.Errorf("delete budgets: %w", err)
 	}
-	if err := r.q.DeleteAllUserRecurring(ctx, userID); err != nil {
+	if err := q.DeleteAllUserRecurring(ctx, userID); err != nil {
 		return fmt.Errorf("delete recurring: %w", err)
 	}
-	if err := r.q.DeleteAllUserGoals(ctx, userID); err != nil {
+	if err := q.DeleteAllUserGoals(ctx, userID); err != nil {
 		return fmt.Errorf("delete goals: %w", err)
 	}
-	if err := r.q.DeleteAllUserCategories(ctx, pgtype.Int8{Int64: userID, Valid: true}); err != nil {
+	if err := q.DeleteAllUserCategories(ctx, pgtype.Int8{Int64: userID, Valid: true}); err != nil {
 		return fmt.Errorf("delete categories: %w", err)
+	}
+	if err := q.DeleteAllUserAccounts(ctx, userID); err != nil {
+		return fmt.Errorf("delete accounts: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
 	}
 	return nil
 }

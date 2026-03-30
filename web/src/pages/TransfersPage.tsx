@@ -7,6 +7,7 @@ import { ArrowRight, ArrowsHorizontal } from '@phosphor-icons/react'
 import { transfersApi } from '../api/transfers'
 import { accountsApi } from '../api/accounts'
 import { formatCents, formatDate, parseCents } from '../lib/money'
+import { friendlyError } from '../lib/errors'
 import { CurrencyBadge } from '../lib/currencyIcons'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
@@ -259,7 +260,7 @@ function TransferFormSheet({
 
         {createMut.isError && (
           <p className="text-xs text-destructive text-center">
-            {(createMut.error as Error)?.message}
+            {friendlyError(createMut.error, t)}
           </p>
         )}
       </div>
@@ -342,7 +343,7 @@ export function TransfersPage() {
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
               <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
-                {(deleteMut.error as Error)?.message}
+                {friendlyError(deleteMut.error, t)}
               </p>
             </div>
           )}

@@ -11,6 +11,15 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteAllUserAccounts = `-- name: DeleteAllUserAccounts :exec
+DELETE FROM accounts WHERE user_id = $1
+`
+
+func (q *Queries) DeleteAllUserAccounts(ctx context.Context, userID int64) error {
+	_, err := q.db.Exec(ctx, deleteAllUserAccounts, userID)
+	return err
+}
+
 const deleteAllUserBudgets = `-- name: DeleteAllUserBudgets :exec
 DELETE FROM budgets WHERE user_id = $1
 `
@@ -53,6 +62,15 @@ DELETE FROM transactions WHERE user_id = $1
 
 func (q *Queries) DeleteAllUserTransactions(ctx context.Context, userID int64) error {
 	_, err := q.db.Exec(ctx, deleteAllUserTransactions, userID)
+	return err
+}
+
+const deleteAllUserTransfers = `-- name: DeleteAllUserTransfers :exec
+DELETE FROM transfers WHERE user_id = $1
+`
+
+func (q *Queries) DeleteAllUserTransfers(ctx context.Context, userID int64) error {
+	_, err := q.db.Exec(ctx, deleteAllUserTransfers, userID)
 	return err
 }
 

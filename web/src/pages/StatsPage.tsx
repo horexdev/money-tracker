@@ -254,7 +254,7 @@ export function StatsPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
+      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h))]">
 
         {/* Hero block with type toggle */}
         <div className="mx-4 mt-4 hero-gradient px-5 pt-5 pb-4 relative shrink-0"

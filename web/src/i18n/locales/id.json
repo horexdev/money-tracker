@@ -226,5 +226,18 @@
     "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Akun",
-  "accountsAll": "Semua akun"
+  "accountsAll": "Semua akun",
+  "errors": {
+    "something_went_wrong": "Sesuatu telah terjadi. Silakan coba lagi.",
+    "category_in_use": "Kategori memiliki transaksi dan tidak bisa dihapus.",
+    "category_system_readonly": "Kategori sistem tidak bisa diubah.",
+    "budget_already_exists": "Anggaran untuk kategori dan periode ini sudah ada.",
+    "account_has_transactions": "Akun memiliki transaksi dan tidak bisa dihapus.",
+    "insufficient_goal_funds": "Dana tidak cukup dalam tujuan tabungan.",
+    "transfer_same_account": "Akun sumber dan tujuan harus berbeda.",
+    "exchange_rate_unavailable": "Kurs pertukaran sementara tidak tersedia.",
+    "too_many_currencies": "Maksimal 3 mata uang tampilan diizinkan.",
+    "invalid_currency": "Kode mata uang tidak valid.",
+    "invalid_amount": "Jumlah tidak valid dimasukkan."
+  }
 }

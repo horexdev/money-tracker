@@ -226,5 +226,18 @@
     "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Шоттар",
-  "accountsAll": "Барлық шоттар"
+  "accountsAll": "Барлық шоттар",
+  "errors": {
+    "something_went_wrong": "Бірдеңе дұрыс болмады. Қайталап көріңіз.",
+    "category_in_use": "Категория транзакцияларда қолданылады және жоюға болмайды.",
+    "category_system_readonly": "Жүйелік категорияларды өзгертуге болмайды.",
+    "budget_already_exists": "Бұл категория мен кезең үшін бюджет бұрыннан бар.",
+    "account_has_transactions": "Шотта транзакциялар бар және оны жоюға болмайды.",
+    "insufficient_goal_funds": "Жинақ мақсатында жеткілікті қаражат жоқ.",
+    "transfer_same_account": "Жіберуші мен алушы шоттары бөлек болуы керек.",
+    "exchange_rate_unavailable": "Валюта бағамы уақытша қол жетімсіз.",
+    "too_many_currencies": "Максимум 3 валюта көрсетілуі мүмкін.",
+    "invalid_currency": "Жарамсыз валюта коды.",
+    "invalid_amount": "Жарамсыз сома енгізілді."
+  }
 }

@@ -226,5 +226,18 @@
     "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Hesaplar",
-  "accountsAll": "Tüm hesaplar"
+  "accountsAll": "Tüm hesaplar",
+  "errors": {
+    "something_went_wrong": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+    "category_in_use": "Kategoride işlem var ve silinemez.",
+    "category_system_readonly": "Sistem kategorileri değiştirilemez.",
+    "budget_already_exists": "Bu kategori ve dönem için bütçe zaten mevcut.",
+    "account_has_transactions": "Hesapta işlem var ve silinemez.",
+    "insufficient_goal_funds": "Tasarruf hedefinde yetersiz fon.",
+    "transfer_same_account": "Kaynak ve hedef hesaplar farklı olmalıdır.",
+    "exchange_rate_unavailable": "Döviz kuru geçici olarak mevcut değil.",
+    "too_many_currencies": "En fazla 3 görüntüleme para birimi izin verilir.",
+    "invalid_currency": "Geçersiz para birimi kodu.",
+    "invalid_amount": "Geçersiz tutar girildi."
+  }
 }

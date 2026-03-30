@@ -278,7 +278,7 @@ export function HistoryPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
+      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h))]">
 
         {/* Toolbar — filter pills + search */}
         <div className="shrink-0 px-4 pt-3 pb-3 space-y-2.5">

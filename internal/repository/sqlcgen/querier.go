@@ -29,11 +29,13 @@ type Querier interface {
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUserCategory(ctx context.Context, arg CreateUserCategoryParams) (Category, error)
 	DeleteAccount(ctx context.Context, arg DeleteAccountParams) error
+	DeleteAllUserAccounts(ctx context.Context, userID int64) error
 	DeleteAllUserBudgets(ctx context.Context, userID int64) error
 	DeleteAllUserCategories(ctx context.Context, userID pgtype.Int8) error
 	DeleteAllUserGoals(ctx context.Context, userID int64) error
 	DeleteAllUserRecurring(ctx context.Context, userID int64) error
 	DeleteAllUserTransactions(ctx context.Context, userID int64) error
+	DeleteAllUserTransfers(ctx context.Context, userID int64) error
 	DeleteBudget(ctx context.Context, arg DeleteBudgetParams) error
 	DeleteRecurring(ctx context.Context, arg DeleteRecurringParams) error
 	DeleteSavingsGoal(ctx context.Context, arg DeleteSavingsGoalParams) error

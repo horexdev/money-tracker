@@ -20,10 +20,11 @@ var ErrInvalidInitData = errors.New("invalid or expired Telegram initData")
 
 // TelegramUser holds the minimal user profile extracted from Telegram initData.
 type TelegramUser struct {
-	ID        int64
-	Username  string
-	FirstName string
-	LastName  string
+	ID           int64
+	Username     string
+	FirstName    string
+	LastName     string
+	LanguageCode string
 }
 
 // ValidateInitData validates the Telegram WebApp initData string using HMAC-SHA256.
@@ -110,10 +111,11 @@ func extractTelegramUser(userJSON string) (TelegramUser, error) {
 	}
 
 	return TelegramUser{
-		ID:        id,
-		FirstName: extractJSONString(userJSON, "first_name"),
-		LastName:  extractJSONString(userJSON, "last_name"),
-		Username:  extractJSONString(userJSON, "username"),
+		ID:           id,
+		FirstName:    extractJSONString(userJSON, "first_name"),
+		LastName:     extractJSONString(userJSON, "last_name"),
+		Username:     extractJSONString(userJSON, "username"),
+		LanguageCode: extractJSONString(userJSON, "language_code"),
 	}, nil
 }
 

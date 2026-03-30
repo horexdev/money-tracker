@@ -183,7 +183,7 @@ export function AddTransactionPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-[calc(100dvh-var(--tab-bar-h))]">
+      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h))]">
 
         {/* Hero card */}
         <div

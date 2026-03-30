@@ -226,5 +226,18 @@
     "page_of": "{{page}} von {{total}}"
   },
   "accounts": "Konten",
-  "accountsAll": "Alle Konten"
+  "accountsAll": "Alle Konten",
+  "errors": {
+    "something_went_wrong": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "category_in_use": "Die Kategorie wird in Transaktionen verwendet und kann nicht gelöscht werden.",
+    "category_system_readonly": "Systemkategorien können nicht geändert werden.",
+    "budget_already_exists": "Ein Budget für diese Kategorie und diesen Zeitraum existiert bereits.",
+    "account_has_transactions": "Das Konto hat Transaktionen und kann nicht gelöscht werden.",
+    "insufficient_goal_funds": "Unzureichende Mittel im Sparziel.",
+    "transfer_same_account": "Quell- und Zielkonto müssen unterschiedlich sein.",
+    "exchange_rate_unavailable": "Wechselkurs vorübergehend nicht verfügbar.",
+    "too_many_currencies": "Maximal 3 Anzeigewährungen erlaubt.",
+    "invalid_currency": "Ungültiger Währungscode.",
+    "invalid_amount": "Ungültiger Betrag eingegeben."
+  }
 }

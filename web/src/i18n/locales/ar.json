@@ -226,5 +226,18 @@
     "page_of": "{{page}} من {{total}}"
   },
   "accounts": "الحسابات",
-  "accountsAll": "جميع الحسابات"
+  "accountsAll": "جميع الحسابات",
+  "errors": {
+    "something_went_wrong": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "category_in_use": "الفئة تحتوي على معاملات ولا يمكن حذفها.",
+    "category_system_readonly": "لا يمكن تعديل الفئات النظامية.",
+    "budget_already_exists": "يوجد بالفعل ميزانية لهذه الفئة والفترة.",
+    "account_has_transactions": "الحساب يحتوي على معاملات ولا يمكن حذفه.",
+    "insufficient_goal_funds": "أموال غير كافية في هدف الادخار.",
+    "transfer_same_account": "يجب أن يكون حسابا المصدر والوجهة مختلفين.",
+    "exchange_rate_unavailable": "سعر الصرف غير متاح مؤقتاً.",
+    "too_many_currencies": "الحد الأقصى 3 عملات للعرض.",
+    "invalid_currency": "رمز العملة غير صالح.",
+    "invalid_amount": "تم إدخال مبلغ غير صالح."
+  }
 }

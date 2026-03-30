@@ -226,5 +226,18 @@
     "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Hisoblar",
-  "accountsAll": "Barcha hisoblar"
+  "accountsAll": "Barcha hisoblar",
+  "errors": {
+    "something_went_wrong": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring.",
+    "category_in_use": "Kategoriya tranzaksiyalarda ishlatilmoqda va o'chirib bo'lmaydi.",
+    "category_system_readonly": "Tizim kategoriyalari o'zgartirilmaydi.",
+    "budget_already_exists": "Bu kategoriya va davr uchun byudjet allaqachon mavjud.",
+    "account_has_transactions": "Hisob tranzaksiyalarga ega va o'chirib bo'lmaydi.",
+    "insufficient_goal_funds": "Jamg'arma maqsadida yetarli mablag' yo'q.",
+    "transfer_same_account": "Jo'natuvchi va qabul qiluvchi hisoblar farqli bo'lishi kerak.",
+    "exchange_rate_unavailable": "Valyuta kursi vaqtincha mavjud emas.",
+    "too_many_currencies": "Maksimal 3 ta valyuta ko'rsatilishi mumkin.",
+    "invalid_currency": "Noto'g'ri valyuta kodi.",
+    "invalid_amount": "Noto'g'ri summa kiritildi."
+  }
 }

@@ -8,6 +8,7 @@ import { fetchBudgets, createBudget, updateBudget, deleteBudget, fetchBudgetTran
 import type { BudgetTransaction } from '../api/budgets'
 import { categoriesApi } from '../api/categories'
 import { formatCents, parseCents } from '../lib/money'
+import { friendlyError } from '../lib/errors'
 import { CategoryIcon } from '../lib/categoryIcons'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
@@ -322,7 +323,7 @@ function BudgetForm({
 
         {mut.isError && (
           <p className="text-xs text-destructive text-center">
-            {(mut.error as Error)?.message}
+            {friendlyError(mut.error, t)}
           </p>
         )}
       </div>
@@ -393,7 +394,7 @@ export function BudgetsPage() {
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
               <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
-                {(deleteMut.error as Error)?.message}
+                {friendlyError(deleteMut.error, t)}
               </p>
             </div>
           )}

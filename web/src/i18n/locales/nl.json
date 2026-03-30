@@ -226,5 +226,18 @@
     "page_of": "{{page}} van {{total}}"
   },
   "accounts": "Rekeningen",
-  "accountsAll": "Alle rekeningen"
+  "accountsAll": "Alle rekeningen",
+  "errors": {
+    "something_went_wrong": "Er is iets misgegaan. Probeer het opnieuw.",
+    "category_in_use": "De categorie heeft transacties en kan niet worden verwijderd.",
+    "category_system_readonly": "Systeemcategorieën kunnen niet worden gewijzigd.",
+    "budget_already_exists": "Er bestaat al een budget voor deze categorie en periode.",
+    "account_has_transactions": "De rekening heeft transacties en kan niet worden verwijderd.",
+    "insufficient_goal_funds": "Onvoldoende geld in spaardoel.",
+    "transfer_same_account": "Bron- en bestemmingsrekening moeten verschillend zijn.",
+    "exchange_rate_unavailable": "Wisselkoers tijdelijk niet beschikbaar.",
+    "too_many_currencies": "Maximaal 3 weergavevaluta's toegestaan.",
+    "invalid_currency": "Ongeldige valutacode.",
+    "invalid_amount": "Ongeldig bedrag ingevoerd."
+  }
 }

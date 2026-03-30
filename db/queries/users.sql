@@ -46,3 +46,9 @@ DELETE FROM savings_goals WHERE user_id = $1;
 
 -- name: DeleteAllUserCategories :exec
 DELETE FROM categories WHERE user_id = $1;
+
+-- name: DeleteAllUserTransfers :exec
+DELETE FROM transfers WHERE user_id = $1;
+
+-- name: DeleteAllUserAccounts :exec
+DELETE FROM accounts WHERE user_id = $1;

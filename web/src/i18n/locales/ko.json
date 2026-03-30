@@ -226,5 +226,18 @@
     "page_of": "{{page}} / {{total}}"
   },
   "accounts": "계좌",
-  "accountsAll": "모든 계좌"
+  "accountsAll": "모든 계좌",
+  "errors": {
+    "something_went_wrong": "문제가 발생했습니다. 다시 시도해 주세요.",
+    "category_in_use": "카테고리에 거래가 있어 삭제할 수 없습니다.",
+    "category_system_readonly": "시스템 카테고리는 수정할 수 없습니다.",
+    "budget_already_exists": "이 카테고리와 기간에 대한 예산이 이미 있습니다.",
+    "account_has_transactions": "계좌에 거래가 있어 삭제할 수 없습니다.",
+    "insufficient_goal_funds": "저축 목표에 자금이 부족합니다.",
+    "transfer_same_account": "출금 계좌와 입금 계좌가 달라야 합니다.",
+    "exchange_rate_unavailable": "환율이 일시적으로 이용할 수 없습니다.",
+    "too_many_currencies": "최대 3개의 표시 통화가 허용됩니다.",
+    "invalid_currency": "유효하지 않은 통화 코드입니다.",
+    "invalid_amount": "유효하지 않은 금액이 입력되었습니다."
+  }
 }

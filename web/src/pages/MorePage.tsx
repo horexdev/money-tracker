@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ArrowsHorizontal, ShieldStar } from '@phosphor-icons/react'
 import { PageTransition } from '../components/PageTransition'
+import { settingsApi } from '../api/settings'
 import type { ReactNode } from 'react'
-
-const ADMIN_USER_ID = 6554524765
 
 interface MenuItem {
   to: string
@@ -34,18 +34,16 @@ const GRID_ITEMS: MenuItem[] = [
   { to: '/settings',  icon: <GearSix size={22} weight="fill" />,           labelKey: 'more.settings',  gradient: 'from-slate-400 to-slate-600' },
 ]
 
-function getTelegramUserId(): number | undefined {
-  try {
-    return (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id?: number } } } } })
-      ?.Telegram?.WebApp?.initDataUnsafe?.user?.id
-  } catch {
-    return undefined
-  }
-}
-
 export function MorePage() {
   const { t } = useTranslation()
-  const isAdmin = getTelegramUserId() === ADMIN_USER_ID
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsApi.get,
+    staleTime: 60_000,
+  })
+
+  const isAdmin = settings?.is_admin === true
 
   const gridItems = useMemo(() => {
     const items = [...GRID_ITEMS]

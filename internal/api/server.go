@@ -9,19 +9,79 @@ import (
 	"github.com/horexdev/money-tracker/internal/service"
 )
 
+// defaultAccountName returns a localized name for the first default account.
+// Falls back to English if the language code is not recognized.
+var defaultAccountNames = map[string]string{
+	"en": "Main account",
+	"ru": "Основной счёт",
+	"uk": "Основний рахунок",
+	"be": "Асноўны рахунак",
+	"kk": "Негізгі шот",
+	"uz": "Asosiy hisob",
+	"es": "Cuenta principal",
+	"de": "Hauptkonto",
+	"it": "Conto principale",
+	"fr": "Compte principal",
+	"pt": "Conta principal",
+	"nl": "Hoofdrekening",
+	"ar": "الحساب الرئيسي",
+	"tr": "Ana hesap",
+	"ko": "주 계좌",
+	"ms": "Akaun utama",
+	"id": "Akun utama",
+}
+
+func localizedAccountName(lang string) string {
+	if name, ok := defaultAccountNames[lang]; ok {
+		return name
+	}
+	return defaultAccountNames["en"]
+}
+
 // userEnsurer wraps UserService to satisfy the ensurer interface required by authMiddleware.
+// It also creates a default account for first-time users.
 type userEnsurer struct {
-	svc *service.UserService
+	svc        *service.UserService
+	accountSvc *service.AccountService
+	log        *slog.Logger
 }
 
 func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error {
-	_, err := u.svc.Upsert(ctx, &domain.User{
+	user, err := u.svc.Upsert(ctx, &domain.User{
 		ID:        tgUser.ID,
 		Username:  tgUser.Username,
 		FirstName: tgUser.FirstName,
 		LastName:  tgUser.LastName,
 	})
-	return err
+	if err != nil {
+		return err
+	}
+
+	accounts, err := u.accountSvc.List(ctx, user.ID)
+	if err != nil {
+		u.log.WarnContext(ctx, "ensureUser: failed to list accounts",
+			slog.Int64("user_id", user.ID),
+			slog.String("error", err.Error()),
+		)
+		return nil
+	}
+	if len(accounts) > 0 {
+		return nil
+	}
+
+	lang := string(user.Language)
+	if lang == "" {
+		lang = tgUser.LanguageCode
+	}
+	name := localizedAccountName(lang)
+
+	if _, err := u.accountSvc.Create(ctx, user.ID, name, "wallet", "#6366f1", domain.AccountTypeChecking, user.CurrencyCode, true); err != nil {
+		u.log.WarnContext(ctx, "ensureUser: failed to create default account",
+			slog.Int64("user_id", user.ID),
+			slog.String("error", err.Error()),
+		)
+	}
+	return nil
 }
 
 // Deps holds all service dependencies needed to build the HTTP server.
@@ -40,6 +100,7 @@ type Deps struct {
 	AdminSvc       *service.AdminService
 	BotToken       string
 	AllowedOrigins string
+	AdminUserID    int64
 	Log            *slog.Logger
 }
 
@@ -47,7 +108,7 @@ type Deps struct {
 func NewServer(d Deps) http.Handler {
 	mux := http.NewServeMux()
 
-	eu := &userEnsurer{svc: d.UserSvc}
+	eu := &userEnsurer{svc: d.UserSvc, accountSvc: d.AccountSvc, log: d.Log}
 
 	auth := authMiddleware(d.BotToken, eu, d.Log)
 	cors := corsMiddleware(d.AllowedOrigins)
@@ -59,7 +120,7 @@ func NewServer(d Deps) http.Handler {
 	}
 
 	// adminProtected wraps a handler with logging + CORS + auth + admin check.
-	admin := adminMiddleware()
+	admin := adminMiddleware(d.AdminUserID)
 	adminProtected := func(h http.HandlerFunc) http.Handler {
 		return chain(h, logging, cors, auth, admin)
 	}
@@ -78,7 +139,7 @@ func NewServer(d Deps) http.Handler {
 	mux.Handle("/api/v1/transactions", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
 	mux.Handle("/api/v1/transactions/", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
 	mux.Handle("/api/v1/stats", protected(statsHandler(d.StatsSvc, d.Log)))
-	mux.Handle("/api/v1/settings", protected(settingsHandler(d.UserSvc, d.Log)))
+	mux.Handle("/api/v1/settings", protected(settingsHandler(d.UserSvc, d.AdminUserID, d.Log)))
 
 	// Categories CRUD.
 	mux.Handle("/api/v1/categories", protected(categoriesHandler(d.CategorySvc, d.Log)))
@@ -108,7 +169,7 @@ func NewServer(d Deps) http.Handler {
 	mux.Handle("/api/v1/export", protected(exportHandler(d.ExportSvc, d.Log)))
 
 	// User data reset.
-	mux.Handle("/api/v1/user/data", protected(userDataHandler(d.UserSvc, d.Log)))
+	mux.Handle("/api/v1/user/data", protected(userDataHandler(d.UserSvc, d.AccountSvc, d.Log)))
 
 	// Admin endpoints.
 	mux.Handle("/api/v1/admin/users", adminProtected(adminUsersHandler(d.AdminSvc, d.Log)))

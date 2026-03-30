@@ -226,5 +226,18 @@
     "page_of": "{{page}} / {{total}}"
   },
   "accounts": "Akaun",
-  "accountsAll": "Semua akaun"
+  "accountsAll": "Semua akaun",
+  "errors": {
+    "something_went_wrong": "Sesuatu telah berlaku. Sila cuba lagi.",
+    "category_in_use": "Kategori mempunyai transaksi dan tidak boleh dipadamkan.",
+    "category_system_readonly": "Kategori sistem tidak boleh diubah suai.",
+    "budget_already_exists": "Belanjawan untuk kategori dan tempoh ini sudah wujud.",
+    "account_has_transactions": "Akaun mempunyai transaksi dan tidak boleh dipadamkan.",
+    "insufficient_goal_funds": "Dana tidak mencukupi dalam matlamat simpanan.",
+    "transfer_same_account": "Akaun sumber dan destinasi mestilah berbeza.",
+    "exchange_rate_unavailable": "Kadar pertukaran tidak tersedia buat sementara waktu.",
+    "too_many_currencies": "Maksimum 3 mata wang paparan dibenarkan.",
+    "invalid_currency": "Kod mata wang tidak sah.",
+    "invalid_amount": "Jumlah tidak sah dimasukkan."
+  }
 }

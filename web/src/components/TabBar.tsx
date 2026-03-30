@@ -20,12 +20,29 @@ const TABS: Tab[] = [
   { to: '/more',    icon: <DotsThree size={24} weight="bold" />,            labelKey: 'tabs.more'    },
 ]
 
-/** Hide the tab bar while any text input or textarea is focused so it
- *  doesn't float over the virtual keyboard on iOS. */
+/** Detects whether the virtual keyboard is visible.
+ *  Uses the VisualViewport API as the primary signal (most reliable on mobile).
+ *  Falls back to focusin/focusout events for browsers that don't support it. */
 function useKeyboardVisible() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    // Primary: VisualViewport resize — fires when keyboard opens/closes.
+    if (window.visualViewport) {
+      const vv = window.visualViewport
+
+      function onViewportResize() {
+        // If the visual viewport is significantly shorter than the layout viewport,
+        // the keyboard is open.
+        const keyboardHeight = window.innerHeight - vv.height
+        setVisible(keyboardHeight > 150)
+      }
+
+      vv.addEventListener('resize', onViewportResize)
+      return () => vv.removeEventListener('resize', onViewportResize)
+    }
+
+    // Fallback: focus/blur events for browsers without VisualViewport.
     const INPUT_SELECTORS = 'input, textarea, [contenteditable]'
 
     function onFocusIn(e: FocusEvent) {
@@ -34,7 +51,7 @@ function useKeyboardVisible() {
       }
     }
     function onFocusOut() {
-      // Small delay so the bar doesn't flash back before keyboard fully dismisses
+      // Small delay so the bar doesn't flash back before keyboard fully dismisses.
       setTimeout(() => {
         if (!document.activeElement?.matches?.(INPUT_SELECTORS)) {
           setVisible(false)
@@ -58,11 +75,11 @@ export function TabBar() {
   const { selection } = useHaptic()
   const keyboardOpen = useKeyboardVisible()
 
-  if (keyboardOpen) return null
-
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 glass"
+      className={`fixed bottom-0 left-0 right-0 z-50 glass transition-transform duration-200 ${
+        keyboardOpen ? 'translate-y-full pointer-events-none' : 'translate-y-0'
+      }`}
       style={{ paddingBottom: 'var(--safe-bottom)' }}
     >
       <div className="flex items-end">

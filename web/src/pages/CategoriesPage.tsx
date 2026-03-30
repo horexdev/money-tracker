@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence } from 'framer-motion'
+import { friendlyError } from '../lib/errors'
 import { Plus, PencilSimple, Tag } from '@phosphor-icons/react'
 import { categoriesApi } from '../api/categories'
 import { CategoryIcon, ICON_CHOICES } from '../lib/categoryIcons'
@@ -208,7 +209,7 @@ function CategoryForm({
 
         {(createMut.isError || updateMut.isError) && (
           <p className="text-xs text-destructive text-center">
-            {((createMut.error || updateMut.error) as Error)?.message}
+            {friendlyError(createMut.error || updateMut.error, t)}
           </p>
         )}
       </div>
@@ -331,7 +332,7 @@ export function CategoriesPage() {
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
               <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
-                {(deleteMut.error as Error)?.message}
+                {friendlyError(deleteMut.error, t)}
               </p>
             </div>
           )}

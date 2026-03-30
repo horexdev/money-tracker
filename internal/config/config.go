@@ -18,6 +18,9 @@ type Config struct {
 	APIPort        string `env:"API_PORT"        envDefault:"8080"`
 	AllowedOrigins string `env:"ALLOWED_ORIGINS" envDefault:"*"`
 	MiniAppURL     string `env:"MINI_APP_URL"    envDefault:""`
+	// AdminUserID is the Telegram user ID that has access to admin endpoints.
+	// Set to 0 to disable admin access entirely.
+	AdminUserID int64 `env:"ADMIN_USER_ID" envDefault:"0"`
 }
 
 // Load parses environment variables into Config.

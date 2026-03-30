@@ -252,5 +252,18 @@
   "includeInTotal": "Include in Total",
   "from": "From",
   "to": "To",
-  "exchangeRate": "Exchange Rate"
+  "exchangeRate": "Exchange Rate",
+  "errors": {
+    "something_went_wrong": "Something went wrong. Please try again.",
+    "category_in_use": "Category has transactions and cannot be deleted.",
+    "category_system_readonly": "System categories cannot be modified.",
+    "budget_already_exists": "A budget already exists for this category and period.",
+    "account_has_transactions": "Account has transactions and cannot be deleted.",
+    "insufficient_goal_funds": "Insufficient funds in savings goal.",
+    "transfer_same_account": "Transfer source and destination must be different.",
+    "exchange_rate_unavailable": "Exchange rate temporarily unavailable.",
+    "too_many_currencies": "Maximum 3 display currencies allowed.",
+    "invalid_currency": "Invalid currency code.",
+    "invalid_amount": "Invalid amount entered."
+  }
 }

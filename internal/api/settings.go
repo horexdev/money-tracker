@@ -12,6 +12,7 @@ type settingsResponse struct {
 	BaseCurrency      string   `json:"base_currency"`
 	DisplayCurrencies []string `json:"display_currencies"`
 	Language          string   `json:"language"`
+	IsAdmin           bool     `json:"is_admin"`
 }
 
 type patchSettingsRequest struct {
@@ -21,7 +22,7 @@ type patchSettingsRequest struct {
 }
 
 // settingsHandler handles GET and PATCH /api/v1/settings
-func settingsHandler(userSvc *service.UserService, log *slog.Logger) http.HandlerFunc {
+func settingsHandler(userSvc *service.UserService, adminUserID int64, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		userID := userIDFromContext(ctx)
@@ -37,6 +38,7 @@ func settingsHandler(userSvc *service.UserService, log *slog.Logger) http.Handle
 				BaseCurrency:      user.CurrencyCode,
 				DisplayCurrencies: user.DisplayCurrencies,
 				Language:          string(user.Language),
+				IsAdmin:           adminUserID != 0 && userID == adminUserID,
 			})
 
 		case http.MethodPatch:
@@ -80,6 +82,7 @@ func settingsHandler(userSvc *service.UserService, log *slog.Logger) http.Handle
 				BaseCurrency:      user.CurrencyCode,
 				DisplayCurrencies: user.DisplayCurrencies,
 				Language:          string(user.Language),
+				IsAdmin:           adminUserID != 0 && userID == adminUserID,
 			})
 
 		default:

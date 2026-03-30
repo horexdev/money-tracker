@@ -252,5 +252,18 @@
   "includeInTotal": "Учитывать в балансе",
   "from": "Откуда",
   "to": "Куда",
-  "exchangeRate": "Курс обмена"
+  "exchangeRate": "Курс обмена",
+  "errors": {
+    "something_went_wrong": "Что-то пошло не так. Попробуйте ещё раз.",
+    "category_in_use": "Категория используется в транзакциях и не может быть удалена.",
+    "category_system_readonly": "Системные категории нельзя изменять.",
+    "budget_already_exists": "Бюджет для этой категории и периода уже существует.",
+    "account_has_transactions": "Счёт содержит транзакции и не может быть удалён.",
+    "insufficient_goal_funds": "Недостаточно средств в накопительной цели.",
+    "transfer_same_account": "Счёт отправителя и получателя должны быть разными.",
+    "exchange_rate_unavailable": "Курс валют временно недоступен.",
+    "too_many_currencies": "Максимум 3 отображаемые валюты.",
+    "invalid_currency": "Неверный код валюты.",
+    "invalid_amount": "Введена некорректная сумма."
+  }
 }

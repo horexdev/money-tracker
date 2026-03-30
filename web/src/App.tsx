@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { Layout } from './components/Layout'
 import { Spinner } from './components/Spinner'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { settingsApi } from './api/settings'
 import { useFirstLaunchSetup } from './hooks/useFirstLaunchSetup'
 
@@ -67,8 +68,10 @@ function AppInit() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppInit />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppInit />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }

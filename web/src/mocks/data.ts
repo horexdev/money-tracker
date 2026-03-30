@@ -116,6 +116,7 @@ export const mockSettings: UserSettings = {
   base_currency: 'USD',
   display_currencies: ['EUR', 'GBP'],
   language: 'en',
+  is_admin: true,
 }
 
 export const mockAccounts: { accounts: Account[] } = {

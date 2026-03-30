@@ -226,5 +226,18 @@
     "page_of": "{{page}} di {{total}}"
   },
   "accounts": "Conti",
-  "accountsAll": "Tutti i conti"
+  "accountsAll": "Tutti i conti",
+  "errors": {
+    "something_went_wrong": "Qualcosa è andato storto. Riprova.",
+    "category_in_use": "La categoria ha transazioni e non può essere eliminata.",
+    "category_system_readonly": "Le categorie di sistema non possono essere modificate.",
+    "budget_already_exists": "Esiste già un budget per questa categoria e periodo.",
+    "account_has_transactions": "Il conto ha transazioni e non può essere eliminato.",
+    "insufficient_goal_funds": "Fondi insufficienti nell'obiettivo di risparmio.",
+    "transfer_same_account": "I conti di origine e destinazione devono essere diversi.",
+    "exchange_rate_unavailable": "Tasso di cambio temporaneamente non disponibile.",
+    "too_many_currencies": "Massimo 3 valute da visualizzare.",
+    "invalid_currency": "Codice valuta non valido.",
+    "invalid_amount": "Importo non valido inserito."
+  }
 }

@@ -108,15 +108,16 @@ func main() {
 		AdminSvc:       adminSvc,
 		BotToken:       cfg.BotToken,
 		AllowedOrigins: cfg.AllowedOrigins,
+		AdminUserID:    cfg.AdminUserID,
 		Log:            log,
 	})
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.APIPort,
 		Handler:      handler,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	go func() {

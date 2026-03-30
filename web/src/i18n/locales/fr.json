@@ -226,5 +226,18 @@
     "page_of": "{{page}} sur {{total}}"
   },
   "accounts": "Comptes",
-  "accountsAll": "Tous les comptes"
+  "accountsAll": "Tous les comptes",
+  "errors": {
+    "something_went_wrong": "Quelque chose a mal tourné. Veuillez réessayer.",
+    "category_in_use": "La catégorie contient des transactions et ne peut pas être supprimée.",
+    "category_system_readonly": "Les catégories système ne peuvent pas être modifiées.",
+    "budget_already_exists": "Un budget existe déjà pour cette catégorie et cette période.",
+    "account_has_transactions": "Le compte a des transactions et ne peut pas être supprimé.",
+    "insufficient_goal_funds": "Fonds insuffisants dans l'objectif d'épargne.",
+    "transfer_same_account": "Les comptes source et destination doivent être différents.",
+    "exchange_rate_unavailable": "Taux de change temporairement indisponible.",
+    "too_many_currencies": "Maximum 3 devises d'affichage autorisées.",
+    "invalid_currency": "Code de devise invalide.",
+    "invalid_amount": "Montant invalide saisi."
+  }
 }

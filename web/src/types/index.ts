@@ -71,6 +71,7 @@ export interface UserSettings {
   base_currency: string
   display_currencies: string[]
   language: string
+  is_admin: boolean
 }
 
 // GET /api/v1/categories

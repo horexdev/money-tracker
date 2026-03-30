@@ -9,6 +9,7 @@ import type { GoalTransaction } from '../api/goals'
 import { accountsApi } from '../api/accounts'
 import { formatCents, parseCents, formatDate } from '../lib/money'
 import { CurrencyBadge } from '../lib/currencyIcons'
+import { friendlyError } from '../lib/errors'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
@@ -181,7 +182,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
 
   const isPending = createMut.isPending || updateMut.isPending
   const isError = createMut.isError || updateMut.isError
-  const errorMsg = ((createMut.error || updateMut.error) as Error | null)?.message
+  const errorMsg = friendlyError(createMut.error || updateMut.error, t)
   const canSubmit = name.trim() && parseCents(targetStr) > 0 && !isPending
 
   return (
@@ -384,7 +385,7 @@ function AmountSheet({
         </button>
 
         {isError && (
-          <p className="text-xs text-destructive text-center">{error?.message}</p>
+          <p className="text-xs text-destructive text-center">{friendlyError(error, t)}</p>
         )}
       </div>
     </BottomSheet>
@@ -533,7 +534,7 @@ export function SavingsPage() {
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
               <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
-                {(deleteMut.error as Error)?.message}
+                {friendlyError(deleteMut.error, t)}
               </p>
             </div>
           )}

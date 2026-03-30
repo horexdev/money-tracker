@@ -9,6 +9,7 @@ import {
 import { accountsApi } from '../api/accounts'
 
 import { formatCents } from '../lib/money'
+import { friendlyError } from '../lib/errors'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
@@ -121,7 +122,7 @@ function AccountFormSheet({
 
   const isPending = createMut.isPending || updateMut.isPending
   const isError = createMut.isError || updateMut.isError
-  const errorMsg = ((createMut.error || updateMut.error) as Error | null)?.message
+  const errorMsg = friendlyError(createMut.error || updateMut.error, t)
   const canSubmit = name.trim().length > 0 && !isPending
 
   return (
@@ -403,7 +404,7 @@ export function AccountsPage() {
           {deleteMut.isError && (
             <div className="mx-4 mt-2">
               <p className="text-xs text-destructive text-center bg-expense/10 rounded-2xl py-2 px-3">
-                {(deleteMut.error as Error)?.message}
+                {friendlyError(deleteMut.error, t)}
               </p>
             </div>
           )}

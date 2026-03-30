@@ -226,5 +226,18 @@
     "page_of": "{{page}} з {{total}}"
   },
   "accounts": "Рахункі",
-  "accountsAll": "Усе рахункі"
+  "accountsAll": "Усе рахункі",
+  "errors": {
+    "something_went_wrong": "Нешта пайшло не так. Паспрабуйце яшчэ раз.",
+    "category_in_use": "Катэгорыя выкарыстоўваецца ў транзакцыях і не можа быць выдалена.",
+    "category_system_readonly": "Сістэмныя катэгорыі нельга змяняць.",
+    "budget_already_exists": "Бюджэт для гэтай катэгорыі і перыяду ўжо існуе.",
+    "account_has_transactions": "Рахунак змяшчае транзакцыі і не можа быць выдалены.",
+    "insufficient_goal_funds": "Недастаткова сродкаў у накапляльнай мэце.",
+    "transfer_same_account": "Рахункі адпраўніка і атрымальніка павінны быць рознымі.",
+    "exchange_rate_unavailable": "Курс валют часова недаступны.",
+    "too_many_currencies": "Максімум 3 адлюстроўваемыя валюты.",
+    "invalid_currency": "Няправільны код валюты.",
+    "invalid_amount": "Уведзена некарэктная сума."
+  }
 }
