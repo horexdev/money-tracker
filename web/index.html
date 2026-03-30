@@ -15,14 +15,19 @@
     <script>
       (function () {
         try {
+          function applyScheme(dark) {
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          }
+
           var tg = window.Telegram && window.Telegram.WebApp;
-          if (tg) {
+          // Only treat as real Telegram context when running inside the actual app
+          var inTelegram = tg && tg.initData && tg.initData.length > 0;
+          if (inTelegram) {
             tg.ready();
             tg.expand();
 
             // Apply color scheme before first paint — prevents flash of wrong theme
-            var scheme = tg.colorScheme || 'light';
-            document.documentElement.setAttribute('data-theme', scheme);
+            applyScheme(tg.colorScheme === 'dark');
 
             // Apply safe area insets before first paint
             var top =
@@ -32,12 +37,10 @@
               document.documentElement.style.setProperty('--safe-top', top + 'px');
             }
           } else {
-            // Outside Telegram — use system preference and keep it in sync
+            // Outside Telegram (browser/preview) — use system preference and keep it in sync
             var mq = window.matchMedia('(prefers-color-scheme: dark)');
-            document.documentElement.setAttribute('data-theme', mq.matches ? 'dark' : 'light');
-            mq.addEventListener('change', function (e) {
-              document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-            });
+            applyScheme(mq.matches);
+            mq.addEventListener('change', function (e) { applyScheme(e.matches); });
           }
         } catch (e) {}
       })();
