@@ -51,15 +51,24 @@ export function EditTransactionSheet({
   const filtered = categories.filter(c => c.type === tx.type || c.type === 'both')
 
   const updateMut = useMutation({
-    mutationFn: () => transactionsApi.update(tx.id, {
-      amount_cents: parseCents(amount),
-      category_id: categoryID,
-      note: note.trim() || undefined,
-      created_at: txDate,
-    }),
+    mutationFn: () => {
+      // Preserve the original time component; only swap the date portion if changed.
+      const originalDate = tx.created_at.split('T')[0]
+      const originalTime = tx.created_at.includes('T') ? tx.created_at.split('T')[1] : '00:00:00Z'
+      const createdAt = txDate !== originalDate
+        ? `${txDate}T${originalTime}`
+        : tx.created_at
+      return transactionsApi.update(tx.id, {
+        amount_cents: parseCents(amount),
+        category_id: categoryID,
+        note: note.trim() || undefined,
+        created_at: createdAt,
+      })
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['balance'] })
+      qc.invalidateQueries({ queryKey: ['accounts'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
       notification('success')
       onClose()

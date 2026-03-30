@@ -217,12 +217,19 @@ func updateTransaction(w http.ResponseWriter, r *http.Request, userID, id int64,
 	}
 	createdAt := time.Now()
 	if req.CreatedAt != "" {
-		t, err := time.Parse("2006-01-02", req.CreatedAt)
-		if err != nil {
-			writeJSON(w, http.StatusBadRequest, errorResponse{Error: "created_at must be in YYYY-MM-DD format"})
+		var parsed time.Time
+		var parseErr error
+		for _, layout := range []string{time.RFC3339, "2006-01-02T15:04:05Z", "2006-01-02"} {
+			parsed, parseErr = time.Parse(layout, req.CreatedAt)
+			if parseErr == nil {
+				break
+			}
+		}
+		if parseErr != nil {
+			writeJSON(w, http.StatusBadRequest, errorResponse{Error: "created_at must be ISO 8601 date or datetime"})
 			return
 		}
-		createdAt = t
+		createdAt = parsed
 	}
 	tx, err := txSvc.UpdateTransaction(r.Context(), userID, id, req.AmountCents, req.CategoryID, req.Note, createdAt)
 	if err != nil {
