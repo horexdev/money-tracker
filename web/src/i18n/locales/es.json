@@ -209,7 +209,9 @@
     "savings": "Metas de ahorro",
     "export": "Exportar",
     "settings": "Ajustes",
-    "admin_panel": "Panel de Admin"
+    "admin_panel": "Panel de Admin",
+    "accounts": "Cuentas",
+    "transfers": "Transferencias"
   },
   "admin": {
     "title": "Panel de Admin",
@@ -223,10 +225,17 @@
     "retention_day30": "Día 30",
     "user_list": "Usuarios",
     "no_users": "No se encontraron usuarios",
-    "page_of": "{{page}} de {{total}}"
+    "page_of": "{{page}} de {{total}}",
+    "reset_user": "Restablecer",
+    "reset_all": "Restablecer todo",
+    "confirm_reset_user": "¿Restablecer todos los datos de este usuario? Esta acción no se puede deshacer.",
+    "confirm_reset_all_short": "Confirmar restablecimiento"
   },
   "accounts": "Cuentas",
   "accountsAll": "Todas las cuentas",
+  "transfers": "Transferencias",
+  "transfer_action": "Transferir",
+  "transfer_need_two_accounts": "Añade otra cuenta para hacer una transferencia",
   "errors": {
     "something_went_wrong": "Algo salió mal. Por favor, inténtalo de nuevo.",
     "category_in_use": "La categoría tiene transacciones y no se puede eliminar.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Máximo 3 monedas para mostrar.",
     "invalid_currency": "Código de moneda inválido.",
     "invalid_amount": "Importe inválido introducido."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Tipo de cuenta",
+  "defaultAccount": "Predeterminada",
+  "exchangeRate": "Tipo de cambio",
+  "from": "Desde",
+  "includeInTotal": "Incluir en el total",
+  "newAccount": "Nueva cuenta",
+  "newTransfer": "Nueva transferencia",
+  "to": "Hacia",
+  "accountTypes": {
+    "checking": "Corriente",
+    "savings": "Ahorro",
+    "cash": "Efectivo",
+    "credit": "Crédito",
+    "crypto": "Cripto"
+  },
+  "setDefault": "Establecer como predeterminada"
 }

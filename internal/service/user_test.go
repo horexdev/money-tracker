@@ -1,0 +1,115 @@
+package service_test
+
+import (
+	"context"
+	"testing"
+
+	"github.com/horexdev/money-tracker/internal/domain"
+	"github.com/horexdev/money-tracker/internal/service"
+	"github.com/horexdev/money-tracker/internal/testutil"
+	"github.com/horexdev/money-tracker/internal/testutil/mocks"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestUserService_Upsert_DefaultCurrency(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	input := &domain.User{ID: 1, FirstName: "Alice"} // no currency
+	expected := &domain.User{ID: 1, FirstName: "Alice", CurrencyCode: "USD"}
+
+	repo.On("Upsert", context.Background(), expected).Return(expected, nil)
+
+	got, err := svc.Upsert(context.Background(), input)
+	require.NoError(t, err)
+	assert.Equal(t, "USD", got.CurrencyCode)
+	repo.AssertExpectations(t)
+}
+
+func TestUserService_Upsert_PreservesExistingCurrency(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	input := &domain.User{ID: 1, CurrencyCode: "EUR"}
+	repo.On("Upsert", context.Background(), input).Return(input, nil)
+
+	got, err := svc.Upsert(context.Background(), input)
+	require.NoError(t, err)
+	assert.Equal(t, "EUR", got.CurrencyCode)
+	repo.AssertExpectations(t)
+}
+
+func TestUserService_UpdateCurrency_Invalid(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	_, err := svc.UpdateCurrency(context.Background(), 1, "INVALID")
+	assert.ErrorIs(t, err, domain.ErrInvalidCurrency)
+	repo.AssertNotCalled(t, "UpdateCurrency")
+}
+
+func TestUserService_UpdateCurrency_Valid(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	expected := &domain.User{ID: 1, CurrencyCode: "EUR"}
+	repo.On("UpdateCurrency", context.Background(), int64(1), "EUR").Return(expected, nil)
+
+	got, err := svc.UpdateCurrency(context.Background(), 1, "EUR")
+	require.NoError(t, err)
+	assert.Equal(t, "EUR", got.CurrencyCode)
+	repo.AssertExpectations(t)
+}
+
+func TestUserService_UpdateLanguage_Invalid(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	_, err := svc.UpdateLanguage(context.Background(), 1, "zh")
+	assert.ErrorIs(t, err, domain.ErrInvalidLanguage)
+	repo.AssertNotCalled(t, "UpdateLanguage")
+}
+
+func TestUserService_UpdateLanguage_Valid(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	expected := &domain.User{ID: 1, Language: domain.LangEN}
+	repo.On("UpdateLanguage", context.Background(), int64(1), "en").Return(expected, nil)
+
+	got, err := svc.UpdateLanguage(context.Background(), 1, "en")
+	require.NoError(t, err)
+	assert.Equal(t, domain.LangEN, got.Language)
+	repo.AssertExpectations(t)
+}
+
+func TestUserService_UpdateDisplayCurrencies_TooMany(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	_, err := svc.UpdateDisplayCurrencies(context.Background(), 1, []string{"USD", "EUR", "GBP", "JPY"})
+	assert.ErrorIs(t, err, domain.ErrTooManyDisplayCurrencies)
+	repo.AssertNotCalled(t, "UpdateDisplayCurrencies")
+}
+
+func TestUserService_UpdateDisplayCurrencies_InvalidCode(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	_, err := svc.UpdateDisplayCurrencies(context.Background(), 1, []string{"USD", "FAKE"})
+	assert.ErrorIs(t, err, domain.ErrInvalidCurrency)
+	repo.AssertNotCalled(t, "UpdateDisplayCurrencies")
+}
+
+func TestUserService_UpdateDisplayCurrencies_Valid(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	expected := &domain.User{ID: 1}
+	repo.On("UpdateDisplayCurrencies", context.Background(), int64(1), "USD,EUR").Return(expected, nil)
+
+	_, err := svc.UpdateDisplayCurrencies(context.Background(), 1, []string{"USD", "EUR"})
+	require.NoError(t, err)
+	repo.AssertExpectations(t)
+}

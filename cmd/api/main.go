@@ -31,6 +31,10 @@ func main() {
 
 	log := setupLogger(cfg.LogLevel)
 
+	if cfg.DevMode {
+		log.Warn("DEV_MODE is enabled — Telegram auth bypass is active. DO NOT use in production.")
+	}
+
 	if err := runMigrations(cfg.DatabaseURL, cfg.MigrationsDir, log); err != nil {
 		log.Error("migrations failed", slog.String("error", err.Error()))
 		os.Exit(1)
@@ -79,7 +83,7 @@ func main() {
 	recurringSvc := service.NewRecurringService(recurringRepo, txRepo, log)
 	goalSvc := service.NewSavingsGoalService(goalRepo, log)
 	exportSvc := service.NewExportService(txRepo, log)
-	accountSvc := service.NewAccountService(accountRepo, log)
+	accountSvc := service.NewAccountService(accountRepo, exchangeSvc, log)
 	transferSvc := service.NewTransferService(transferRepo, accountRepo, goalRepo, log)
 	adminSvc := service.NewAdminService(adminRepo, log)
 
@@ -109,6 +113,8 @@ func main() {
 		BotToken:       cfg.BotToken,
 		AllowedOrigins: cfg.AllowedOrigins,
 		AdminUserID:    cfg.AdminUserID,
+		DevMode:        cfg.DevMode,
+		DevLang:        cfg.DevLang,
 		Log:            log,
 	})
 

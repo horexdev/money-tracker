@@ -209,7 +209,9 @@
     "savings": "Matlamat Simpanan",
     "export": "Eksport",
     "settings": "Tetapan",
-    "admin_panel": "Panel Admin"
+    "admin_panel": "Panel Admin",
+    "accounts": "Akaun",
+    "transfers": "Pindahan"
   },
   "admin": {
     "title": "Panel Admin",
@@ -223,10 +225,17 @@
     "retention_day30": "Hari 30",
     "user_list": "Pengguna",
     "no_users": "Tiada pengguna ditemui",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "reset_user": "Set semula",
+    "reset_all": "Set semula semua",
+    "confirm_reset_user": "Set semula semua data pengguna ini? Tindakan ini tidak boleh dibatalkan.",
+    "confirm_reset_all_short": "Sahkan set semula"
   },
   "accounts": "Akaun",
   "accountsAll": "Semua akaun",
+  "transfers": "Pindahan",
+  "transfer_action": "Pindah",
+  "transfer_need_two_accounts": "Tambah akaun lain untuk membuat pindahan",
   "errors": {
     "something_went_wrong": "Sesuatu telah berlaku. Sila cuba lagi.",
     "category_in_use": "Kategori mempunyai transaksi dan tidak boleh dipadamkan.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Maksimum 3 mata wang paparan dibenarkan.",
     "invalid_currency": "Kod mata wang tidak sah.",
     "invalid_amount": "Jumlah tidak sah dimasukkan."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Jenis akaun",
+  "defaultAccount": "Lalai",
+  "exchangeRate": "Kadar pertukaran",
+  "from": "Dari",
+  "includeInTotal": "Sertakan dalam jumlah",
+  "newAccount": "Akaun baru",
+  "newTransfer": "Pindahan baru",
+  "to": "Ke",
+  "accountTypes": {
+    "checking": "Semasa",
+    "savings": "Simpanan",
+    "cash": "Tunai",
+    "credit": "Kredit",
+    "crypto": "Kripto"
+  },
+  "setDefault": "Tetapkan sebagai lalai"
 }

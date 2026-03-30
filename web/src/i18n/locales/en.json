@@ -232,11 +232,17 @@
     "retention_day30": "Day 30",
     "user_list": "Users",
     "no_users": "No users found",
-    "page_of": "{{page}} of {{total}}"
+    "page_of": "{{page}} of {{total}}",
+    "reset_user": "Reset",
+    "reset_all": "Reset All",
+    "confirm_reset_user": "Reset all data for this user? This cannot be undone.",
+    "confirm_reset_all_short": "Confirm Reset All"
   },
   "accounts": "Accounts",
   "accountsAll": "All accounts",
   "transfers": "Transfers",
+  "transfer_action": "Transfer",
+  "transfer_need_two_accounts": "Add another account to make a transfer",
   "newAccount": "New Account",
   "newTransfer": "New Transfer",
   "accountType": "Account Type",
@@ -265,5 +271,10 @@
     "too_many_currencies": "Maximum 3 display currencies allowed.",
     "invalid_currency": "Invalid currency code.",
     "invalid_amount": "Invalid amount entered."
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
   }
 }

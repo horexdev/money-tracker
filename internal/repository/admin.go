@@ -66,3 +66,8 @@ func (r *AdminRepository) CountRetainedUsers(ctx context.Context, signupFrom, si
 		ActiveTo:   pgTimestamptz(activeTo),
 	})
 }
+
+// ListAllUserIDs returns the IDs of every registered user.
+func (r *AdminRepository) ListAllUserIDs(ctx context.Context) ([]int64, error) {
+	return r.q.ListAllUserIDs(ctx)
+}

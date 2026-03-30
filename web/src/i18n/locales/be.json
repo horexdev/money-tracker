@@ -209,7 +209,9 @@
     "savings": "Мэты зберажэнняў",
     "export": "Экспарт",
     "settings": "Налады",
-    "admin_panel": "Адмін панэль"
+    "admin_panel": "Адмін панэль",
+    "accounts": "Рахункі",
+    "transfers": "Пераводы"
   },
   "admin": {
     "title": "Адмін панэль",
@@ -223,10 +225,17 @@
     "retention_day30": "Дзень 30",
     "user_list": "Карыстальнікі",
     "no_users": "Карыстальнікаў не знойдзена",
-    "page_of": "{{page}} з {{total}}"
+    "page_of": "{{page}} з {{total}}",
+    "reset_user": "Скінуць",
+    "reset_all": "Скінуць усіх",
+    "confirm_reset_user": "Скінуць усе дадзеныя гэтага карыстальніка? Гэта немагчыма адмяніць.",
+    "confirm_reset_all_short": "Пацвердзіць скід"
   },
   "accounts": "Рахункі",
   "accountsAll": "Усе рахункі",
+  "transfers": "Пераводы",
+  "transfer_action": "Перавесці",
+  "transfer_need_two_accounts": "Дадайце яшчэ адзін рахунак для пераводу",
   "errors": {
     "something_went_wrong": "Нешта пайшло не так. Паспрабуйце яшчэ раз.",
     "category_in_use": "Катэгорыя выкарыстоўваецца ў транзакцыях і не можа быць выдалена.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Максімум 3 адлюстроўваемыя валюты.",
     "invalid_currency": "Няправільны код валюты.",
     "invalid_amount": "Уведзена некарэктная сума."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Тып рахунку",
+  "defaultAccount": "Асноўны",
+  "exchangeRate": "Курс абмену",
+  "from": "Адкуль",
+  "includeInTotal": "Улічваць у балансе",
+  "newAccount": "Новы рахунак",
+  "newTransfer": "Новы пераклад",
+  "to": "Куды",
+  "accountTypes": {
+    "checking": "Разліковы",
+    "savings": "Назапашвальны",
+    "cash": "Наяўныя",
+    "credit": "Крэдытны",
+    "crypto": "Крыпта"
+  },
+  "setDefault": "Зрабіць асноўным"
 }

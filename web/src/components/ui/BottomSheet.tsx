@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 
 interface BottomSheetProps {
@@ -10,7 +11,7 @@ interface BottomSheetProps {
  * Use inside AnimatePresence for enter/exit transitions.
  */
 export function BottomSheet({ onClose, children }: BottomSheetProps) {
-  return (
+  return createPortal(
     <>
       <motion.div
         className="fixed inset-0 bg-black/50 z-[60]"
@@ -38,6 +39,7 @@ export function BottomSheet({ onClose, children }: BottomSheetProps) {
         </div>
         {children}
       </motion.div>
-    </>
+    </>,
+    document.body,
   )
 }

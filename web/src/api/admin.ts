@@ -8,4 +8,10 @@ export const adminApi = {
   getStats(): Promise<AdminStatsResponse> {
     return api.get('/v1/admin/stats')
   },
+  resetUser(userID: number): Promise<{ reset: boolean; user_id: number }> {
+    return api.delete(`/v1/admin/users/${userID}/data`)
+  },
+  resetAllUsers(): Promise<{ reset: number; failed: number }> {
+    return api.delete('/v1/admin/users/data')
+  },
 }

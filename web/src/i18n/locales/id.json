@@ -209,7 +209,9 @@
     "savings": "Target Tabungan",
     "export": "Ekspor",
     "settings": "Pengaturan",
-    "admin_panel": "Panel Admin"
+    "admin_panel": "Panel Admin",
+    "accounts": "Akun",
+    "transfers": "Transfer"
   },
   "admin": {
     "title": "Panel Admin",
@@ -223,10 +225,17 @@
     "retention_day30": "Hari 30",
     "user_list": "Pengguna",
     "no_users": "Pengguna tidak ditemukan",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "reset_user": "Reset",
+    "reset_all": "Reset semua",
+    "confirm_reset_user": "Reset semua data pengguna ini? Tindakan ini tidak dapat dibatalkan.",
+    "confirm_reset_all_short": "Konfirmasi reset"
   },
   "accounts": "Akun",
   "accountsAll": "Semua akun",
+  "transfers": "Transfer",
+  "transfer_action": "Transfer",
+  "transfer_need_two_accounts": "Tambahkan akun lain untuk melakukan transfer",
   "errors": {
     "something_went_wrong": "Sesuatu telah terjadi. Silakan coba lagi.",
     "category_in_use": "Kategori memiliki transaksi dan tidak bisa dihapus.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Maksimal 3 mata uang tampilan diizinkan.",
     "invalid_currency": "Kode mata uang tidak valid.",
     "invalid_amount": "Jumlah tidak valid dimasukkan."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Jenis rekening",
+  "defaultAccount": "Default",
+  "exchangeRate": "Kurs tukar",
+  "from": "Dari",
+  "includeInTotal": "Sertakan dalam total",
+  "newAccount": "Rekening baru",
+  "newTransfer": "Transfer baru",
+  "to": "Ke",
+  "accountTypes": {
+    "checking": "Giro",
+    "savings": "Tabungan",
+    "cash": "Tunai",
+    "credit": "Kredit",
+    "crypto": "Kripto"
+  },
+  "setDefault": "Jadikan default"
 }

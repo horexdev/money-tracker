@@ -209,7 +209,9 @@
     "savings": "Цілі заощаджень",
     "export": "Експорт",
     "settings": "Налаштування",
-    "admin_panel": "Адмін панель"
+    "admin_panel": "Адмін панель",
+    "accounts": "Рахунки",
+    "transfers": "Перекази"
   },
   "admin": {
     "title": "Адмін панель",
@@ -223,10 +225,17 @@
     "retention_day30": "День 30",
     "user_list": "Користувачі",
     "no_users": "Користувачів не знайдено",
-    "page_of": "{{page}} з {{total}}"
+    "page_of": "{{page}} з {{total}}",
+    "reset_user": "Скинути",
+    "reset_all": "Скинути всіх",
+    "confirm_reset_user": "Скинути всі дані цього користувача? Це незворотно.",
+    "confirm_reset_all_short": "Підтвердити скидання"
   },
   "accounts": "Рахунки",
   "accountsAll": "Всі рахунки",
+  "transfers": "Перекази",
+  "transfer_action": "Перевести",
+  "transfer_need_two_accounts": "Додайте ще один рахунок для переказу",
   "errors": {
     "something_went_wrong": "Щось пішло не так. Спробуйте ще раз.",
     "category_in_use": "Категорія використовується в транзакціях і не може бути видалена.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Максимум 3 відображувані валюти.",
     "invalid_currency": "Невірний код валюти.",
     "invalid_amount": "Введена некоректна сума."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Тип рахунку",
+  "defaultAccount": "Основний",
+  "exchangeRate": "Курс обміну",
+  "from": "Звідки",
+  "includeInTotal": "Враховувати в балансі",
+  "newAccount": "Новий рахунок",
+  "newTransfer": "Новий переказ",
+  "to": "Куди",
+  "accountTypes": {
+    "checking": "Поточний",
+    "savings": "Накопичувальний",
+    "cash": "Готівка",
+    "credit": "Кредитний",
+    "crypto": "Крипто"
+  },
+  "setDefault": "Зробити основним"
 }

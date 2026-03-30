@@ -184,7 +184,7 @@ export function AddTransactionPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h))]">
+      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h)-var(--safe-top,0px))]">
 
         {/* Hero card */}
         <div
@@ -213,7 +213,7 @@ export function AddTransactionPage() {
                   {m === 'transfer' && <ArrowsLeftRight size={11} weight="bold" />}
                   {m === 'expense' ? t('transactions.expense')
                     : m === 'income' ? t('transactions.income')
-                    : t('transfers')}
+                    : t('transfer_action')}
                 </button>
               ))}
             </div>
@@ -244,33 +244,42 @@ export function AddTransactionPage() {
 
             {/* Transfer: from ⇄ to row */}
             {isTransfer && (
-              <div className="mt-4 flex items-center gap-2">
-                <div className="shrink-0">
-                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
-                    {t('from')}
+              accounts.length < 2 ? (
+                <div className="mt-4 flex items-center gap-2 bg-white/[0.08] rounded-2xl px-4 py-3">
+                  <ArrowsLeftRight size={16} weight="bold" className="text-white/40 shrink-0" />
+                  <p className="text-white/60 text-[13px] font-medium">
+                    {t('transfer_need_two_accounts')}
                   </p>
-                  <AccountDropdown
-                    accounts={accounts.filter(a => a.id !== toAccountId)}
-                    selectedId={fromAccountId}
-                    onChange={id => id !== null && setFromAccountId(id)}
-                    showBalance
-                  />
                 </div>
-                <div className="shrink-0 mt-4">
-                  <ArrowsLeftRight size={16} weight="bold" className="text-white/40" />
+              ) : (
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="shrink-0">
+                    <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
+                      {t('from')}
+                    </p>
+                    <AccountDropdown
+                      accounts={accounts.filter(a => a.id !== toAccountId)}
+                      selectedId={fromAccountId}
+                      onChange={id => id !== null && setFromAccountId(id)}
+                      showBalance
+                    />
+                  </div>
+                  <div className="shrink-0 mt-4">
+                    <ArrowsLeftRight size={16} weight="bold" className="text-white/40" />
+                  </div>
+                  <div className="shrink-0">
+                    <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
+                      {t('to')}
+                    </p>
+                    <AccountDropdown
+                      accounts={accounts.filter(a => a.id !== fromAccountId)}
+                      selectedId={toAccountId}
+                      onChange={id => id !== null && setToAccountId(id)}
+                      showBalance
+                    />
+                  </div>
                 </div>
-                <div className="shrink-0">
-                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
-                    {t('to')}
-                  </p>
-                  <AccountDropdown
-                    accounts={accounts.filter(a => a.id !== fromAccountId)}
-                    selectedId={toAccountId}
-                    onChange={id => id !== null && setToAccountId(id)}
-                    showBalance
-                  />
-                </div>
-              </div>
+              )
             )}
           </div>
         </div>
@@ -388,7 +397,7 @@ export function AddTransactionPage() {
                 }
               `}
             >
-              {isPending ? t('common.loading') : t('transfers')}
+              {isPending ? t('common.loading') : t('transfer_action')}
             </button>
           </div>
         )}

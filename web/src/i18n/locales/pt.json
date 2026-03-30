@@ -209,7 +209,9 @@
     "savings": "Metas de poupança",
     "export": "Exportar",
     "settings": "Configurações",
-    "admin_panel": "Painel Admin"
+    "admin_panel": "Painel Admin",
+    "accounts": "Contas",
+    "transfers": "Transferências"
   },
   "admin": {
     "title": "Painel Admin",
@@ -223,10 +225,17 @@
     "retention_day30": "Dia 30",
     "user_list": "Usuários",
     "no_users": "Nenhum usuário encontrado",
-    "page_of": "{{page}} de {{total}}"
+    "page_of": "{{page}} de {{total}}",
+    "reset_user": "Redefinir",
+    "reset_all": "Redefinir tudo",
+    "confirm_reset_user": "Redefinir todos os dados deste usuário? Esta ação não pode ser desfeita.",
+    "confirm_reset_all_short": "Confirmar redefinição"
   },
   "accounts": "Contas",
   "accountsAll": "Todas as contas",
+  "transfers": "Transferências",
+  "transfer_action": "Transferir",
+  "transfer_need_two_accounts": "Adicione outra conta para fazer uma transferência",
   "errors": {
     "something_went_wrong": "Algo deu errado. Por favor, tente novamente.",
     "category_in_use": "A categoria tem transações e não pode ser excluída.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Máximo 3 moedas de exibição permitidas.",
     "invalid_currency": "Código de moeda inválido.",
     "invalid_amount": "Valor inválido inserido."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Tipo de conta",
+  "defaultAccount": "Padrão",
+  "exchangeRate": "Taxa de câmbio",
+  "from": "De",
+  "includeInTotal": "Incluir no total",
+  "newAccount": "Nova conta",
+  "newTransfer": "Nova transferência",
+  "to": "Para",
+  "accountTypes": {
+    "checking": "Corrente",
+    "savings": "Poupança",
+    "cash": "Dinheiro",
+    "credit": "Crédito",
+    "crypto": "Cripto"
+  },
+  "setDefault": "Definir como padrão"
 }

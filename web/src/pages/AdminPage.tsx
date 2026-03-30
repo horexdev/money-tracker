@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Users, UserPlus, ChartLineUp, CaretLeft, CaretRight } from '@phosphor-icons/react'
+import { Users, UserPlus, ChartLineUp, CaretLeft, CaretRight, Trash, Warning } from '@phosphor-icons/react'
 import { adminApi } from '../api/admin'
 import { Spinner } from '../components/Spinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { useTgBackButton } from '../hooks/useTelegramApp'
+import { FIRST_LAUNCH_KEY } from '../hooks/useFirstLaunchSetup'
 import type { AdminUser } from '../types'
 
 function StatCard({ label, value, icon, gradient }: {
@@ -44,7 +45,8 @@ function RetentionBar({ label, value }: { label: string; value: number }) {
   )
 }
 
-function UserRow({ user }: { user: AdminUser }) {
+function UserRow({ user, onReset, resetting }: { user: AdminUser; onReset: (id: number) => void; resetting: boolean }) {
+  const { t } = useTranslation()
   const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || '—'
   const date = new Date(user.created_at)
   const formattedDate = date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
@@ -62,6 +64,14 @@ function UserRow({ user }: { user: AdminUser }) {
         </p>
       </div>
       <p className="text-[11px] text-muted shrink-0">{formattedDate}</p>
+      <button
+        onClick={() => onReset(user.id)}
+        disabled={resetting}
+        title={t('admin.reset_user')}
+        className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 disabled:opacity-40 active:scale-90 transition-transform shrink-0"
+      >
+        {resetting ? <Spinner size="sm" /> : <Trash size={14} weight="bold" />}
+      </button>
     </div>
   )
 }
@@ -69,8 +79,11 @@ function UserRow({ user }: { user: AdminUser }) {
 export function AdminPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const pageSize = 20
+  const [confirmResetAll, setConfirmResetAll] = useState(false)
+  const [resettingUserId, setResettingUserId] = useState<number | null>(null)
 
   useTgBackButton(useCallback(() => navigate('/more'), [navigate]))
 
@@ -86,6 +99,36 @@ export function AdminPage() {
     staleTime: 30_000,
   })
 
+  const resetUserMutation = useMutation({
+    mutationFn: (userID: number) => adminApi.resetUser(userID),
+    onSuccess: () => {
+      localStorage.removeItem(FIRST_LAUNCH_KEY)
+      setResettingUserId(null)
+      window.location.reload()
+    },
+    onError: () => {
+      setResettingUserId(null)
+    },
+  })
+
+  const resetAllMutation = useMutation({
+    mutationFn: adminApi.resetAllUsers,
+    onSuccess: () => {
+      localStorage.removeItem(FIRST_LAUNCH_KEY)
+      setConfirmResetAll(false)
+      window.location.reload()
+    },
+    onError: () => {
+      setConfirmResetAll(false)
+    },
+  })
+
+  const handleResetUser = (id: number) => {
+    if (!window.confirm(t('admin.confirm_reset_user'))) return
+    setResettingUserId(id)
+    resetUserMutation.mutate(id)
+  }
+
   const totalPages = usersData ? Math.ceil(usersData.total / pageSize) : 1
 
   if (statsLoading && usersLoading) {
@@ -100,7 +143,35 @@ export function AdminPage() {
     <PageTransition>
       <div className="px-4 pt-3 pb-4 space-y-4">
         {/* Header */}
-        <h1 className="text-xl font-bold text-text">{t('admin.title')}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-text">{t('admin.title')}</h1>
+          {confirmResetAll ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setConfirmResetAll(false)}
+                className="text-xs px-3 py-1.5 rounded-xl bg-surface-alt text-muted font-medium active:scale-95 transition-transform"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={() => resetAllMutation.mutate()}
+                disabled={resetAllMutation.isPending}
+                className="text-xs px-3 py-1.5 rounded-xl bg-red-500/20 text-red-400 font-semibold active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-1"
+              >
+                {resetAllMutation.isPending ? <Spinner size="sm" /> : <Warning size={12} weight="fill" />}
+                {t('admin.confirm_reset_all_short')}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmResetAll(true)}
+              className="text-xs px-3 py-1.5 rounded-xl bg-red-500/10 text-red-400 font-medium active:scale-95 transition-transform flex items-center gap-1.5"
+            >
+              <Trash size={12} weight="bold" />
+              {t('admin.reset_all')}
+            </button>
+          )}
+        </div>
 
         {/* Stats Overview */}
         {stats && (
@@ -163,7 +234,12 @@ export function AdminPage() {
             <>
               <div>
                 {usersData?.users.map((user) => (
-                  <UserRow key={user.id} user={user} />
+                  <UserRow
+                    key={user.id}
+                    user={user}
+                    onReset={handleResetUser}
+                    resetting={resettingUserId === user.id}
+                  />
                 ))}
               </div>
 

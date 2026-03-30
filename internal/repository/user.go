@@ -32,6 +32,7 @@ func (r *UserRepository) Upsert(ctx context.Context, u *domain.User) (*domain.Us
 		FirstName:    u.FirstName,
 		LastName:     u.LastName,
 		CurrencyCode: u.CurrencyCode,
+		Language:     string(u.Language),
 	})
 	if err != nil {
 		return nil, err
@@ -118,6 +119,9 @@ func (r *UserRepository) ResetData(ctx context.Context, userID int64) error {
 	}
 	if err := q.DeleteAllUserAccounts(ctx, userID); err != nil {
 		return fmt.Errorf("delete accounts: %w", err)
+	}
+	if err := q.DeleteUser(ctx, userID); err != nil {
+		return fmt.Errorf("delete user: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

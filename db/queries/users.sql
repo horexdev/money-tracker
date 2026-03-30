@@ -1,6 +1,6 @@
 -- name: UpsertUser :one
-INSERT INTO users (id, username, first_name, last_name, currency_code)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users (id, username, first_name, last_name, currency_code, language)
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (id) DO UPDATE
     SET username   = EXCLUDED.username,
         first_name = EXCLUDED.first_name,
@@ -52,3 +52,6 @@ DELETE FROM transfers WHERE user_id = $1;
 
 -- name: DeleteAllUserAccounts :exec
 DELETE FROM accounts WHERE user_id = $1;
+
+-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1;

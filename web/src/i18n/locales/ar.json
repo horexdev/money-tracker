@@ -209,7 +209,9 @@
     "savings": "أهداف الادخار",
     "export": "تصدير",
     "settings": "الإعدادات",
-    "admin_panel": "لوحة الإدارة"
+    "admin_panel": "لوحة الإدارة",
+    "accounts": "الحسابات",
+    "transfers": "التحويلات"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -223,10 +225,17 @@
     "retention_day30": "اليوم 30",
     "user_list": "المستخدمون",
     "no_users": "لم يتم العثور على مستخدمين",
-    "page_of": "{{page}} من {{total}}"
+    "page_of": "{{page}} من {{total}}",
+    "reset_user": "إعادة تعيين",
+    "reset_all": "إعادة تعيين الكل",
+    "confirm_reset_user": "هل تريد إعادة تعيين جميع بيانات هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.",
+    "confirm_reset_all_short": "تأكيد إعادة التعيين"
   },
   "accounts": "الحسابات",
   "accountsAll": "جميع الحسابات",
+  "transfers": "التحويلات",
+  "transfer_action": "تحويل",
+  "transfer_need_two_accounts": "أضف حساباً آخر لإجراء تحويل",
   "errors": {
     "something_went_wrong": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "category_in_use": "الفئة تحتوي على معاملات ولا يمكن حذفها.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "الحد الأقصى 3 عملات للعرض.",
     "invalid_currency": "رمز العملة غير صالح.",
     "invalid_amount": "تم إدخال مبلغ غير صالح."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "نوع الحساب",
+  "defaultAccount": "افتراضي",
+  "exchangeRate": "سعر الصرف",
+  "from": "من",
+  "includeInTotal": "تضمين في الإجمالي",
+  "newAccount": "حساب جديد",
+  "newTransfer": "تحويل جديد",
+  "to": "إلى",
+  "accountTypes": {
+    "checking": "جاري",
+    "savings": "توفير",
+    "cash": "نقدي",
+    "credit": "ائتمان",
+    "crypto": "كريبتو"
+  },
+  "setDefault": "تعيين كافتراضي"
 }

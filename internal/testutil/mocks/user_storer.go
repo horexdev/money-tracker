@@ -1,0 +1,58 @@
+package mocks
+
+import (
+	"context"
+
+	"github.com/horexdev/money-tracker/internal/domain"
+	"github.com/stretchr/testify/mock"
+)
+
+// MockUserStorer is a testify mock for service.UserStorer.
+type MockUserStorer struct {
+	mock.Mock
+}
+
+func (m *MockUserStorer) Upsert(ctx context.Context, u *domain.User) (*domain.User, error) {
+	args := m.Called(ctx, u)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *MockUserStorer) GetByID(ctx context.Context, id int64) (*domain.User, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *MockUserStorer) UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error) {
+	args := m.Called(ctx, id, code)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *MockUserStorer) UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error) {
+	args := m.Called(ctx, id, codes)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *MockUserStorer) UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error) {
+	args := m.Called(ctx, id, lang)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *MockUserStorer) ResetData(ctx context.Context, userID int64) error {
+	args := m.Called(ctx, userID)
+	return args.Error(0)
+}

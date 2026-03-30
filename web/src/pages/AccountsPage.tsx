@@ -212,7 +212,17 @@ function AccountFormSheet({
   const errorMsg = friendlyError(createMut.error || updateMut.error, t)
   const canSubmit = name.trim().length > 0 && !isPending
 
+  const [showCurrencyWarning, setShowCurrencyWarning] = useState(false)
+  const currencyChanged = isEdit && editAccount!.currency_code !== currency
+
+  function handleSubmit() {
+    if (!isEdit) { createMut.mutate(); return }
+    if (currencyChanged) { setShowCurrencyWarning(true); return }
+    updateMut.mutate()
+  }
+
   return (
+    <>
     <BottomSheet onClose={onClose}>
       <div
         className="px-5 space-y-4 overflow-y-auto no-scrollbar"
@@ -306,7 +316,7 @@ function AccountFormSheet({
 
         {/* Submit */}
         <button
-          onClick={() => isEdit ? updateMut.mutate() : createMut.mutate()}
+          onClick={handleSubmit}
           disabled={!canSubmit}
           className={`
             w-full py-4 rounded-2xl text-[15px] font-bold transition-all active:scale-[0.98]
@@ -324,6 +334,42 @@ function AccountFormSheet({
         )}
       </div>
     </BottomSheet>
+
+    <AnimatePresence>
+      {showCurrencyWarning && (
+        <BottomSheet onClose={() => setShowCurrencyWarning(false)}>
+          <div className="px-5 pt-2 pb-8 flex flex-col gap-4 items-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-accent-subtle flex items-center justify-center text-2xl">
+              💱
+            </div>
+            <p className="text-base font-bold text-text">
+              {t('accountForm.currency_change_title')}
+            </p>
+            <p className="text-sm text-muted leading-relaxed">
+              {t('accountForm.currency_change_desc', {
+                oldCurrency: editAccount!.currency_code,
+                newCurrency: currency,
+              })}
+            </p>
+            <div className="w-full flex flex-col gap-2">
+              <button
+                onClick={() => { setShowCurrencyWarning(false); updateMut.mutate() }}
+                className="w-full py-4 rounded-2xl bg-accent text-accent-text font-bold text-[15px] active:scale-[0.98] transition-transform"
+              >
+                {t('accountForm.currency_change_confirm', { newCurrency: currency })}
+              </button>
+              <button
+                onClick={() => setShowCurrencyWarning(false)}
+                className="w-full py-4 rounded-2xl bg-surface text-muted font-semibold text-sm active:scale-[0.98] transition-transform"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </BottomSheet>
+      )}
+    </AnimatePresence>
+    </>
   )
 }
 

@@ -11,13 +11,14 @@ import (
 
 // AccountService handles business logic for user accounts.
 type AccountService struct {
-	repo AccountStorer
-	log  *slog.Logger
+	repo    AccountStorer
+	exchSvc *ExchangeService
+	log     *slog.Logger
 }
 
 // NewAccountService constructs an AccountService.
-func NewAccountService(repo AccountStorer, log *slog.Logger) *AccountService {
-	return &AccountService{repo: repo, log: log}
+func NewAccountService(repo AccountStorer, exchSvc *ExchangeService, log *slog.Logger) *AccountService {
+	return &AccountService{repo: repo, exchSvc: exchSvc, log: log}
 }
 
 // Create creates a new account. If it is the first account for the user, it is
@@ -54,14 +55,14 @@ func (s *AccountService) Create(ctx context.Context, userID int64, name, icon, c
 	return created, nil
 }
 
-// List returns all accounts for a user with computed balances.
+// List returns all accounts for a user with computed balances converted to each account's currency.
 func (s *AccountService) List(ctx context.Context, userID int64) ([]*domain.Account, error) {
 	accounts, err := s.repo.ListByUser(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("list accounts: %w", err)
 	}
 	for _, a := range accounts {
-		bal, err := s.repo.GetBalance(ctx, a.ID, userID)
+		bal, err := s.balanceInCurrency(ctx, a.ID, userID, a.CurrencyCode)
 		if err != nil {
 			s.log.WarnContext(ctx, "failed to get account balance",
 				slog.Int64("account_id", a.ID),
@@ -74,13 +75,13 @@ func (s *AccountService) List(ctx context.Context, userID int64) ([]*domain.Acco
 	return accounts, nil
 }
 
-// GetByID returns a single account with its balance.
+// GetByID returns a single account with its balance converted to the account's currency.
 func (s *AccountService) GetByID(ctx context.Context, id, userID int64) (*domain.Account, error) {
 	a, err := s.repo.GetByID(ctx, id, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get account: %w", err)
 	}
-	bal, err := s.repo.GetBalance(ctx, a.ID, userID)
+	bal, err := s.balanceInCurrency(ctx, a.ID, userID, a.CurrencyCode)
 	if err != nil {
 		s.log.WarnContext(ctx, "failed to get account balance",
 			slog.Int64("account_id", a.ID),
@@ -90,6 +91,43 @@ func (s *AccountService) GetByID(ctx context.Context, id, userID int64) (*domain
 		a.BalanceCents = bal
 	}
 	return a, nil
+}
+
+// balanceInCurrency returns the account balance converted to targetCurrency.
+// Each transaction is first converted to base currency using its exchange_rate_snapshot,
+// then the sum is converted from base to targetCurrency via ExchangeService.
+// Falls back to raw balance if there are no transactions or exchange rates are unavailable.
+func (s *AccountService) balanceInCurrency(ctx context.Context, accountID, userID int64, targetCurrency string) (int64, error) {
+	balInBase, err := s.repo.GetBalanceInBase(ctx, accountID, userID)
+	if err != nil {
+		return 0, err
+	}
+	if balInBase == 0 {
+		return 0, nil
+	}
+
+	baseCurrency, err := s.repo.GetBaseCurrency(ctx, accountID, userID)
+	if err != nil {
+		// No transactions yet — balance is zero.
+		return 0, nil
+	}
+
+	if baseCurrency == targetCurrency {
+		return balInBase, nil
+	}
+
+	converted, err := s.exchSvc.Convert(ctx, balInBase, baseCurrency, targetCurrency)
+	if err != nil {
+		// Exchange rate unavailable — fall back to raw balance to avoid showing 0.
+		s.log.WarnContext(ctx, "exchange rate unavailable, falling back to raw balance",
+			slog.Int64("account_id", accountID),
+			slog.String("base", baseCurrency),
+			slog.String("target", targetCurrency),
+			slog.String("err", err.Error()),
+		)
+		return s.repo.GetBalance(ctx, accountID, userID)
+	}
+	return converted, nil
 }
 
 // Update modifies a non-default account. is_default cannot be changed via Update — use SetDefault.

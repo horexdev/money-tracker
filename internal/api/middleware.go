@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -27,10 +28,39 @@ type ensurer interface {
 // authMiddleware validates the Telegram initData header and injects userID into the context.
 // It also upserts the user profile (username, first/last name) on every request so that
 // profile data is always kept up to date.
-func authMiddleware(botToken string, userSvc ensurer, log *slog.Logger) func(http.Handler) http.Handler {
+//
+// When devMode is true, it additionally accepts the header value "dev:<user_id>" as a bypass,
+// skipping HMAC validation entirely. This is for local development only and must never be
+// enabled in production.
+func authMiddleware(botToken string, devMode bool, devLang string, userSvc ensurer, log *slog.Logger) func(http.Handler) http.Handler {
+	if devLang == "" {
+		devLang = "en"
+	}
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			initData := r.Header.Get("X-Telegram-Init-Data")
+
+			// DEV bypass: accept "dev:<user_id>" when devMode is enabled.
+			if devMode && strings.HasPrefix(initData, "dev:") {
+				userIDStr := strings.TrimPrefix(initData, "dev:")
+				userID, err := strconv.ParseInt(userIDStr, 10, 64)
+				if err != nil || userID <= 0 {
+					writeJSON(w, http.StatusUnauthorized, errorResponse{Error: "unauthorized"})
+					return
+				}
+				tgUser := TelegramUser{ID: userID, FirstName: "DevUser", LanguageCode: devLang}
+				if err := userSvc.ensureUser(r.Context(), tgUser); err != nil {
+					log.ErrorContext(r.Context(), "auth: dev mode failed to ensure user",
+						slog.Int64("user_id", userID), slog.String("error", err.Error()))
+					writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "internal server error"})
+					return
+				}
+				log.InfoContext(r.Context(), "auth: dev bypass", slog.Int64("user_id", userID))
+				ctx := context.WithValue(r.Context(), contextKeyUserID, userID)
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return
+			}
+
 			tgUser, err := ValidateInitData(botToken, initData)
 			if err != nil {
 				if errors.Is(err, ErrInvalidInitData) {
@@ -57,9 +87,14 @@ func authMiddleware(botToken string, userSvc ensurer, log *slog.Logger) func(htt
 
 // adminMiddleware restricts access to the configured admin Telegram user ID.
 // Must be applied after authMiddleware so that userID is present in context.
-func adminMiddleware(adminUserID int64) func(http.Handler) http.Handler {
+// When devMode is true, all authenticated users are granted admin access.
+func adminMiddleware(adminUserID int64, devMode bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if devMode {
+				next.ServeHTTP(w, r)
+				return
+			}
 			if adminUserID == 0 || userIDFromContext(r.Context()) != adminUserID {
 				writeJSON(w, http.StatusForbidden, errorResponse{Error: "forbidden"})
 				return

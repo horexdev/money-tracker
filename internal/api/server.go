@@ -45,7 +45,7 @@ var defaultAccountNames = map[string]string{
 	"tr": "Ana hesap",
 	"ko": "주 계좌",
 	"ms": "Akaun utama",
-	"id": "Akun utama",
+	"id": "Rekening utama",
 }
 
 func localizedAccountName(lang string) string {
@@ -65,10 +65,12 @@ type userEnsurer struct {
 
 func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error {
 	user, err := u.svc.Upsert(ctx, &domain.User{
-		ID:        tgUser.ID,
-		Username:  tgUser.Username,
-		FirstName: tgUser.FirstName,
-		LastName:  tgUser.LastName,
+		ID:           tgUser.ID,
+		Username:     tgUser.Username,
+		FirstName:    tgUser.FirstName,
+		LastName:     tgUser.LastName,
+		Language:     domain.Language(tgUser.LanguageCode),
+		CurrencyCode: localizedAccountCurrency(tgUser.LanguageCode),
 	})
 	if err != nil {
 		return err
@@ -122,7 +124,11 @@ type Deps struct {
 	BotToken       string
 	AllowedOrigins string
 	AdminUserID    int64
-	Log            *slog.Logger
+	// DevMode enables the Telegram auth bypass for local development.
+	// When true, X-Telegram-Init-Data: dev:<user_id> is accepted without HMAC validation.
+	DevMode bool
+	DevLang string
+	Log     *slog.Logger
 }
 
 // NewServer builds and returns the HTTP handler for the API server.
@@ -131,7 +137,7 @@ func NewServer(d Deps) http.Handler {
 
 	eu := &userEnsurer{svc: d.UserSvc, accountSvc: d.AccountSvc, log: d.Log}
 
-	auth := authMiddleware(d.BotToken, eu, d.Log)
+	auth := authMiddleware(d.BotToken, d.DevMode, d.DevLang, eu, d.Log)
 	cors := corsMiddleware(d.AllowedOrigins)
 	logging := loggingMiddleware(d.Log)
 
@@ -141,7 +147,7 @@ func NewServer(d Deps) http.Handler {
 	}
 
 	// adminProtected wraps a handler with logging + CORS + auth + admin check.
-	admin := adminMiddleware(d.AdminUserID)
+	admin := adminMiddleware(d.AdminUserID, d.DevMode)
 	adminProtected := func(h http.HandlerFunc) http.Handler {
 		return chain(h, logging, cors, auth, admin)
 	}
@@ -160,7 +166,7 @@ func NewServer(d Deps) http.Handler {
 	mux.Handle("/api/v1/transactions", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
 	mux.Handle("/api/v1/transactions/", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
 	mux.Handle("/api/v1/stats", protected(statsHandler(d.StatsSvc, d.Log)))
-	mux.Handle("/api/v1/settings", protected(settingsHandler(d.UserSvc, d.AdminUserID, d.Log)))
+	mux.Handle("/api/v1/settings", protected(settingsHandler(d.UserSvc, d.AdminUserID, d.DevMode, d.Log)))
 
 	// Categories CRUD.
 	mux.Handle("/api/v1/categories", protected(categoriesHandler(d.CategorySvc, d.Log)))
@@ -190,11 +196,13 @@ func NewServer(d Deps) http.Handler {
 	mux.Handle("/api/v1/export", protected(exportHandler(d.ExportSvc, d.Log)))
 
 	// User data reset.
-	mux.Handle("/api/v1/user/data", protected(userDataHandler(d.UserSvc, d.AccountSvc, d.Log)))
+	mux.Handle("/api/v1/user/data", protected(userDataHandler(d.UserSvc, d.Log)))
 
 	// Admin endpoints.
 	mux.Handle("/api/v1/admin/users", adminProtected(adminUsersHandler(d.AdminSvc, d.Log)))
 	mux.Handle("/api/v1/admin/stats", adminProtected(adminStatsHandler(d.AdminSvc, d.Log)))
+	mux.Handle("/api/v1/admin/users/data", adminProtected(adminResetAllHandler(d.AdminSvc, d.UserSvc, d.AccountSvc, d.Log)))
+	mux.Handle("/api/v1/admin/users/", adminProtected(adminResetUserHandler(d.AdminSvc, d.UserSvc, d.AccountSvc, d.Log)))
 
 	return mux
 }

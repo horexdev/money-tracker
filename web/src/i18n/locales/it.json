@@ -209,7 +209,9 @@
     "savings": "Obiettivi di risparmio",
     "export": "Esporta",
     "settings": "Impostazioni",
-    "admin_panel": "Pannello Admin"
+    "admin_panel": "Pannello Admin",
+    "accounts": "Conti",
+    "transfers": "Trasferimenti"
   },
   "admin": {
     "title": "Pannello Admin",
@@ -223,10 +225,17 @@
     "retention_day30": "Giorno 30",
     "user_list": "Utenti",
     "no_users": "Nessun utente trovato",
-    "page_of": "{{page}} di {{total}}"
+    "page_of": "{{page}} di {{total}}",
+    "reset_user": "Ripristina",
+    "reset_all": "Ripristina tutti",
+    "confirm_reset_user": "Ripristinare tutti i dati di questo utente? Questa azione non può essere annullata.",
+    "confirm_reset_all_short": "Conferma ripristino"
   },
   "accounts": "Conti",
   "accountsAll": "Tutti i conti",
+  "transfers": "Trasferimenti",
+  "transfer_action": "Trasferisci",
+  "transfer_need_two_accounts": "Aggiungi un altro conto per effettuare un trasferimento",
   "errors": {
     "something_went_wrong": "Qualcosa è andato storto. Riprova.",
     "category_in_use": "La categoria ha transazioni e non può essere eliminata.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Massimo 3 valute da visualizzare.",
     "invalid_currency": "Codice valuta non valido.",
     "invalid_amount": "Importo non valido inserito."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Tipo di conto",
+  "defaultAccount": "Predefinito",
+  "exchangeRate": "Tasso di cambio",
+  "from": "Da",
+  "includeInTotal": "Includi nel totale",
+  "newAccount": "Nuovo conto",
+  "newTransfer": "Nuovo trasferimento",
+  "to": "A",
+  "accountTypes": {
+    "checking": "Corrente",
+    "savings": "Risparmio",
+    "cash": "Contanti",
+    "credit": "Credito",
+    "crypto": "Cripto"
+  },
+  "setDefault": "Imposta come predefinito"
 }

@@ -174,3 +174,29 @@ func (r *AccountRepository) GetBalance(ctx context.Context, accountID, userID in
 	}
 	return cents, nil
 }
+
+// GetBalanceInBase returns the net balance converted to the user's base currency
+// using per-transaction exchange_rate_snapshot values.
+func (r *AccountRepository) GetBalanceInBase(ctx context.Context, accountID, userID int64) (int64, error) {
+	cents, err := r.q.GetAccountBalanceInBase(ctx, sqlcgen.GetAccountBalanceInBaseParams{
+		AccountID: pgInt8(accountID),
+		UserID:    userID,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("get account balance in base: %w", err)
+	}
+	return cents, nil
+}
+
+// GetBaseCurrency returns the base_currency_at_creation of the most recent transaction
+// on this account, which represents the base currency used for balance calculations.
+func (r *AccountRepository) GetBaseCurrency(ctx context.Context, accountID, userID int64) (string, error) {
+	cur, err := r.q.GetAccountBaseCurrency(ctx, sqlcgen.GetAccountBaseCurrencyParams{
+		AccountID: pgInt8(accountID),
+		UserID:    userID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("get account base currency: %w", err)
+	}
+	return cur, nil
+}

@@ -209,7 +209,9 @@
     "savings": "Birikim Hedefleri",
     "export": "Dışa Aktar",
     "settings": "Ayarlar",
-    "admin_panel": "Yönetim Paneli"
+    "admin_panel": "Yönetim Paneli",
+    "accounts": "Hesaplar",
+    "transfers": "Transferler"
   },
   "admin": {
     "title": "Yönetim Paneli",
@@ -223,10 +225,17 @@
     "retention_day30": "Gün 30",
     "user_list": "Kullanıcılar",
     "no_users": "Kullanıcı bulunamadı",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "reset_user": "Sıfırla",
+    "reset_all": "Tümünü sıfırla",
+    "confirm_reset_user": "Bu kullanıcının tüm verilerini sıfırlamak istiyor musunuz? Bu işlem geri alınamaz.",
+    "confirm_reset_all_short": "Sıfırlamayı onayla"
   },
   "accounts": "Hesaplar",
   "accountsAll": "Tüm hesaplar",
+  "transfers": "Transferler",
+  "transfer_action": "Transfer Et",
+  "transfer_need_two_accounts": "Transfer yapmak için başka bir hesap ekleyin",
   "errors": {
     "something_went_wrong": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
     "category_in_use": "Kategoride işlem var ve silinemez.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "En fazla 3 görüntüleme para birimi izin verilir.",
     "invalid_currency": "Geçersiz para birimi kodu.",
     "invalid_amount": "Geçersiz tutar girildi."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Hesap türü",
+  "defaultAccount": "Varsayılan",
+  "exchangeRate": "Döviz kuru",
+  "from": "Kimden",
+  "includeInTotal": "Toplamda dahil et",
+  "newAccount": "Yeni hesap",
+  "newTransfer": "Yeni transfer",
+  "to": "Kime",
+  "accountTypes": {
+    "checking": "Vadesiz",
+    "savings": "Birikim",
+    "cash": "Nakit",
+    "credit": "Kredi",
+    "crypto": "Kripto"
+  },
+  "setDefault": "Varsayılan olarak ayarla"
 }

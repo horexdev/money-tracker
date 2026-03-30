@@ -21,6 +21,13 @@ type Config struct {
 	// AdminUserID is the Telegram user ID that has access to admin endpoints.
 	// Set to 0 to disable admin access entirely.
 	AdminUserID int64 `env:"ADMIN_USER_ID" envDefault:"0"`
+	// DevMode enables the Telegram auth bypass for local development.
+	// When true, X-Telegram-Init-Data: dev:<user_id> is accepted without HMAC validation.
+	// WARNING: must never be enabled in production environments.
+	DevMode bool `env:"DEV_MODE" envDefault:"false"`
+	// DevLang sets the Telegram language_code for the synthetic dev user.
+	// Used to test first-account localization. Only applies when DEV_MODE=true.
+	DevLang string `env:"DEV_LANG" envDefault:"en"`
 }
 
 // Load parses environment variables into Config.

@@ -94,6 +94,15 @@ func (s *AdminService) GetStats(ctx context.Context) (*AdminStats, error) {
 	}, nil
 }
 
+// ListAllUserIDs returns the IDs of every registered user. Used for bulk operations.
+func (s *AdminService) ListAllUserIDs(ctx context.Context) ([]int64, error) {
+	ids, err := s.repo.ListAllUserIDs(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list user IDs: %w", err)
+	}
+	return ids, nil
+}
+
 // computeRetention calculates the retention rate for a cohort that signed up
 // exactly `daysAgo` days ago. Retention = users who have any transaction after signup.
 func (s *AdminService) computeRetention(ctx context.Context, now time.Time, daysAgo int) float64 {

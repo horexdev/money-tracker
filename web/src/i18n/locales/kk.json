@@ -209,7 +209,9 @@
     "savings": "Жинақ мақсаттары",
     "export": "Экспорт",
     "settings": "Баптаулар",
-    "admin_panel": "Админ панель"
+    "admin_panel": "Админ панель",
+    "accounts": "Шоттар",
+    "transfers": "Аударымдар"
   },
   "admin": {
     "title": "Админ панель",
@@ -223,10 +225,17 @@
     "retention_day30": "30 күн",
     "user_list": "Пайдаланушылар",
     "no_users": "Пайдаланушылар табылмады",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "reset_user": "Қалпына келтіру",
+    "reset_all": "Барлығын қалпына келтіру",
+    "confirm_reset_user": "Бұл пайдаланушының барлық деректерін жою керек пе? Бұл іс-әрекетті болдырмау мүмкін емес.",
+    "confirm_reset_all_short": "Растау"
   },
   "accounts": "Шоттар",
   "accountsAll": "Барлық шоттар",
+  "transfers": "Аударымдар",
+  "transfer_action": "Аудару",
+  "transfer_need_two_accounts": "Аударым жасау үшін басқа шот қосыңыз",
   "errors": {
     "something_went_wrong": "Бірдеңе дұрыс болмады. Қайталап көріңіз.",
     "category_in_use": "Категория транзакцияларда қолданылады және жоюға болмайды.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Максимум 3 валюта көрсетілуі мүмкін.",
     "invalid_currency": "Жарамсыз валюта коды.",
     "invalid_amount": "Жарамсыз сома енгізілді."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Шот түрі",
+  "defaultAccount": "Негізгі",
+  "exchangeRate": "Айырбас бағамы",
+  "from": "Қайдан",
+  "includeInTotal": "Балансқа қосу",
+  "newAccount": "Жаңа шот",
+  "newTransfer": "Жаңа аударым",
+  "to": "Қайда",
+  "accountTypes": {
+    "checking": "Ағымдағы",
+    "savings": "Жинақтау",
+    "cash": "Қолма-қол",
+    "credit": "Кредиттік",
+    "crypto": "Крипто"
+  },
+  "setDefault": "Негізгі ету"
 }

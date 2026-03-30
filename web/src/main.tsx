@@ -23,8 +23,22 @@ if (!isTelegram && import.meta.env.DEV) {
       colorScheme: 'light',
     },
   }
-  const { setupMockFetch } = await import('./mocks/setup')
-  setupMockFetch()
+
+  // Auto-detect real backend: probe localhost:8080 via Vite proxy.
+  // Any HTTP response (even 401) means the backend is up → skip mocks.
+  // Network error means backend is down → fall back to mocks.
+  let backendAvailable = false
+  try {
+    const probe = await fetch('/api/v1/settings', { signal: AbortSignal.timeout(1000) })
+    backendAvailable = probe.status !== 0
+  } catch {
+    backendAvailable = false
+  }
+
+  if (!backendAvailable) {
+    const { setupMockFetch } = await import('./mocks/setup')
+    setupMockFetch()
+  }
 }
 
 const queryClient = new QueryClient({

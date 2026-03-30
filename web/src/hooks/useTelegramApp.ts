@@ -117,12 +117,23 @@ export function useTgBackButton(onBack: () => void, enabled = true) {
   }, [enabled, onBack])
 }
 
-/** Get Telegram initData raw string for API auth. */
+/** Get Telegram initData raw string for API auth.
+ *
+ * Outside Telegram in dev mode, returns a "dev:<user_id>" token accepted by
+ * the backend when DEV_MODE=true, bypassing HMAC validation.
+ */
 export function getInitDataRaw(): string {
-  if (!sdkLoaded) return ''
-  try {
-    return sdkModules!.retrieveRawInitData() ?? ''
-  } catch {
-    return ''
+  if (sdkLoaded) {
+    try {
+      const raw = sdkModules!.retrieveRawInitData() ?? ''
+      if (raw) return raw
+    } catch {
+      // fall through to dev bypass below
+    }
   }
+  if (import.meta.env.DEV) {
+    const devUserID = import.meta.env.VITE_DEV_USER_ID ?? '6554524765'
+    return `dev:${devUserID}`
+  }
+  return ''
 }

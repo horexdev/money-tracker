@@ -209,7 +209,9 @@
     "savings": "Sparziele",
     "export": "Exportieren",
     "settings": "Einstellungen",
-    "admin_panel": "Admin-Panel"
+    "admin_panel": "Admin-Panel",
+    "accounts": "Konten",
+    "transfers": "Überweisungen"
   },
   "admin": {
     "title": "Admin-Panel",
@@ -223,10 +225,17 @@
     "retention_day30": "Tag 30",
     "user_list": "Benutzer",
     "no_users": "Keine Benutzer gefunden",
-    "page_of": "{{page}} von {{total}}"
+    "page_of": "{{page}} von {{total}}",
+    "reset_user": "Zurücksetzen",
+    "reset_all": "Alle zurücksetzen",
+    "confirm_reset_user": "Alle Daten dieses Benutzers zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirm_reset_all_short": "Zurücksetzen bestätigen"
   },
   "accounts": "Konten",
   "accountsAll": "Alle Konten",
+  "transfers": "Überweisungen",
+  "transfer_action": "Überweisen",
+  "transfer_need_two_accounts": "Füge ein weiteres Konto hinzu, um eine Überweisung zu machen",
   "errors": {
     "something_went_wrong": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "category_in_use": "Die Kategorie wird in Transaktionen verwendet und kann nicht gelöscht werden.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Maximal 3 Anzeigewährungen erlaubt.",
     "invalid_currency": "Ungültiger Währungscode.",
     "invalid_amount": "Ungültiger Betrag eingegeben."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Kontotyp",
+  "defaultAccount": "Standard",
+  "exchangeRate": "Wechselkurs",
+  "from": "Von",
+  "includeInTotal": "Im Gesamtbetrag einbeziehen",
+  "newAccount": "Neues Konto",
+  "newTransfer": "Neue Überweisung",
+  "to": "An",
+  "accountTypes": {
+    "checking": "Girokonto",
+    "savings": "Sparkonto",
+    "cash": "Bargeld",
+    "credit": "Kredit",
+    "crypto": "Krypto"
+  },
+  "setDefault": "Als Standard festlegen"
 }

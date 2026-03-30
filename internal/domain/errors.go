@@ -13,7 +13,7 @@ var (
 	ErrInvalidPeriod            = errors.New("invalid period")
 	ErrInvalidCurrency          = errors.New("invalid currency code")
 	ErrInvalidFrequency         = errors.New("invalid frequency")
-	ErrInvalidLanguage          = errors.New("invalid language: must be en or ru")
+	ErrInvalidLanguage          = errors.New("invalid language: unsupported language code")
 	ErrTooManyDisplayCurrencies = errors.New("maximum 3 display currencies allowed")
 	ErrExchangeRateUnavailable  = errors.New("exchange rate unavailable")
 	ErrCategoryInUse            = errors.New("category is referenced by transactions")

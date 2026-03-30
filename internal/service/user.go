@@ -21,9 +21,6 @@ func NewUserService(repo UserStorer, log *slog.Logger) *UserService {
 
 // Upsert creates or updates a user record from Telegram user data.
 func (s *UserService) Upsert(ctx context.Context, u *domain.User) (*domain.User, error) {
-	if u.CurrencyCode == "" {
-		u.CurrencyCode = "USD"
-	}
 	result, err := s.repo.Upsert(ctx, u)
 	if err != nil {
 		return nil, fmt.Errorf("upsert user %d: %w", u.ID, err)

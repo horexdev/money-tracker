@@ -232,11 +232,17 @@
     "retention_day30": "День 30",
     "user_list": "Пользователи",
     "no_users": "Пользователи не найдены",
-    "page_of": "{{page}} из {{total}}"
+    "page_of": "{{page}} из {{total}}",
+    "reset_user": "Сбросить",
+    "reset_all": "Сбросить всех",
+    "confirm_reset_user": "Сбросить все данные этого пользователя? Это нельзя отменить.",
+    "confirm_reset_all_short": "Подтвердить сброс"
   },
   "accounts": "Счета",
   "accountsAll": "Все счета",
   "transfers": "Переводы",
+  "transfer_action": "Перевести",
+  "transfer_need_two_accounts": "Добавьте ещё один счёт для перевода",
   "newAccount": "Новый счёт",
   "newTransfer": "Новый перевод",
   "accountType": "Тип счёта",
@@ -265,5 +271,10 @@
     "too_many_currencies": "Максимум 3 отображаемые валюты.",
     "invalid_currency": "Неверный код валюты.",
     "invalid_amount": "Введена некорректная сумма."
+  },
+  "accountForm": {
+    "currency_change_title": "Сменить валюту счёта?",
+    "currency_change_desc": "Существующие транзакции останутся в {{oldCurrency}}. Баланс будет пересчитан в {{newCurrency}} с учётом исторических курсов обмена.",
+    "currency_change_confirm": "Сменить на {{newCurrency}}"
   }
 }

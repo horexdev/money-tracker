@@ -209,7 +209,9 @@
     "savings": "Objectifs d'épargne",
     "export": "Exporter",
     "settings": "Paramètres",
-    "admin_panel": "Panneau Admin"
+    "admin_panel": "Panneau Admin",
+    "accounts": "Comptes",
+    "transfers": "Virements"
   },
   "admin": {
     "title": "Panneau Admin",
@@ -223,10 +225,17 @@
     "retention_day30": "Jour 30",
     "user_list": "Utilisateurs",
     "no_users": "Aucun utilisateur trouvé",
-    "page_of": "{{page}} sur {{total}}"
+    "page_of": "{{page}} sur {{total}}",
+    "reset_user": "Réinitialiser",
+    "reset_all": "Tout réinitialiser",
+    "confirm_reset_user": "Réinitialiser toutes les données de cet utilisateur ? Cette action est irréversible.",
+    "confirm_reset_all_short": "Confirmer la réinitialisation"
   },
   "accounts": "Comptes",
   "accountsAll": "Tous les comptes",
+  "transfers": "Virements",
+  "transfer_action": "Virer",
+  "transfer_need_two_accounts": "Ajoutez un autre compte pour effectuer un virement",
   "errors": {
     "something_went_wrong": "Quelque chose a mal tourné. Veuillez réessayer.",
     "category_in_use": "La catégorie contient des transactions et ne peut pas être supprimée.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Maximum 3 devises d'affichage autorisées.",
     "invalid_currency": "Code de devise invalide.",
     "invalid_amount": "Montant invalide saisi."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Type de compte",
+  "defaultAccount": "Par défaut",
+  "exchangeRate": "Taux de change",
+  "from": "De",
+  "includeInTotal": "Inclure dans le total",
+  "newAccount": "Nouveau compte",
+  "newTransfer": "Nouveau virement",
+  "to": "Vers",
+  "accountTypes": {
+    "checking": "Courant",
+    "savings": "Épargne",
+    "cash": "Espèces",
+    "credit": "Crédit",
+    "crypto": "Crypto"
+  },
+  "setDefault": "Définir par défaut"
 }

@@ -83,6 +83,30 @@ func (q *Queries) CountRetainedUsers(ctx context.Context, arg CountRetainedUsers
 	return column_1, err
 }
 
+const listAllUserIDs = `-- name: ListAllUserIDs :many
+SELECT id FROM users
+`
+
+func (q *Queries) ListAllUserIDs(ctx context.Context) ([]int64, error) {
+	rows, err := q.db.Query(ctx, listAllUserIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAllUsers = `-- name: ListAllUsers :many
 SELECT id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2
 `

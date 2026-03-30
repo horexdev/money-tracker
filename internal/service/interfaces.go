@@ -92,6 +92,8 @@ type AccountStorer interface {
 	Delete(ctx context.Context, id, userID int64) error
 	CountTransactions(ctx context.Context, accountID, userID int64) (int64, error)
 	GetBalance(ctx context.Context, accountID, userID int64) (int64, error)
+	GetBalanceInBase(ctx context.Context, accountID, userID int64) (int64, error)
+	GetBaseCurrency(ctx context.Context, accountID, userID int64) (string, error)
 }
 
 // AdminStorer is the repository interface for admin analytics queries.
@@ -101,6 +103,7 @@ type AdminStorer interface {
 	CountNewUsers(ctx context.Context, from, to time.Time) (int64, error)
 	CountActiveUsers(ctx context.Context, from, to time.Time) (int64, error)
 	CountRetainedUsers(ctx context.Context, signupFrom, signupTo, activeFrom, activeTo time.Time) (int64, error)
+	ListAllUserIDs(ctx context.Context) ([]int64, error)
 }
 
 // TransferStorer is the repository interface for transfer operations.

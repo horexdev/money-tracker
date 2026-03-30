@@ -41,8 +41,16 @@ type Querier interface {
 	DeleteSavingsGoal(ctx context.Context, arg DeleteSavingsGoalParams) error
 	DeleteTransaction(ctx context.Context, arg DeleteTransactionParams) error
 	DeleteTransfer(ctx context.Context, arg DeleteTransferParams) error
+	DeleteUser(ctx context.Context, id int64) error
 	DepositToGoal(ctx context.Context, arg DepositToGoalParams) (SavingsGoal, error)
 	GetAccountBalance(ctx context.Context, arg GetAccountBalanceParams) (int64, error)
+	// Returns net balance converted to the user's base currency using per-transaction
+	// exchange_rate_snapshot (rate: transaction.currency_code → transaction.base_currency_at_creation).
+	// Result is in base currency cents; divide by the rate base→target to get target currency cents.
+	GetAccountBalanceInBase(ctx context.Context, arg GetAccountBalanceInBaseParams) (int64, error)
+	// Returns the base_currency_at_creation of the most recent transaction on this account.
+	// Used to determine which currency the balance_in_base_cents is expressed in.
+	GetAccountBaseCurrency(ctx context.Context, arg GetAccountBaseCurrencyParams) (string, error)
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetBalance(ctx context.Context, userID int64) (GetBalanceRow, error)
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]GetBalanceByCurrencyRow, error)
@@ -63,6 +71,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	InsertGoalTransaction(ctx context.Context, arg InsertGoalTransactionParams) error
 	ListAccountsByUser(ctx context.Context, userID int64) ([]Account, error)
+	ListAllUserIDs(ctx context.Context) ([]int64, error)
 	ListAllUsers(ctx context.Context, arg ListAllUsersParams) ([]User, error)
 	ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error)
 	ListDistinctUsersWithBudgets(ctx context.Context) ([]int64, error)

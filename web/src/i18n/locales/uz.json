@@ -209,7 +209,9 @@
     "savings": "Jamg'arma maqsadlari",
     "export": "Eksport",
     "settings": "Sozlamalar",
-    "admin_panel": "Admin panel"
+    "admin_panel": "Admin panel",
+    "accounts": "Hisoblar",
+    "transfers": "O'tkazmalar"
   },
   "admin": {
     "title": "Admin panel",
@@ -223,10 +225,17 @@
     "retention_day30": "30-kun",
     "user_list": "Foydalanuvchilar",
     "no_users": "Foydalanuvchilar topilmadi",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "reset_user": "Qayta o'rnatish",
+    "reset_all": "Hammasini qayta o'rnatish",
+    "confirm_reset_user": "Bu foydalanuvchining barcha ma'lumotlarini o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi.",
+    "confirm_reset_all_short": "Tasdiqlash"
   },
   "accounts": "Hisoblar",
   "accountsAll": "Barcha hisoblar",
+  "transfers": "O'tkazmalar",
+  "transfer_action": "O'tkazish",
+  "transfer_need_two_accounts": "O'tkazma uchun boshqa hisob qo'shing",
   "errors": {
     "something_went_wrong": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring.",
     "category_in_use": "Kategoriya tranzaksiyalarda ishlatilmoqda va o'chirib bo'lmaydi.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Maksimal 3 ta valyuta ko'rsatilishi mumkin.",
     "invalid_currency": "Noto'g'ri valyuta kodi.",
     "invalid_amount": "Noto'g'ri summa kiritildi."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Hisob turi",
+  "defaultAccount": "Asosiy",
+  "exchangeRate": "Valyuta kursi",
+  "from": "Qayerdan",
+  "includeInTotal": "Balansga qo'shish",
+  "newAccount": "Yangi hisob",
+  "newTransfer": "Yangi o'tkazma",
+  "to": "Qayerga",
+  "accountTypes": {
+    "checking": "Joriy",
+    "savings": "Jamg'arma",
+    "cash": "Naqd",
+    "credit": "Kredit",
+    "crypto": "Kripto"
+  },
+  "setDefault": "Asosiy qilish"
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -14,7 +14,6 @@ import { PageTransition } from '../components/PageTransition'
 import { EmptyState, RangeDateModal } from '../components/ui'
 import { AccountDropdown } from '../components/ui/AccountDropdown'
 import { useCategoryName } from '../hooks/useCategoryName'
-import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import type { TransactionType, CategoryStat } from '../types'
 
 const COLORS = [
@@ -32,14 +31,22 @@ interface CustomRange {
 /* ─── Animated Number Counter ─── */
 function AnimatedNumber({ value, formatter }: { value: number; formatter?: (v: number) => string }) {
   const spring = useSpring(0, { stiffness: 80, damping: 20 })
+  const formatterRef = useRef(formatter)
+  formatterRef.current = formatter
+
   const [display, setDisplay] = useState(() =>
     formatter ? formatter(value) : value.toString()
   )
 
-  useEffect(() => { spring.set(value) }, [value, spring])
+  useEffect(() => {
+    spring.set(value)
+    // Re-render display immediately when formatter changes (e.g. currency switch)
+    setDisplay(formatterRef.current ? formatterRef.current(Math.round(spring.get())) : Math.round(spring.get()).toString())
+  }, [value, formatter, spring]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useMotionValueEvent(spring, 'change', (v) => {
-    setDisplay(formatter ? formatter(Math.round(v)) : Math.round(v).toString())
+    const fmt = formatterRef.current
+    setDisplay(fmt ? fmt(Math.round(v)) : Math.round(v).toString())
   })
 
   return <motion.span>{display}</motion.span>
@@ -84,6 +91,7 @@ function DonutChart({
         strokeDashoffset={offset}
         initial={{ opacity: 0, strokeDasharray: `0 ${circumference}` }}
         animate={{ opacity: 1, strokeDasharray: `${segLen - 2} ${circumference - segLen + 2}` }}
+        exit={{ opacity: 0, strokeDasharray: `0 ${circumference}` }}
         transition={{ duration: 0.6, delay: i * 0.08, ease: 'easeOut' }}
       />
     )
@@ -106,7 +114,7 @@ function DonutChart({
           stroke="var(--color-border)"
           strokeWidth={strokeWidth}
         />
-        {segments}
+        <AnimatePresence>{segments}</AnimatePresence>
       </svg>
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center px-1">
@@ -188,7 +196,6 @@ function CategoryRow({
 export function StatsPage() {
   const { t } = useTranslation()
   const tCategory = useCategoryName()
-  const { code: baseCurrency } = useBaseCurrency()
   const location = useLocation()
   const initialType = (location.state as { type?: TransactionType } | null)?.type ?? 'expense'
   const [type, setType] = useState<TransactionType>(initialType)
@@ -201,6 +208,18 @@ export function StatsPage() {
     queryKey: ['accounts'],
     queryFn: accountsApi.list,
   })
+
+  useEffect(() => {
+    if (selectedAccountId === null && accounts.length > 0) {
+      const def = accounts.find(a => a.is_default) ?? accounts[0]
+      setSelectedAccountId(def.id)
+    }
+  }, [accounts, selectedAccountId])
+
+  const effectiveAccount = accounts.find(a => a.id === selectedAccountId)
+    ?? accounts.find(a => a.is_default)
+    ?? accounts[0]
+  const displayCurrency = effectiveAccount?.currency_code ?? 'USD'
 
   const isCustom = customRange !== null
 
@@ -254,7 +273,7 @@ export function StatsPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h))]">
+      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h)-var(--safe-top,0px))]">
 
         {/* Hero block with type toggle */}
         <div className="mx-4 mt-4 hero-gradient px-5 pt-5 pb-4 relative shrink-0"
@@ -263,7 +282,7 @@ export function StatsPage() {
           <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-indigo-400/15 blur-2xl pointer-events-none" />
 
           {/* Account selector — top-right, outside z-10 div so it sits over decorative blobs */}
-          {accounts.length > 1 && (
+          {accounts.length > 0 && (
             <div className="absolute top-5 right-5 z-20">
               <AccountDropdown
                 accounts={accounts}
@@ -298,7 +317,7 @@ export function StatsPage() {
             {/* Animated total + count */}
             <div className="mt-3 flex items-end gap-3">
               <p className="text-white text-3xl font-extrabold tabular-nums leading-none tracking-tight">
-                <AnimatedNumber value={total} formatter={(v) => formatCents(v, baseCurrency)} />
+                <AnimatedNumber value={total} formatter={(v) => formatCents(v, displayCurrency)} />
               </p>
               <p className="text-white/40 text-xs font-medium pb-0.5">
                 <AnimatedNumber value={txCount} /> {t('stats.transactions_count_other', { count: txCount }).replace(/^\d+\s*/, '')}
@@ -310,7 +329,7 @@ export function StatsPage() {
         {/* Period pills */}
         <div className="shrink-0 px-4 pt-3 pb-2">
           {/* -my-1.5 / py-1.5 give the shadow vertical room without adding visible whitespace */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 -my-1.5 py-1.5">
+          <div className="flex flex-wrap gap-2">
             {periodOptions.map((opt) => {
               const isActive = opt.value === 'custom' ? isCustom : (!isCustom && opt.value === period)
               return (
@@ -375,7 +394,7 @@ export function StatsPage() {
 
                         {/* Center — donut */}
                         <div className="shrink-0 mx-2">
-                          <DonutChart data={withPercent} total={total} animationKey={animationKey} currency={baseCurrency} />
+                          <DonutChart data={withPercent} total={total} animationKey={animationKey} currency={displayCurrency} />
                         </div>
 
                         {/* Right — stats */}
@@ -391,7 +410,7 @@ export function StatsPage() {
                           <div>
                             <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.avg_per_tx')}</p>
                             <p className="text-sm font-bold text-text tabular-nums">
-                              <AnimatedNumber value={avgPerTx} formatter={(v) => formatCents(v, baseCurrency)} />
+                              <AnimatedNumber value={avgPerTx} formatter={(v) => formatCents(v, displayCurrency)} />
                             </p>
                           </div>
                         </div>
@@ -407,7 +426,7 @@ export function StatsPage() {
                             entry={entry}
                             index={i}
                             color={entry.category_color || COLORS[i % COLORS.length]}
-                            currency={baseCurrency}
+                            currency={displayCurrency}
                           />
                         ))}
                       </div>

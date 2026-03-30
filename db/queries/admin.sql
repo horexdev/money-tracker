@@ -18,3 +18,6 @@ WHERE u.created_at >= @signup_from AND u.created_at < @signup_to
     SELECT 1 FROM transactions t
     WHERE t.user_id = u.id AND t.created_at >= @active_from AND t.created_at < @active_to
   );
+
+-- name: ListAllUserIDs :many
+SELECT id FROM users;

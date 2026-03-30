@@ -8,11 +8,35 @@ type Language string
 const (
 	LangEN Language = "en"
 	LangRU Language = "ru"
+	LangUK Language = "uk"
+	LangBE Language = "be"
+	LangKK Language = "kk"
+	LangUZ Language = "uz"
+	LangES Language = "es"
+	LangDE Language = "de"
+	LangIT Language = "it"
+	LangFR Language = "fr"
+	LangPT Language = "pt"
+	LangNL Language = "nl"
+	LangAR Language = "ar"
+	LangTR Language = "tr"
+	LangKO Language = "ko"
+	LangMS Language = "ms"
+	LangID Language = "id"
 )
+
+// supportedLanguages is the full set of accepted language codes.
+var supportedLanguages = map[Language]struct{}{
+	LangEN: {}, LangRU: {}, LangUK: {}, LangBE: {}, LangKK: {},
+	LangUZ: {}, LangES: {}, LangDE: {}, LangIT: {}, LangFR: {},
+	LangPT: {}, LangNL: {}, LangAR: {}, LangTR: {}, LangKO: {},
+	LangMS: {}, LangID: {},
+}
 
 // ValidLanguage checks if the given string is a supported language code.
 func ValidLanguage(code string) bool {
-	return code == string(LangEN) || code == string(LangRU)
+	_, ok := supportedLanguages[Language(code)]
+	return ok
 }
 
 // User represents a registered Telegram user.

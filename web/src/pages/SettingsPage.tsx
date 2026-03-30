@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +11,7 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { useTgBackButton } from '../hooks/useTelegramApp'
 import { useHaptic } from '../hooks/useHaptic'
+import { FIRST_LAUNCH_KEY } from '../hooks/useFirstLaunchSetup'
 
 const LANGUAGES = [
   { code: 'en', label: 'English', native: 'English', flag: '🇬🇧' },
@@ -45,7 +47,7 @@ function BottomSheet({
   title: string
   children: React.ReactNode
 }) {
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -93,7 +95,8 @@ function BottomSheet({
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }
 
@@ -123,6 +126,7 @@ export function SettingsPage() {
   const resetMutation = useMutation({
     mutationFn: () => settingsApi.resetData(),
     onSuccess: () => {
+      localStorage.removeItem(FIRST_LAUNCH_KEY)
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['balance'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
@@ -153,52 +157,54 @@ export function SettingsPage() {
   }
 
   return (
-    <PageTransition>
-      <div className="px-4 pt-3 pb-4 space-y-3">
+    <>
+      <PageTransition>
+        <div className="px-4 pt-3 pb-4 space-y-3">
 
-            {/* Language row */}
-            <button
-              onClick={() => setModal('language')}
-              className="w-full card-elevated p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left"
-            >
-              <div className="w-11 h-11 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
-                <Globe size={22} weight="fill" className="text-accent" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold text-muted uppercase tracking-widest">
-                  {t('settings.language')}
-                </p>
-                <p className="text-sm font-semibold text-text mt-0.5">
-                  {currentLangData ? `${currentLangData.flag} ${currentLangData.native}` : currentLang}
-                </p>
-              </div>
-              <CaretRight size={16} weight="bold" className="text-muted/40 shrink-0" />
-            </button>
-
-            {/* Danger zone */}
-            <div className="pt-2">
-              <p className="text-[11px] font-bold text-destructive/70 uppercase tracking-widest mb-2 px-1">
-                {t('settings.danger_zone')}
-              </p>
+              {/* Language row */}
               <button
-                onClick={() => setModal('reset-confirm')}
-                className="w-full card-elevated p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left border border-destructive/20"
+                onClick={() => setModal('language')}
+                className="w-full card-elevated p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left"
               >
-                <div className="w-11 h-11 rounded-2xl bg-destructive/10 flex items-center justify-center shrink-0">
-                  <Trash size={22} weight="fill" className="text-destructive" />
+                <div className="w-11 h-11 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
+                  <Globe size={22} weight="fill" className="text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-destructive/70 uppercase tracking-widest">
-                    {t('settings.reset_data')}
+                  <p className="text-[11px] font-bold text-muted uppercase tracking-widest">
+                    {t('settings.language')}
                   </p>
-                  <p className="text-xs text-muted mt-0.5 leading-relaxed">
-                    {t('settings.reset_data_desc')}
+                  <p className="text-sm font-semibold text-text mt-0.5">
+                    {currentLangData ? `${currentLangData.flag} ${currentLangData.native}` : currentLang}
                   </p>
                 </div>
+                <CaretRight size={16} weight="bold" className="text-muted/40 shrink-0" />
               </button>
-            </div>
 
-      </div>
+              {/* Danger zone */}
+              <div className="pt-2">
+                <p className="text-[11px] font-bold text-destructive/70 uppercase tracking-widest mb-2 px-1">
+                  {t('settings.danger_zone')}
+                </p>
+                <button
+                  onClick={() => setModal('reset-confirm')}
+                  className="w-full card-elevated p-4 flex items-center gap-4 active:scale-[0.98] transition-transform text-left border border-destructive/20"
+                >
+                  <div className="w-11 h-11 rounded-2xl bg-destructive/10 flex items-center justify-center shrink-0">
+                    <Trash size={22} weight="fill" className="text-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-destructive/70 uppercase tracking-widest">
+                      {t('settings.reset_data')}
+                    </p>
+                    <p className="text-xs text-muted mt-0.5 leading-relaxed">
+                      {t('settings.reset_data_desc')}
+                    </p>
+                  </div>
+                </button>
+              </div>
+
+        </div>
+      </PageTransition>
 
       {/* Language bottom sheet */}
       <BottomSheet
@@ -227,56 +233,58 @@ export function SettingsPage() {
       </BottomSheet>
 
       {/* Reset data confirmation dialog */}
-      <AnimatePresence>
-        {modal === 'reset-confirm' && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black/40 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeModal}
-            />
-            <motion.div
-              className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-card px-5 pt-6 pb-8"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-            >
-              <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
-                  <Trash size={28} weight="fill" className="text-destructive" />
+      {createPortal(
+        <AnimatePresence>
+          {modal === 'reset-confirm' && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-black/40 z-40"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeModal}
+              />
+              <motion.div
+                className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-card px-5 pt-6 pb-8"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+              >
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
+                    <Trash size={28} weight="fill" className="text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-text">
+                      {t('settings.reset_confirm_title')}
+                    </p>
+                    <p className="text-sm text-muted mt-2 leading-relaxed">
+                      {t('settings.reset_confirm_desc')}
+                    </p>
+                  </div>
+                  <div className="w-full flex flex-col gap-2 mt-2">
+                    <button
+                      onClick={() => resetMutation.mutate()}
+                      disabled={resetMutation.isPending}
+                      className="w-full py-3.5 rounded-2xl bg-destructive text-white font-bold text-sm disabled:opacity-50"
+                    >
+                      {resetMutation.isPending ? t('common.loading') : t('settings.reset_confirm_btn')}
+                    </button>
+                    <button
+                      onClick={closeModal}
+                      className="w-full py-3.5 rounded-2xl bg-surface text-muted font-semibold text-sm"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-base font-bold text-text">
-                    {t('settings.reset_confirm_title')}
-                  </p>
-                  <p className="text-sm text-muted mt-2 leading-relaxed">
-                    {t('settings.reset_confirm_desc')}
-                  </p>
-                </div>
-                <div className="w-full flex flex-col gap-2 mt-2">
-                  <button
-                    onClick={() => resetMutation.mutate()}
-                    disabled={resetMutation.isPending}
-                    className="w-full py-3.5 rounded-2xl bg-destructive text-white font-bold text-sm disabled:opacity-50"
-                  >
-                    {resetMutation.isPending ? t('common.loading') : t('settings.reset_confirm_btn')}
-                  </button>
-                  <button
-                    onClick={closeModal}
-                    className="w-full py-3.5 rounded-2xl bg-surface text-muted font-semibold text-sm"
-                  >
-                    {t('common.cancel')}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-    </PageTransition>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
+    </>
   )
 }

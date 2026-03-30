@@ -53,3 +53,29 @@ FROM transactions
 WHERE account_id = $1
   AND user_id    = $2
   AND type IN ('income', 'expense');
+
+-- name: GetAccountBalanceInBase :one
+-- Returns net balance converted to the user's base currency using per-transaction
+-- exchange_rate_snapshot (rate: transaction.currency_code → transaction.base_currency_at_creation).
+-- Result is in base currency cents; divide by the rate base→target to get target currency cents.
+SELECT COALESCE(
+    SUM(
+        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
+        * exchange_rate_snapshot
+    ), 0
+)::BIGINT AS balance_in_base_cents
+FROM transactions
+WHERE account_id = $1
+  AND user_id    = $2
+  AND type IN ('income', 'expense');
+
+-- name: GetAccountBaseCurrency :one
+-- Returns the base_currency_at_creation of the most recent transaction on this account.
+-- Used to determine which currency the balance_in_base_cents is expressed in.
+SELECT base_currency_at_creation
+FROM transactions
+WHERE account_id = $1
+  AND user_id    = $2
+  AND type IN ('income', 'expense')
+ORDER BY created_at DESC
+LIMIT 1;

@@ -119,6 +119,58 @@ func (q *Queries) GetAccountBalance(ctx context.Context, arg GetAccountBalancePa
 	return balance_cents, err
 }
 
+const getAccountBalanceInBase = `-- name: GetAccountBalanceInBase :one
+SELECT COALESCE(
+    SUM(
+        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
+        * exchange_rate_snapshot
+    ), 0
+)::BIGINT AS balance_in_base_cents
+FROM transactions
+WHERE account_id = $1
+  AND user_id    = $2
+  AND type IN ('income', 'expense')
+`
+
+type GetAccountBalanceInBaseParams struct {
+	AccountID pgtype.Int8 `json:"account_id"`
+	UserID    int64       `json:"user_id"`
+}
+
+// Returns net balance converted to the user's base currency using per-transaction
+// exchange_rate_snapshot (rate: transaction.currency_code → transaction.base_currency_at_creation).
+// Result is in base currency cents; divide by the rate base→target to get target currency cents.
+func (q *Queries) GetAccountBalanceInBase(ctx context.Context, arg GetAccountBalanceInBaseParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAccountBalanceInBase, arg.AccountID, arg.UserID)
+	var balance_in_base_cents int64
+	err := row.Scan(&balance_in_base_cents)
+	return balance_in_base_cents, err
+}
+
+const getAccountBaseCurrency = `-- name: GetAccountBaseCurrency :one
+SELECT base_currency_at_creation
+FROM transactions
+WHERE account_id = $1
+  AND user_id    = $2
+  AND type IN ('income', 'expense')
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+type GetAccountBaseCurrencyParams struct {
+	AccountID pgtype.Int8 `json:"account_id"`
+	UserID    int64       `json:"user_id"`
+}
+
+// Returns the base_currency_at_creation of the most recent transaction on this account.
+// Used to determine which currency the balance_in_base_cents is expressed in.
+func (q *Queries) GetAccountBaseCurrency(ctx context.Context, arg GetAccountBaseCurrencyParams) (string, error) {
+	row := q.db.QueryRow(ctx, getAccountBaseCurrency, arg.AccountID, arg.UserID)
+	var base_currency_at_creation string
+	err := row.Scan(&base_currency_at_creation)
+	return base_currency_at_creation, err
+}
+
 const getAccountByID = `-- name: GetAccountByID :one
 SELECT id, user_id, name, icon, color, type, currency_code, is_default, include_in_total, created_at, updated_at FROM accounts
 WHERE id = $1 AND user_id = $2

@@ -74,6 +74,15 @@ func (q *Queries) DeleteAllUserTransfers(ctx context.Context, userID int64) erro
 	return err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
+	return err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language FROM users WHERE id = $1
 `
@@ -186,8 +195,8 @@ func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguage
 }
 
 const upsertUser = `-- name: UpsertUser :one
-INSERT INTO users (id, username, first_name, last_name, currency_code)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users (id, username, first_name, last_name, currency_code, language)
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (id) DO UPDATE
     SET username   = EXCLUDED.username,
         first_name = EXCLUDED.first_name,
@@ -202,6 +211,7 @@ type UpsertUserParams struct {
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 	CurrencyCode string `json:"currency_code"`
+	Language     string `json:"language"`
 }
 
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
@@ -211,6 +221,7 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		arg.FirstName,
 		arg.LastName,
 		arg.CurrencyCode,
+		arg.Language,
 	)
 	var i User
 	err := row.Scan(

@@ -14,7 +14,7 @@ const LANG_DEFAULT_CURRENCY: Record<string, string> = {
   it: 'EUR', nl: 'EUR', ko: 'KRW', ms: 'MYR', id: 'IDR',
 }
 
-const FIRST_LAUNCH_KEY = 'money_tracker_first_launch_done'
+export const FIRST_LAUNCH_KEY = 'money_tracker_first_launch_done'
 
 /**
  * On first launch: detect language from Telegram / browser and persist
@@ -31,26 +31,26 @@ export function useFirstLaunchSetup(settings: UserSettings | undefined) {
   useEffect(() => {
     if (ran.current) return
     if (!settings) return
-    if (localStorage.getItem(FIRST_LAUNCH_KEY)) return
 
     ran.current = true
+
+    // Always sync the UI language to whatever the backend has persisted.
+    // This handles the case where DEV_LANG or Telegram language differs from browser language.
+    if (settings.language && i18n.language?.split('-')[0] !== settings.language) {
+      i18n.changeLanguage(settings.language)
+    }
+
+    if (localStorage.getItem(FIRST_LAUNCH_KEY)) return
     localStorage.setItem(FIRST_LAUNCH_KEY, '1')
 
-    const detectedLang = i18n.language?.split('-')[0] ?? 'en'
-    const defaultCurrency = LANG_DEFAULT_CURRENCY[detectedLang] ?? 'USD'
-
-    const needsLangUpdate = settings.language !== detectedLang
+    const effectiveLang = settings.language || i18n.language?.split('-')[0] || 'en'
+    const defaultCurrency = LANG_DEFAULT_CURRENCY[effectiveLang] ?? 'USD'
     const needsCurrencyUpdate = settings.base_currency !== defaultCurrency
 
-    if (!needsLangUpdate && !needsCurrencyUpdate) return
+    if (!needsCurrencyUpdate) return
 
-    const patch: Record<string, string> = {}
-    if (needsLangUpdate) patch.language = detectedLang
-    if (needsCurrencyUpdate) patch.base_currency = defaultCurrency
-
-    settingsApi.update(patch).then((updated) => {
+    settingsApi.update({ base_currency: defaultCurrency }).then((updated) => {
       qc.setQueryData(['settings'], updated)
-      if (needsLangUpdate) i18n.changeLanguage(updated.language)
     })
   }, [settings, i18n, qc])
 }

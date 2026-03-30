@@ -66,7 +66,7 @@ export function DashboardPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h))]">
+      <div className="flex flex-col min-h-[calc(100dvh-var(--tab-bar-h)-var(--safe-top,0px))]">
 
         {/* Fixed top section */}
         <div className="px-4 pt-4 flex flex-col gap-3 shrink-0">
@@ -186,9 +186,9 @@ export function DashboardPage() {
           )}
         </div>
 
-        {/* Recent transactions — fills remaining space, scrolls internally */}
-        <div className="flex-1 min-h-0 px-4 pt-3 pb-2 flex flex-col">
-          <div className="card-elevated flex-1 min-h-0 flex flex-col">
+        {/* Recent transactions */}
+        <div className="px-4 pt-3 pb-2 flex flex-col">
+          <div className="card-elevated flex flex-col">
             <div className="flex justify-between items-center px-5 pt-4 pb-2 shrink-0">
               <span className="text-sm font-bold text-text">
                 {t('dashboard.recent_transactions')}
@@ -201,7 +201,7 @@ export function DashboardPage() {
             {txQ.isPending ? (
               <div className="flex justify-center py-10"><Spinner size="sm" /></div>
             ) : txQ.data?.transactions.length ? (
-              <div className="overflow-y-auto no-scrollbar flex-1">
+              <div className="overflow-y-auto no-scrollbar">
                 <div className="divide-y divide-border">
                   {txQ.data.transactions.map(tx => (
                     <TransactionRow key={tx.id} tx={tx} onEdit={setEditingTx} />

@@ -209,7 +209,9 @@
     "savings": "Spaardoelen",
     "export": "Exporteren",
     "settings": "Instellingen",
-    "admin_panel": "Beheerpaneel"
+    "admin_panel": "Beheerpaneel",
+    "accounts": "Rekeningen",
+    "transfers": "Overboekingen"
   },
   "admin": {
     "title": "Beheerpaneel",
@@ -223,10 +225,17 @@
     "retention_day30": "Dag 30",
     "user_list": "Gebruikers",
     "no_users": "Geen gebruikers gevonden",
-    "page_of": "{{page}} van {{total}}"
+    "page_of": "{{page}} van {{total}}",
+    "reset_user": "Terugzetten",
+    "reset_all": "Alles terugzetten",
+    "confirm_reset_user": "Alle gegevens van deze gebruiker terugzetten? Dit kan niet ongedaan worden gemaakt.",
+    "confirm_reset_all_short": "Bevestig terugzetten"
   },
   "accounts": "Rekeningen",
   "accountsAll": "Alle rekeningen",
+  "transfers": "Overboekingen",
+  "transfer_action": "Overmaken",
+  "transfer_need_two_accounts": "Voeg een ander account toe om een overboeking te doen",
   "errors": {
     "something_went_wrong": "Er is iets misgegaan. Probeer het opnieuw.",
     "category_in_use": "De categorie heeft transacties en kan niet worden verwijderd.",
@@ -239,5 +248,26 @@
     "too_many_currencies": "Maximaal 3 weergavevaluta's toegestaan.",
     "invalid_currency": "Ongeldige valutacode.",
     "invalid_amount": "Ongeldig bedrag ingevoerd."
-  }
+  },
+  "accountForm": {
+    "currency_change_title": "Change account currency?",
+    "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
+    "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "accountType": "Rekeningtype",
+  "defaultAccount": "Standaard",
+  "exchangeRate": "Wisselkoers",
+  "from": "Van",
+  "includeInTotal": "Opnemen in totaal",
+  "newAccount": "Nieuwe rekening",
+  "newTransfer": "Nieuwe overboeking",
+  "to": "Naar",
+  "accountTypes": {
+    "checking": "Betaalrekening",
+    "savings": "Spaarrekening",
+    "cash": "Contant",
+    "credit": "Krediet",
+    "crypto": "Crypto"
+  },
+  "setDefault": "Als standaard instellen"
 }
