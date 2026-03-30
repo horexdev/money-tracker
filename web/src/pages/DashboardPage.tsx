@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
 import { formatDate, formatCents } from '../lib/money'
 import { TrendUp, TrendDown, ArrowRight, Plus, CaretDown, Receipt } from '@phosphor-icons/react'
 import { balanceApi } from '../api/balance'
@@ -14,6 +14,31 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { PageTransition } from '../components/PageTransition'
 import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState } from '../components/ui'
 import type { Transaction } from '../types'
+
+/** Animates a numeric cents value with a spring, formatted via formatCents */
+function AnimatedMoney({ cents, currency, className }: { cents: number; currency: string; className?: string }) {
+  const spring = useSpring(cents, { stiffness: 70, damping: 18 })
+  const formatterRef = useRef((v: number) => formatCents(Math.round(v), currency))
+  const [display, setDisplay] = useState(() => formatCents(cents, currency))
+
+  // Update formatter ref when currency changes
+  formatterRef.current = (v: number) => formatCents(Math.round(v), currency)
+
+  useEffect(() => {
+    spring.set(cents)
+  }, [cents, spring])
+
+  // When currency changes, snap immediately (avoid showing wrong currency symbol during animation)
+  useEffect(() => {
+    setDisplay(formatCents(Math.round(spring.get()), currency))
+  }, [currency]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useMotionValueEvent(spring, 'change', (v) => {
+    setDisplay(formatterRef.current(v))
+  })
+
+  return <motion.span className={className}>{display}</motion.span>
+}
 
 export function DashboardPage() {
   const { t, i18n } = useTranslation()
@@ -59,10 +84,11 @@ export function DashboardPage() {
     ?? balance?.by_currency?.[0]
 
   const selectedAccount = accounts.find(a => a.id === selectedAccountId)
-  const heroAmount = selectedAccount
-    ? formatCents(selectedAccount.balance_cents, selectedAccount.currency_code)
-    : formatCents(totalInBase, baseCurrency)
+  const heroCents = selectedAccount ? selectedAccount.balance_cents : totalInBase
   const heroCurrency = selectedAccount?.currency_code ?? baseCurrency
+
+  const incomeCents = baseEntry?.income_cents ?? 0
+  const expenseCents = baseEntry?.expense_cents ?? 0
 
   return (
     <PageTransition>
@@ -96,14 +122,16 @@ export function DashboardPage() {
                 {!selectedAccount && isMultiCurrency && (
                   <span className="text-white/50 text-2xl font-bold">≈</span>
                 )}
-                <p className={`text-white font-extrabold tabular-nums leading-none tracking-tight ${
-                  heroAmount.length > 14 ? 'text-[22px]' :
-                  heroAmount.length > 11 ? 'text-[28px]' :
-                  heroAmount.length > 8  ? 'text-[34px]' :
-                  'text-[42px]'
-                }`}>
-                  {heroAmount}
-                </p>
+                <AnimatedMoney
+                  cents={heroCents}
+                  currency={heroCurrency}
+                  className={`text-white font-extrabold tabular-nums leading-none tracking-tight ${
+                    formatCents(heroCents, heroCurrency).length > 14 ? 'text-[22px]' :
+                    formatCents(heroCents, heroCurrency).length > 11 ? 'text-[28px]' :
+                    formatCents(heroCents, heroCurrency).length > 8  ? 'text-[34px]' :
+                    'text-[42px]'
+                  }`}
+                />
               </div>
 
               {!selectedAccount && isMultiCurrency ? (
@@ -155,9 +183,10 @@ export function DashboardPage() {
           {/* Income / Expense bento cards */}
           {baseEntry && (
             <div className="grid grid-cols-2 gap-3">
-              <button
+              <motion.button
+                layout
                 onClick={() => navigate('/stats', { state: { type: 'income' } })}
-                className="card-elevated p-4 relative text-left active:scale-[0.97] transition-transform"
+                className="card-elevated p-4 relative text-left active:scale-[0.97] transition-transform overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-1 h-full rounded-l-[--radius-card] bg-income" />
                 <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full bg-income/[0.06] pointer-events-none" />
@@ -169,13 +198,14 @@ export function DashboardPage() {
                   <ArrowRight size={12} weight="bold" className="text-muted/40 ml-auto" />
                 </div>
                 <p className="text-income text-lg font-bold tabular-nums leading-tight">
-                  {formatCents(baseEntry.income_cents, heroCurrency)}
+                  <AnimatedMoney cents={incomeCents} currency={heroCurrency} />
                 </p>
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
+                layout
                 onClick={() => navigate('/stats', { state: { type: 'expense' } })}
-                className="card-elevated p-4 relative text-left active:scale-[0.97] transition-transform"
+                className="card-elevated p-4 relative text-left active:scale-[0.97] transition-transform overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-1 h-full rounded-l-[--radius-card] bg-expense" />
                 <div className="absolute -top-6 -right-6 w-16 h-16 rounded-full bg-expense/[0.06] pointer-events-none" />
@@ -187,14 +217,14 @@ export function DashboardPage() {
                   <ArrowRight size={12} weight="bold" className="text-muted/40 ml-auto" />
                 </div>
                 <p className="text-expense text-lg font-bold tabular-nums leading-tight">
-                  {formatCents(baseEntry.expense_cents, heroCurrency)}
+                  <AnimatedMoney cents={expenseCents} currency={heroCurrency} />
                 </p>
-              </button>
+              </motion.button>
             </div>
           )}
         </div>
 
-        {/* Recent transactions */}
+        {/* Recent transactions — fade/slide when account changes */}
         <div className="px-4 pt-3 pb-2 flex flex-col">
           <div className="card-elevated flex flex-col">
             <div className="flex justify-between items-center px-5 pt-4 pb-2 shrink-0">
@@ -206,23 +236,56 @@ export function DashboardPage() {
               </Link>
             </div>
 
-            {txQ.isPending ? (
-              <div className="flex justify-center py-10"><Spinner size="sm" /></div>
-            ) : txQ.data?.transactions.length ? (
-              <div className="overflow-y-auto no-scrollbar">
-                <div className="divide-y divide-border">
-                  {txQ.data.transactions.map(tx => (
-                    <TransactionRow key={tx.id} tx={tx} onEdit={setEditingTx} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <EmptyState
-                icon={Receipt}
-                title={t('transactions.no_transactions')}
-                description={t('transactions.start_tracking')}
-              />
-            )}
+            <AnimatePresence mode="wait">
+              {txQ.isPending ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex justify-center py-10"
+                >
+                  <Spinner size="sm" />
+                </motion.div>
+              ) : txQ.data?.transactions.length ? (
+                <motion.div
+                  key={`txlist-${selectedAccountId}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="overflow-y-auto no-scrollbar"
+                >
+                  <div className="divide-y divide-border">
+                    {txQ.data.transactions.map((tx, i) => (
+                      <motion.div
+                        key={tx.id}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: i * 0.04, ease: 'easeOut' }}
+                      >
+                        <TransactionRow tx={tx} onEdit={setEditingTx} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`empty-${selectedAccountId}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <EmptyState
+                    icon={Receipt}
+                    title={t('transactions.no_transactions')}
+                    description={t('transactions.start_tracking')}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
