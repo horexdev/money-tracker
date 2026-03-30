@@ -198,10 +198,12 @@ const upsertUser = `-- name: UpsertUser :one
 INSERT INTO users (id, username, first_name, last_name, currency_code, language)
 VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (id) DO UPDATE
-    SET username   = EXCLUDED.username,
-        first_name = EXCLUDED.first_name,
-        last_name  = EXCLUDED.last_name,
-        updated_at = NOW()
+    SET username      = EXCLUDED.username,
+        first_name    = EXCLUDED.first_name,
+        last_name     = EXCLUDED.last_name,
+        language      = CASE WHEN users.language = '' OR users.language IS NULL THEN EXCLUDED.language ELSE users.language END,
+        currency_code = CASE WHEN users.currency_code = '' OR users.currency_code IS NULL THEN EXCLUDED.currency_code ELSE users.currency_code END,
+        updated_at    = NOW()
 RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language
 `
 
