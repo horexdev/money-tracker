@@ -45,7 +45,7 @@ func AuthMiddlewareForTest(botToken string, devMode bool, fn EnsureUserFunc) fun
 
 // AdminMiddlewareForTest exposes adminMiddleware for testing.
 func AdminMiddlewareForTest(adminUserID int64) func(http.Handler) http.Handler {
-	return adminMiddleware(adminUserID)
+	return adminMiddleware(adminUserID, false)
 }
 
 // CorsMiddlewareForTest exposes corsMiddleware for testing.
