@@ -83,6 +83,9 @@ export function AddTransactionPage() {
     }
   }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const isTransfer = mode === 'transfer'
+  const isExpense = mode === 'expense'
+
   const fromAccount = accounts.find(a => a.id === fromAccountId)
   const toAccount = accounts.find(a => a.id === toAccountId)
   const needsExchangeRate = isTransfer && fromAccount && toAccount && fromAccount.currency_code !== toAccount.currency_code
@@ -100,9 +103,6 @@ export function AddTransactionPage() {
   const selectedAccount = accounts.find(a => a.id === selectedAccountId)
   const baseCurrency = selectedAccount?.currency_code ?? balanceData?.by_currency?.[0]?.currency_code ?? 'USD'
   const toAmountCents = exchangeRate != null ? Math.round(parseCents(amount) * exchangeRate) : null
-
-  const isTransfer = mode === 'transfer'
-  const isExpense = mode === 'expense'
 
   const filtered = (catData?.categories ?? []).filter(
     c => c.type === mode || c.type === 'both'

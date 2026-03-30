@@ -89,9 +89,9 @@ export const mockStats: StatsResponse = {
 
 export const mockBudgets: BudgetsResponse = {
   budgets: [
-    { id: 1, category_id: 1, category_name: 'Food', category_emoji: '🍔', category_color: '#6366f1', limit_cents: 60000, spent_cents: 45000, period: 'monthly', currency_code: 'USD', notify_at_percent: 80, usage_percent: 75, is_over_limit: false },
-    { id: 2, category_id: 3, category_name: 'Entertainment', category_emoji: '🎬', category_color: '#ec4899', limit_cents: 15000, spent_cents: 18000, period: 'monthly', currency_code: 'USD', notify_at_percent: 80, usage_percent: 120, is_over_limit: true },
-    { id: 3, category_id: 2, category_name: 'Transport', category_emoji: '🚕', category_color: '#8b5cf6', limit_cents: 40000, spent_cents: 32000, period: 'monthly', currency_code: 'USD', notify_at_percent: 80, usage_percent: 80, is_over_limit: false },
+    { id: 1, category_id: 1, category_name: 'Food', category_emoji: '🍔', category_color: '#6366f1', limit_cents: 60000, spent_cents: 45000, period: 'monthly', currency_code: 'USD', notify_at_percent: 80, notifications_enabled: true, usage_percent: 75, is_over_limit: false },
+    { id: 2, category_id: 3, category_name: 'Entertainment', category_emoji: '🎬', category_color: '#ec4899', limit_cents: 15000, spent_cents: 18000, period: 'monthly', currency_code: 'USD', notify_at_percent: 80, notifications_enabled: true, usage_percent: 120, is_over_limit: true },
+    { id: 3, category_id: 2, category_name: 'Transport', category_emoji: '🚕', category_color: '#8b5cf6', limit_cents: 40000, spent_cents: 32000, period: 'monthly', currency_code: 'USD', notify_at_percent: 80, notifications_enabled: true, usage_percent: 80, is_over_limit: false },
   ],
 }
 
