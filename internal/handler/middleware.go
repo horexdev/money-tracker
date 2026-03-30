@@ -47,6 +47,14 @@ func AutoRegisterMiddleware(userSvc *service.UserService, log *slog.Logger) bot.
 					FirstName: tgUser.FirstName,
 					LastName:  tgUser.LastName,
 				}
+				// Persist the Telegram UI language so bot replies can be localised.
+				// LanguageCode is an IETF tag like "ru", "en", "uk" — map it to a
+				// supported Language if possible, fall back to English.
+				if domain.ValidLanguage(tgUser.LanguageCode) {
+					u.Language = domain.Language(tgUser.LanguageCode)
+				} else {
+					u.Language = domain.LangEN
+				}
 				if _, err := userSvc.Upsert(ctx, u); err != nil {
 					log.ErrorContext(ctx, "auto-register failed",
 						slog.Int64("user_id", tgUser.ID),

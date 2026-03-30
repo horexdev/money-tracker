@@ -6,41 +6,35 @@ import (
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+
+	"github.com/horexdev/money-tracker/internal/domain"
+	"github.com/horexdev/money-tracker/internal/service"
 )
 
-const welcomeText = `<b>Welcome to MoneyTracker!</b>
+// userLang fetches the stored language for the given user, falling back to English on any error.
+func userLang(ctx context.Context, userSvc *service.UserService, userID int64) domain.Language {
+	u, err := userSvc.GetByID(ctx, userID)
+	if err != nil || u == nil {
+		return domain.LangEN
+	}
+	if u.Language == "" {
+		return domain.LangEN
+	}
+	return u.Language
+}
 
-Your personal finance companion in Telegram.
-Track expenses, monitor income, and stay on top of your money.
-
-Tap the button below to open the app 👇`
-
-const helpText = `<b>MoneyTracker Help</b>
-
-Open the Mini App to manage your finances:
-• Add expenses and income
-• View balance and transaction history
-• Track budgets and savings goals
-• Set up recurring transactions
-• Export your data
-
-Use the button below to get started.`
-
-// StartHandler handles the /start command — sends a welcome message with a Mini App button.
-func StartHandler(miniAppURL string, log *slog.Logger) bot.HandlerFunc {
+// StartHandler handles the /start command — sends a localised welcome message with a Mini App button.
+func StartHandler(miniAppURL string, userSvc *service.UserService, log *slog.Logger) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
+		lang := userLang(ctx, userSvc, update.Message.From.ID)
+		s := getString(lang)
 		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    update.Message.Chat.ID,
-			Text:      welcomeText,
+			Text:      s.welcome,
 			ParseMode: models.ParseModeHTML,
 			ReplyMarkup: &models.InlineKeyboardMarkup{
 				InlineKeyboard: [][]models.InlineKeyboardButton{
-					{
-						{
-							Text:   "📱 Open MoneyTracker",
-							WebApp: &models.WebAppInfo{URL: miniAppURL},
-						},
-					},
+					{{Text: s.openButton, WebApp: &models.WebAppInfo{URL: miniAppURL}}},
 				},
 			},
 		}); err != nil {
@@ -49,21 +43,18 @@ func StartHandler(miniAppURL string, log *slog.Logger) bot.HandlerFunc {
 	}
 }
 
-// HelpHandler handles the /help command — sends help text with a Mini App button.
-func HelpHandler(miniAppURL string, log *slog.Logger) bot.HandlerFunc {
+// HelpHandler handles the /help command — sends a localised help message with a Mini App button.
+func HelpHandler(miniAppURL string, userSvc *service.UserService, log *slog.Logger) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
+		lang := userLang(ctx, userSvc, update.Message.From.ID)
+		s := getString(lang)
 		if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    update.Message.Chat.ID,
-			Text:      helpText,
+			Text:      s.help,
 			ParseMode: models.ParseModeHTML,
 			ReplyMarkup: &models.InlineKeyboardMarkup{
 				InlineKeyboard: [][]models.InlineKeyboardButton{
-					{
-						{
-							Text:   "📱 Open MoneyTracker",
-							WebApp: &models.WebAppInfo{URL: miniAppURL},
-						},
-					},
+					{{Text: s.openButton, WebApp: &models.WebAppInfo{URL: miniAppURL}}},
 				},
 			},
 		}); err != nil {

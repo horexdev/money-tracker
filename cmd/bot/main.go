@@ -47,7 +47,7 @@ func main() {
 	userSvc := service.NewUserService(userRepo, log)
 
 	b, err := bot.New(cfg.BotToken,
-		bot.WithDefaultHandler(handler.DefaultHandler(cfg.MiniAppURL, log)),
+		bot.WithDefaultHandler(handler.DefaultHandler(cfg.MiniAppURL, userSvc, log)),
 		bot.WithMiddlewares(
 			handler.LoggingMiddleware(log),
 			handler.AutoRegisterMiddleware(userSvc, log),
@@ -58,7 +58,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	handler.RegisterAll(b, cfg.MiniAppURL, log)
+	handler.RegisterAll(b, cfg.MiniAppURL, userSvc, log)
 
 	log.Info("bot started, waiting for updates")
 	b.Start(ctx)
