@@ -128,7 +128,8 @@
       "Business": "Бизнес",
       "Housing": "Тұрғын үй",
       "Investments": "Инвестициялар",
-      "Other": "Басқа"
+      "Other": "Басқа",
+      "Savings": "Жинақтар"
     }
   },
   "budgets": {

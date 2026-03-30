@@ -128,7 +128,8 @@
       "Business": "Бізнес",
       "Housing": "Житло",
       "Investments": "Інвестиції",
-      "Other": "Інше"
+      "Other": "Інше",
+      "Savings": "Накопичення"
     }
   },
   "budgets": {

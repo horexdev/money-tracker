@@ -128,7 +128,8 @@
       "Business": "Perniagaan",
       "Housing": "Perumahan",
       "Investments": "Pelaburan",
-      "Other": "Lain-lain"
+      "Other": "Lain-lain",
+      "Savings": "Simpanan"
     }
   },
   "budgets": {

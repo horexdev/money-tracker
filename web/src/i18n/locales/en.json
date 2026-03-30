@@ -132,7 +132,8 @@
       "Business": "Business",
       "Housing": "Housing",
       "Investments": "Investments",
-      "Other": "Other"
+      "Other": "Other",
+      "Savings": "Savings"
     }
   },
   "budgets": {

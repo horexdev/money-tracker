@@ -128,7 +128,8 @@
       "Business": "Negócios",
       "Housing": "Moradia",
       "Investments": "Investimentos",
-      "Other": "Outros"
+      "Other": "Outros",
+      "Savings": "Poupanças"
     }
   },
   "budgets": {

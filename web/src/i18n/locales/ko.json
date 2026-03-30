@@ -128,7 +128,8 @@
       "Business": "비즈니스",
       "Housing": "주거",
       "Investments": "투자",
-      "Other": "기타"
+      "Other": "기타",
+      "Savings": "저축"
     }
   },
   "budgets": {

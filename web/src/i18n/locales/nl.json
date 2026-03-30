@@ -128,7 +128,8 @@
       "Business": "Zakelijk",
       "Housing": "Wonen",
       "Investments": "Investeringen",
-      "Other": "Overig"
+      "Other": "Overig",
+      "Savings": "Spaargeld"
     }
   },
   "budgets": {

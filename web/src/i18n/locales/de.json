@@ -128,7 +128,8 @@
       "Business": "Geschäft",
       "Housing": "Wohnen",
       "Investments": "Investitionen",
-      "Other": "Sonstiges"
+      "Other": "Sonstiges",
+      "Savings": "Ersparnisse"
     }
   },
   "budgets": {

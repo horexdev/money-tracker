@@ -128,7 +128,8 @@
       "Business": "أعمال",
       "Housing": "سكن",
       "Investments": "استثمارات",
-      "Other": "أخرى"
+      "Other": "أخرى",
+      "Savings": "المدخرات"
     }
   },
   "budgets": {
