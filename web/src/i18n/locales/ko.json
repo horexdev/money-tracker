@@ -146,7 +146,9 @@
     "no_budgets": "설정된 예산 없음",
     "set_budget": "지출 한도를 관리하기 위해 예산을 설정하세요",
     "view_transactions": "거래 내역",
-    "no_transactions": "이 기간에 거래가 없습니다"
+    "no_transactions": "이 기간에 거래가 없습니다",
+    "notifications": "알림",
+    "notify_threshold": "50%, 75%, 95%, 100%에서 알림"
   },
   "recurring": {
     "title": "반복",

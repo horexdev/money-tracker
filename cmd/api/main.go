@@ -79,7 +79,7 @@ func main() {
 	statsSvc := service.NewStatsService(txRepo, log)
 	exchangeSvc := service.NewExchangeService(service.NewRateAPIProvider(), rdb, cfg.ExchangeRateTTL, log)
 	categorySvc := service.NewCategoryService(catRepo, log)
-	budgetSvc := service.NewBudgetService(budgetRepo, txRepo, log)
+	budgetSvc := service.NewBudgetService(budgetRepo, txRepo, userRepo, log)
 	recurringSvc := service.NewRecurringService(recurringRepo, txRepo, log)
 	goalSvc := service.NewSavingsGoalService(goalRepo, txRepo, catRepo, accountRepo, log)
 	exportSvc := service.NewExportService(txRepo, log)

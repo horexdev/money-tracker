@@ -150,7 +150,9 @@
     "no_budgets": "No budgets set",
     "set_budget": "Set a budget to track spending limits",
     "view_transactions": "Transactions",
-    "no_transactions": "No transactions in this period"
+    "no_transactions": "No transactions in this period",
+    "notifications": "Notifications",
+    "notify_threshold": "Alert at 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Recurring",

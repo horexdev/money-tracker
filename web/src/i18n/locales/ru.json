@@ -150,7 +150,9 @@
     "no_budgets": "Бюджеты не заданы",
     "set_budget": "Задайте бюджет для контроля расходов",
     "view_transactions": "Транзакции",
-    "no_transactions": "В этом периоде нет транзакций"
+    "no_transactions": "В этом периоде нет транзакций",
+    "notifications": "Уведомления",
+    "notify_threshold": "Оповещение при 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Повторяющиеся",

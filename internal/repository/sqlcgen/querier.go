@@ -89,7 +89,7 @@ type Querier interface {
 	ToggleRecurringActive(ctx context.Context, arg ToggleRecurringActiveParams) (RecurringTransaction, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
 	UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error)
-	UpdateBudgetLastNotified(ctx context.Context, id int64) error
+	UpdateBudgetLastNotified(ctx context.Context, arg UpdateBudgetLastNotifiedParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplayCurrenciesParams) (User, error)
 	UpdateRecurring(ctx context.Context, arg UpdateRecurringParams) (RecurringTransaction, error)

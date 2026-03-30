@@ -146,7 +146,9 @@
     "no_budgets": "Nessun budget impostato",
     "set_budget": "Imposta un budget per controllare le spese",
     "view_transactions": "Transazioni",
-    "no_transactions": "Nessuna transazione in questo periodo"
+    "no_transactions": "Nessuna transazione in questo periodo",
+    "notifications": "Notifiche",
+    "notify_threshold": "Avviso al 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Ricorrenti",

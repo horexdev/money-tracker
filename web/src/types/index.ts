@@ -91,6 +91,7 @@ export interface Budget {
   period: string
   currency_code: string
   notify_at_percent: number
+  notifications_enabled: boolean
   usage_percent: number
   is_over_limit: boolean
 }

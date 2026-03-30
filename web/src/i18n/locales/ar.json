@@ -146,7 +146,9 @@
     "no_budgets": "لا توجد ميزانيات",
     "set_budget": "حدد ميزانية لمتابعة حدود الإنفاق",
     "view_transactions": "المعاملات",
-    "no_transactions": "لا توجد معاملات في هذه الفترة"
+    "no_transactions": "لا توجد معاملات في هذه الفترة",
+    "notifications": "الإشعارات",
+    "notify_threshold": "تنبيه عند 50%، 75%، 95%، 100%"
   },
   "recurring": {
     "title": "المتكررة",

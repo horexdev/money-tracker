@@ -1,6 +1,6 @@
 -- name: CreateBudget :one
-INSERT INTO budgets (user_id, category_id, limit_cents, period, currency_code, notify_at_percent)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO budgets (user_id, category_id, limit_cents, period, currency_code, notify_at_percent, notifications_enabled)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: GetBudgetByID :one
@@ -19,11 +19,12 @@ ORDER BY b.created_at DESC;
 
 -- name: UpdateBudget :one
 UPDATE budgets
-SET limit_cents       = $3,
-    period            = $4,
-    currency_code     = $5,
-    notify_at_percent = $6,
-    updated_at        = now()
+SET limit_cents             = $3,
+    period                  = $4,
+    currency_code           = $5,
+    notify_at_percent       = $6,
+    notifications_enabled   = $7,
+    updated_at              = now()
 WHERE id = $1 AND user_id = $2
 RETURNING *;
 
@@ -31,7 +32,10 @@ RETURNING *;
 DELETE FROM budgets WHERE id = $1 AND user_id = $2;
 
 -- name: UpdateBudgetLastNotified :exec
-UPDATE budgets SET last_notified_at = now() WHERE id = $1;
+UPDATE budgets
+SET last_notified_at     = now(),
+    last_notified_percent = $2
+WHERE id = $1;
 
 -- name: ListDistinctUsersWithBudgets :many
 SELECT DISTINCT user_id FROM budgets;

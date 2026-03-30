@@ -24,12 +24,13 @@ func NewBudgetRepository(pool *pgxpool.Pool) *BudgetRepository {
 // Create inserts a new budget and returns the persisted record.
 func (r *BudgetRepository) Create(ctx context.Context, b *domain.Budget) (*domain.Budget, error) {
 	row, err := r.q.CreateBudget(ctx, sqlcgen.CreateBudgetParams{
-		UserID:          b.UserID,
-		CategoryID:      b.CategoryID,
-		LimitCents:      b.LimitCents,
-		Period:          string(b.Period),
-		CurrencyCode:    b.CurrencyCode,
-		NotifyAtPercent: int32(b.NotifyAtPercent),
+		UserID:               b.UserID,
+		CategoryID:           b.CategoryID,
+		LimitCents:           b.LimitCents,
+		Period:               string(b.Period),
+		CurrencyCode:         b.CurrencyCode,
+		NotifyAtPercent:      int32(b.NotifyAtPercent),
+		NotificationsEnabled: b.NotificationsEnabled,
 	})
 	if err != nil {
 		return nil, err
@@ -61,18 +62,20 @@ func (r *BudgetRepository) ListByUser(ctx context.Context, userID int64) ([]*dom
 	budgets := make([]*domain.Budget, 0, len(rows))
 	for _, row := range rows {
 		b := &domain.Budget{
-			ID:              row.ID,
-			UserID:          row.UserID,
-			CategoryID:      row.CategoryID,
-			LimitCents:      row.LimitCents,
-			Period:          domain.BudgetPeriod(row.Period),
-			CurrencyCode:    row.CurrencyCode,
-			NotifyAtPercent: int(row.NotifyAtPercent),
-			CreatedAt:       goTime(row.CreatedAt),
-			UpdatedAt:       goTime(row.UpdatedAt),
-			CategoryName:    row.CategoryName,
-			CategoryEmoji:   row.CategoryEmoji,
-			CategoryColor:   row.CategoryColor,
+			ID:                   row.ID,
+			UserID:               row.UserID,
+			CategoryID:           row.CategoryID,
+			LimitCents:           row.LimitCents,
+			Period:               domain.BudgetPeriod(row.Period),
+			CurrencyCode:         row.CurrencyCode,
+			NotifyAtPercent:      int(row.NotifyAtPercent),
+			NotificationsEnabled: row.NotificationsEnabled,
+			LastNotifiedPercent:  int(row.LastNotifiedPercent),
+			CreatedAt:            goTime(row.CreatedAt),
+			UpdatedAt:            goTime(row.UpdatedAt),
+			CategoryName:         row.CategoryName,
+			CategoryEmoji:        row.CategoryEmoji,
+			CategoryColor:        row.CategoryColor,
 		}
 		if row.LastNotifiedAt.Valid {
 			t := row.LastNotifiedAt.Time
@@ -86,12 +89,13 @@ func (r *BudgetRepository) ListByUser(ctx context.Context, userID int64) ([]*dom
 // Update modifies an existing budget.
 func (r *BudgetRepository) Update(ctx context.Context, b *domain.Budget) (*domain.Budget, error) {
 	row, err := r.q.UpdateBudget(ctx, sqlcgen.UpdateBudgetParams{
-		ID:              b.ID,
-		UserID:          b.UserID,
-		LimitCents:      b.LimitCents,
-		Period:          string(b.Period),
-		CurrencyCode:    b.CurrencyCode,
-		NotifyAtPercent: int32(b.NotifyAtPercent),
+		ID:                   b.ID,
+		UserID:               b.UserID,
+		LimitCents:           b.LimitCents,
+		Period:               string(b.Period),
+		CurrencyCode:         b.CurrencyCode,
+		NotifyAtPercent:      int32(b.NotifyAtPercent),
+		NotificationsEnabled: b.NotificationsEnabled,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -134,9 +138,12 @@ func (r *BudgetRepository) GetSpentInPeriod(ctx context.Context, userID, categor
 	})
 }
 
-// UpdateLastNotified sets last_notified_at = now() for the given budget.
-func (r *BudgetRepository) UpdateLastNotified(ctx context.Context, id int64) error {
-	return r.q.UpdateBudgetLastNotified(ctx, id)
+// UpdateLastNotified sets last_notified_at = now() and records the threshold percent.
+func (r *BudgetRepository) UpdateLastNotified(ctx context.Context, id int64, notifiedPercent int) error {
+	return r.q.UpdateBudgetLastNotified(ctx, sqlcgen.UpdateBudgetLastNotifiedParams{
+		ID:                  id,
+		LastNotifiedPercent: int32(notifiedPercent),
+	})
 }
 
 // ListDistinctUserIDs returns all user IDs that have at least one budget.
@@ -151,15 +158,17 @@ func (r *BudgetRepository) ListDistinctUserIDs(ctx context.Context) ([]int64, er
 
 func rowToBudget(row sqlcgen.Budget) *domain.Budget {
 	b := &domain.Budget{
-		ID:              row.ID,
-		UserID:          row.UserID,
-		CategoryID:      row.CategoryID,
-		LimitCents:      row.LimitCents,
-		Period:          domain.BudgetPeriod(row.Period),
-		CurrencyCode:    row.CurrencyCode,
-		NotifyAtPercent: int(row.NotifyAtPercent),
-		CreatedAt:       goTime(row.CreatedAt),
-		UpdatedAt:       goTime(row.UpdatedAt),
+		ID:                   row.ID,
+		UserID:               row.UserID,
+		CategoryID:           row.CategoryID,
+		LimitCents:           row.LimitCents,
+		Period:               domain.BudgetPeriod(row.Period),
+		CurrencyCode:         row.CurrencyCode,
+		NotifyAtPercent:      int(row.NotifyAtPercent),
+		NotificationsEnabled: row.NotificationsEnabled,
+		LastNotifiedPercent:  int(row.LastNotifiedPercent),
+		CreatedAt:            goTime(row.CreatedAt),
+		UpdatedAt:            goTime(row.UpdatedAt),
 	}
 	if row.LastNotifiedAt.Valid {
 		t := row.LastNotifiedAt.Time

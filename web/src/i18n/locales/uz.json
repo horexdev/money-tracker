@@ -146,7 +146,9 @@
     "no_budgets": "Byudjetlar o'rnatilmagan",
     "set_budget": "Xarajatlarni nazorat qilish uchun byudjet o'rnating",
     "view_transactions": "Tranzaksiyalar",
-    "no_transactions": "Bu davrda tranzaksiyalar yo'q"
+    "no_transactions": "Bu davrda tranzaksiyalar yo'q",
+    "notifications": "Bildirishnomalar",
+    "notify_threshold": "50%, 75%, 95%, 100% da ogohlantirish"
   },
   "recurring": {
     "title": "Muntazam",

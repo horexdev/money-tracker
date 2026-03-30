@@ -146,7 +146,9 @@
     "no_budgets": "Belum ada anggaran",
     "set_budget": "Tetapkan anggaran untuk mengontrol pengeluaran",
     "view_transactions": "Transaksi",
-    "no_transactions": "Tidak ada transaksi pada periode ini"
+    "no_transactions": "Tidak ada transaksi pada periode ini",
+    "notifications": "Notifikasi",
+    "notify_threshold": "Peringatan di 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Berulang",

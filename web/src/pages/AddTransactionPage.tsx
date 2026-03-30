@@ -6,7 +6,7 @@ import { Check, CalendarBlank, ArrowsLeftRight } from '@phosphor-icons/react'
 import { AnimatePresence } from 'framer-motion'
 import { categoriesApi } from '../api/categories'
 import { transactionsApi } from '../api/transactions'
-import { transfersApi } from '../api/transfers'
+import { transfersApi, exchangeApi } from '../api/transfers'
 import { balanceApi } from '../api/balance'
 import { accountsApi } from '../api/accounts'
 import { parseCents } from '../lib/money'
@@ -55,6 +55,7 @@ export function AddTransactionPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
   const [fromAccountId, setFromAccountId] = useState<number | null>(null)
   const [toAccountId, setToAccountId] = useState<number | null>(null)
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null)
 
   const { data: catData, isLoading } = useQuery({
     queryKey: ['categories'],
@@ -82,8 +83,23 @@ export function AddTransactionPage() {
     }
   }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const fromAccount = accounts.find(a => a.id === fromAccountId)
+  const toAccount = accounts.find(a => a.id === toAccountId)
+  const needsExchangeRate = isTransfer && fromAccount && toAccount && fromAccount.currency_code !== toAccount.currency_code
+
+  useEffect(() => {
+    if (!needsExchangeRate || !fromAccount || !toAccount) {
+      setExchangeRate(null)
+      return
+    }
+    exchangeApi.getRate(fromAccount.currency_code, toAccount.currency_code)
+      .then(r => setExchangeRate(r.rate))
+      .catch(() => setExchangeRate(null))
+  }, [needsExchangeRate, fromAccount?.currency_code, toAccount?.currency_code]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const selectedAccount = accounts.find(a => a.id === selectedAccountId)
   const baseCurrency = selectedAccount?.currency_code ?? balanceData?.by_currency?.[0]?.currency_code ?? 'USD'
+  const toAmountCents = exchangeRate != null ? Math.round(parseCents(amount) * exchangeRate) : null
 
   const isTransfer = mode === 'transfer'
   const isExpense = mode === 'expense'
@@ -136,6 +152,7 @@ export function AddTransactionPage() {
         from_account_id: fromAccountId,
         to_account_id: toAccountId,
         amount_cents: parseCents(amount),
+        exchange_rate: exchangeRate ?? undefined,
         note: note.trim() || undefined,
       })
     } else {
@@ -253,32 +270,51 @@ export function AddTransactionPage() {
                   </p>
                 </div>
               ) : (
-                <div className="mt-4 flex items-center gap-2">
-                  <div className="shrink-0">
-                    <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
-                      {t('from')}
-                    </p>
-                    <AccountDropdown
-                      accounts={accounts.filter(a => a.id !== toAccountId)}
-                      selectedId={fromAccountId}
-                      onChange={id => id !== null && setFromAccountId(id)}
-                      showBalance
-                    />
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
+                        {t('from')}
+                      </p>
+                      <AccountDropdown
+                        accounts={accounts.filter(a => a.id !== toAccountId)}
+                        selectedId={fromAccountId}
+                        onChange={id => id !== null && setFromAccountId(id)}
+                        showBalance
+                      />
+                    </div>
+                    <div className="shrink-0 mt-4">
+                      <ArrowsLeftRight size={16} weight="bold" className="text-white/40" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
+                        {t('to')}
+                      </p>
+                      <AccountDropdown
+                        accounts={accounts.filter(a => a.id !== fromAccountId)}
+                        selectedId={toAccountId}
+                        onChange={id => id !== null && setToAccountId(id)}
+                        showBalance
+                      />
+                    </div>
                   </div>
-                  <div className="shrink-0 mt-4">
-                    <ArrowsLeftRight size={16} weight="bold" className="text-white/40" />
-                  </div>
-                  <div className="shrink-0">
-                    <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">
-                      {t('to')}
-                    </p>
-                    <AccountDropdown
-                      accounts={accounts.filter(a => a.id !== fromAccountId)}
-                      selectedId={toAccountId}
-                      onChange={id => id !== null && setToAccountId(id)}
-                      showBalance
-                    />
-                  </div>
+                  {needsExchangeRate && fromAccount && toAccount && (
+                    <div className="flex items-center justify-between bg-white/[0.06] rounded-xl px-3 py-2">
+                      <span className="text-white/50 text-[11px]">
+                        1 {fromAccount.currency_code} =
+                      </span>
+                      <span className="text-white/80 text-[12px] font-semibold tabular-nums">
+                        {exchangeRate != null
+                          ? `${exchangeRate.toFixed(4)} ${toAccount.currency_code}`
+                          : '…'}
+                      </span>
+                      {toAmountCents != null && parseCents(amount) > 0 && (
+                        <span className="text-white/60 text-[11px] tabular-nums ml-2">
+                          ≈ {(toAmountCents / 100).toFixed(2)} {toAccount.currency_code}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             )}

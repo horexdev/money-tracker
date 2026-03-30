@@ -18,7 +18,7 @@ import (
 )
 
 func buildBudgetHandler(budgetRepo *mocks.MockBudgetStorer, txRepo *mocks.MockTransactionStorer) http.HandlerFunc {
-	svc := service.NewBudgetService(budgetRepo, txRepo, testutil.TestLogger())
+	svc := service.NewBudgetService(budgetRepo, txRepo, &mocks.MockUserStorer{}, testutil.TestLogger())
 	return api.BudgetHandlerForTest(svc, testutil.TestLogger())
 }
 

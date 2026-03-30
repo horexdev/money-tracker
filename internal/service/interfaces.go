@@ -53,7 +53,7 @@ type BudgetStorer interface {
 	Delete(ctx context.Context, id, userID int64) error
 	GetByUserCategoryPeriod(ctx context.Context, userID, categoryID int64, period string) (*domain.Budget, error)
 	GetSpentInPeriod(ctx context.Context, userID, categoryID int64, currency string, from, to time.Time) (int64, error)
-	UpdateLastNotified(ctx context.Context, id int64) error
+	UpdateLastNotified(ctx context.Context, id int64, notifiedPercent int) error
 	ListDistinctUserIDs(ctx context.Context) ([]int64, error)
 }
 

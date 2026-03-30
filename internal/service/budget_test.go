@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/horexdev/money-tracker/internal/domain"
 	"github.com/horexdev/money-tracker/internal/service"
@@ -15,7 +14,7 @@ import (
 )
 
 func newBudgetService(repo *mocks.MockBudgetStorer, txRepo *mocks.MockTransactionStorer) *service.BudgetService {
-	return service.NewBudgetService(repo, txRepo, testutil.TestLogger())
+	return service.NewBudgetService(repo, txRepo, &mocks.MockUserStorer{}, testutil.TestLogger())
 }
 
 func TestBudgetService_Create_ZeroLimit(t *testing.T) {
@@ -28,7 +27,6 @@ func TestBudgetService_Create_DuplicateBudget(t *testing.T) {
 	repo := &mocks.MockBudgetStorer{}
 	svc := newBudgetService(repo, &mocks.MockTransactionStorer{})
 
-	// GetByUserCategoryPeriod returns a budget (no error) → duplicate.
 	existing := &domain.Budget{ID: 10}
 	repo.On("GetByUserCategoryPeriod", mock.Anything, int64(1), int64(1), "monthly").Return(existing, nil)
 
@@ -40,7 +38,6 @@ func TestBudgetService_Create_Success(t *testing.T) {
 	repo := &mocks.MockBudgetStorer{}
 	svc := newBudgetService(repo, &mocks.MockTransactionStorer{})
 
-	// No existing budget.
 	repo.On("GetByUserCategoryPeriod", mock.Anything, int64(1), int64(1), "monthly").Return(nil, domain.ErrBudgetNotFound)
 
 	created := &domain.Budget{ID: 5, LimitCents: 10000}
@@ -66,19 +63,23 @@ func TestBudgetService_CheckAndNotify_NoNotifier(t *testing.T) {
 
 func TestBudgetService_CheckAndNotify_BelowThreshold(t *testing.T) {
 	repo := &mocks.MockBudgetStorer{}
+	userRepo := &mocks.MockUserStorer{}
 	notifier := &mocks.MockBudgetNotifier{}
-	svc := newBudgetService(repo, &mocks.MockTransactionStorer{})
+	svc := service.NewBudgetService(repo, &mocks.MockTransactionStorer{}, userRepo, testutil.TestLogger())
 	svc.WithNotifier(notifier)
 
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1, Language: "en"}, nil)
+
 	budget := &domain.Budget{
-		ID:              1,
-		UserID:          1,
-		CategoryID:      1,
-		LimitCents:      10000,
-		SpentCents:      0, // 0% — below any threshold
-		NotifyAtPercent: 80,
-		Period:          domain.BudgetPeriodMonthly,
-		CurrencyCode:    "USD",
+		ID:                   1,
+		UserID:               1,
+		CategoryID:           1,
+		LimitCents:           10000,
+		SpentCents:           0, // 0% — below any threshold
+		NotifyAtPercent:      80,
+		NotificationsEnabled: true,
+		Period:               domain.BudgetPeriodMonthly,
+		CurrencyCode:         "USD",
 	}
 	repo.On("ListByUser", mock.Anything, int64(1)).Return([]*domain.Budget{budget}, nil)
 	repo.On("GetSpentInPeriod", mock.Anything, int64(1), int64(1), "USD", mock.Anything, mock.Anything).Return(int64(0), nil)
@@ -88,24 +89,25 @@ func TestBudgetService_CheckAndNotify_BelowThreshold(t *testing.T) {
 	notifier.AssertNotCalled(t, "SendBudgetAlert")
 }
 
-func TestBudgetService_CheckAndNotify_AlreadyNotifiedThisPeriod(t *testing.T) {
+func TestBudgetService_CheckAndNotify_NotificationsDisabled(t *testing.T) {
 	repo := &mocks.MockBudgetStorer{}
+	userRepo := &mocks.MockUserStorer{}
 	notifier := &mocks.MockBudgetNotifier{}
-	svc := newBudgetService(repo, &mocks.MockTransactionStorer{})
+	svc := service.NewBudgetService(repo, &mocks.MockTransactionStorer{}, userRepo, testutil.TestLogger())
 	svc.WithNotifier(notifier)
 
-	// Budget is over threshold but was already notified this period.
-	now := time.Now()
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1, Language: "en"}, nil)
+
 	budget := &domain.Budget{
-		ID:              1,
-		UserID:          1,
-		CategoryID:      1,
-		LimitCents:      10000,
-		SpentCents:      9000, // 90% — above threshold
-		NotifyAtPercent: 80,
-		Period:          domain.BudgetPeriodMonthly,
-		CurrencyCode:    "USD",
-		LastNotifiedAt:  &now, // notified NOW → still in current period
+		ID:                   1,
+		UserID:               1,
+		CategoryID:           1,
+		LimitCents:           10000,
+		SpentCents:           9000, // 90% — above threshold, but disabled
+		NotifyAtPercent:      80,
+		NotificationsEnabled: false,
+		Period:               domain.BudgetPeriodMonthly,
+		CurrencyCode:         "USD",
 	}
 	repo.On("ListByUser", mock.Anything, int64(1)).Return([]*domain.Budget{budget}, nil)
 	repo.On("GetSpentInPeriod", mock.Anything, int64(1), int64(1), "USD", mock.Anything, mock.Anything).Return(int64(9000), nil)
@@ -115,32 +117,66 @@ func TestBudgetService_CheckAndNotify_AlreadyNotifiedThisPeriod(t *testing.T) {
 	notifier.AssertNotCalled(t, "SendBudgetAlert")
 }
 
-func TestBudgetService_CheckAndNotify_SendsAlert(t *testing.T) {
+func TestBudgetService_CheckAndNotify_AlreadyNotifiedCurrentThreshold(t *testing.T) {
 	repo := &mocks.MockBudgetStorer{}
+	userRepo := &mocks.MockUserStorer{}
 	notifier := &mocks.MockBudgetNotifier{}
-	svc := newBudgetService(repo, &mocks.MockTransactionStorer{})
+	svc := service.NewBudgetService(repo, &mocks.MockTransactionStorer{}, userRepo, testutil.TestLogger())
 	svc.WithNotifier(notifier)
 
-	// Never notified before (LastNotifiedAt == nil).
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1, Language: "ru"}, nil)
+
+	// Already notified at 75% this period, usage is 80% — no new threshold crossed.
 	budget := &domain.Budget{
-		ID:              1,
-		UserID:          1,
-		CategoryID:      1,
-		CategoryName:    "Food",
-		LimitCents:      10000,
-		SpentCents:      9000, // 90% — above threshold
-		NotifyAtPercent: 80,
-		Period:          domain.BudgetPeriodMonthly,
-		CurrencyCode:    "USD",
-		LastNotifiedAt:  nil,
+		ID:                   1,
+		UserID:               1,
+		CategoryID:           1,
+		LimitCents:           10000,
+		SpentCents:           8000, // 80% → next fixed threshold is 95%, not yet reached
+		NotifyAtPercent:      80,
+		NotificationsEnabled: true,
+		LastNotifiedPercent:  75,
+		Period:               domain.BudgetPeriodMonthly,
+		CurrencyCode:         "USD",
 	}
 	repo.On("ListByUser", mock.Anything, int64(1)).Return([]*domain.Budget{budget}, nil)
-	repo.On("GetSpentInPeriod", mock.Anything, int64(1), int64(1), "USD", mock.Anything, mock.Anything).Return(int64(9000), nil)
-	notifier.On("SendBudgetAlert", mock.Anything, int64(1), "Food", 90, int64(10000), int64(9000)).Return(nil)
-	repo.On("UpdateLastNotified", mock.Anything, int64(1)).Return(nil)
+	repo.On("GetSpentInPeriod", mock.Anything, int64(1), int64(1), "USD", mock.Anything, mock.Anything).Return(int64(8000), nil)
+
+	err := svc.CheckAndNotify(context.Background(), 1)
+	require.NoError(t, err)
+	notifier.AssertNotCalled(t, "SendBudgetAlert")
+}
+
+func TestBudgetService_CheckAndNotify_SendsAlert(t *testing.T) {
+	repo := &mocks.MockBudgetStorer{}
+	userRepo := &mocks.MockUserStorer{}
+	notifier := &mocks.MockBudgetNotifier{}
+	svc := service.NewBudgetService(repo, &mocks.MockTransactionStorer{}, userRepo, testutil.TestLogger())
+	svc.WithNotifier(notifier)
+
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1, Language: "ru"}, nil)
+
+	// Never notified (LastNotifiedPercent=0, LastNotifiedAt=nil), usage 55% → crosses 50% threshold.
+	budget := &domain.Budget{
+		ID:                   1,
+		UserID:               1,
+		CategoryID:           1,
+		CategoryName:         "Food",
+		LimitCents:           10000,
+		SpentCents:           5500, // 55%
+		NotifyAtPercent:      80,
+		NotificationsEnabled: true,
+		LastNotifiedPercent:  0,
+		Period:               domain.BudgetPeriodMonthly,
+		CurrencyCode:         "USD",
+	}
+	repo.On("ListByUser", mock.Anything, int64(1)).Return([]*domain.Budget{budget}, nil)
+	repo.On("GetSpentInPeriod", mock.Anything, int64(1), int64(1), "USD", mock.Anything, mock.Anything).Return(int64(5500), nil)
+	notifier.On("SendBudgetAlert", mock.Anything, int64(1), "ru", "Food", "USD", 50, int64(10000), int64(5500)).Return(nil)
+	repo.On("UpdateLastNotified", mock.Anything, int64(1), 50).Return(nil)
 
 	err := svc.CheckAndNotify(context.Background(), 1)
 	require.NoError(t, err)
 	notifier.AssertExpectations(t)
-	repo.AssertCalled(t, "UpdateLastNotified", mock.Anything, int64(1))
+	repo.AssertCalled(t, "UpdateLastNotified", mock.Anything, int64(1), 50)
 }

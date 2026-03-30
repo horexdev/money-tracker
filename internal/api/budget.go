@@ -12,32 +12,35 @@ import (
 )
 
 type budgetResponse struct {
-	ID              int64   `json:"id"`
-	CategoryID      int64   `json:"category_id"`
-	CategoryName    string  `json:"category_name"`
-	CategoryEmoji   string  `json:"category_emoji"`
-	CategoryColor   string  `json:"category_color"`
-	LimitCents      int64   `json:"limit_cents"`
-	SpentCents      int64   `json:"spent_cents"`
-	Period          string  `json:"period"`
-	CurrencyCode    string  `json:"currency_code"`
-	NotifyAtPercent int     `json:"notify_at_percent"`
-	UsagePercent    float64 `json:"usage_percent"`
-	IsOverLimit     bool    `json:"is_over_limit"`
+	ID                   int64   `json:"id"`
+	CategoryID           int64   `json:"category_id"`
+	CategoryName         string  `json:"category_name"`
+	CategoryEmoji        string  `json:"category_emoji"`
+	CategoryColor        string  `json:"category_color"`
+	LimitCents           int64   `json:"limit_cents"`
+	SpentCents           int64   `json:"spent_cents"`
+	Period               string  `json:"period"`
+	CurrencyCode         string  `json:"currency_code"`
+	NotifyAtPercent      int     `json:"notify_at_percent"`
+	NotificationsEnabled bool    `json:"notifications_enabled"`
+	UsagePercent         float64 `json:"usage_percent"`
+	IsOverLimit          bool    `json:"is_over_limit"`
 }
 
 type createBudgetRequest struct {
-	CategoryID      int64  `json:"category_id"`
-	LimitCents      int64  `json:"limit_cents"`
-	Period          string `json:"period"`
-	CurrencyCode    string `json:"currency_code"`
-	NotifyAtPercent *int   `json:"notify_at_percent"`
+	CategoryID           int64  `json:"category_id"`
+	LimitCents           int64  `json:"limit_cents"`
+	Period               string `json:"period"`
+	CurrencyCode         string `json:"currency_code"`
+	NotifyAtPercent      *int   `json:"notify_at_percent"`
+	NotificationsEnabled *bool  `json:"notifications_enabled"`
 }
 
 type updateBudgetRequest struct {
-	LimitCents      *int64 `json:"limit_cents"`
-	Period          string `json:"period"`
-	NotifyAtPercent *int   `json:"notify_at_percent"`
+	LimitCents           *int64 `json:"limit_cents"`
+	Period               string `json:"period"`
+	NotifyAtPercent      *int   `json:"notify_at_percent"`
+	NotificationsEnabled *bool  `json:"notifications_enabled"`
 }
 
 // budgetHandler routes requests for /api/v1/budgets[/{id}[/transactions]].
@@ -122,14 +125,19 @@ func createBudget(w http.ResponseWriter, r *http.Request, userID int64, svc *ser
 	if req.NotifyAtPercent != nil {
 		notifyAt = *req.NotifyAtPercent
 	}
+	notificationsEnabled := true
+	if req.NotificationsEnabled != nil {
+		notificationsEnabled = *req.NotificationsEnabled
+	}
 
 	budget, err := svc.Create(r.Context(), &domain.Budget{
-		UserID:          userID,
-		CategoryID:      req.CategoryID,
-		LimitCents:      req.LimitCents,
-		Period:          domain.BudgetPeriod(req.Period),
-		CurrencyCode:    req.CurrencyCode,
-		NotifyAtPercent: notifyAt,
+		UserID:               userID,
+		CategoryID:           req.CategoryID,
+		LimitCents:           req.LimitCents,
+		Period:               domain.BudgetPeriod(req.Period),
+		CurrencyCode:         req.CurrencyCode,
+		NotifyAtPercent:      notifyAt,
+		NotificationsEnabled: notificationsEnabled,
 	})
 	if err != nil {
 		writeError(w, log, err)
@@ -160,6 +168,9 @@ func updateBudget(w http.ResponseWriter, r *http.Request, userID, id int64, svc 
 	}
 	if req.NotifyAtPercent != nil {
 		existing.NotifyAtPercent = *req.NotifyAtPercent
+	}
+	if req.NotificationsEnabled != nil {
+		existing.NotificationsEnabled = *req.NotificationsEnabled
 	}
 
 	budget, err := svc.Update(ctx, existing)
@@ -206,17 +217,18 @@ type budgetTransactionResponse struct {
 
 func budgetToResponse(b *domain.Budget) budgetResponse {
 	return budgetResponse{
-		ID:              b.ID,
-		CategoryID:      b.CategoryID,
-		CategoryName:    b.CategoryName,
-		CategoryEmoji:   b.CategoryEmoji,
-		CategoryColor:   b.CategoryColor,
-		LimitCents:      b.LimitCents,
-		SpentCents:      b.SpentCents,
-		Period:          string(b.Period),
-		CurrencyCode:    b.CurrencyCode,
-		NotifyAtPercent: b.NotifyAtPercent,
-		UsagePercent:    b.UsagePercent(),
-		IsOverLimit:     b.IsOverLimit(),
+		ID:                   b.ID,
+		CategoryID:           b.CategoryID,
+		CategoryName:         b.CategoryName,
+		CategoryEmoji:        b.CategoryEmoji,
+		CategoryColor:        b.CategoryColor,
+		LimitCents:           b.LimitCents,
+		SpentCents:           b.SpentCents,
+		Period:               string(b.Period),
+		CurrencyCode:         b.CurrencyCode,
+		NotifyAtPercent:      b.NotifyAtPercent,
+		NotificationsEnabled: b.NotificationsEnabled,
+		UsagePercent:         b.UsagePercent(),
+		IsOverLimit:          b.IsOverLimit(),
 	}
 }

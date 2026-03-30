@@ -114,16 +114,18 @@ type Account struct {
 }
 
 type Budget struct {
-	ID              int64              `json:"id"`
-	UserID          int64              `json:"user_id"`
-	CategoryID      int64              `json:"category_id"`
-	LimitCents      int64              `json:"limit_cents"`
-	Period          string             `json:"period"`
-	CurrencyCode    string             `json:"currency_code"`
-	NotifyAtPercent int32              `json:"notify_at_percent"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
-	LastNotifiedAt  pgtype.Timestamptz `json:"last_notified_at"`
+	ID                   int64              `json:"id"`
+	UserID               int64              `json:"user_id"`
+	CategoryID           int64              `json:"category_id"`
+	LimitCents           int64              `json:"limit_cents"`
+	Period               string             `json:"period"`
+	CurrencyCode         string             `json:"currency_code"`
+	NotifyAtPercent      int32              `json:"notify_at_percent"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	LastNotifiedAt       pgtype.Timestamptz `json:"last_notified_at"`
+	NotificationsEnabled bool               `json:"notifications_enabled"`
+	LastNotifiedPercent  int32              `json:"last_notified_percent"`
 }
 
 type Category struct {

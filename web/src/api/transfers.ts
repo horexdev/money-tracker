@@ -1,6 +1,11 @@
 import { api } from './client'
 import type { Transfer } from '../types'
 
+export const exchangeApi = {
+  getRate: (from: string, to: string): Promise<{ rate: number }> =>
+    api.get<{ rate: number }>(`/v1/exchange/rate?from=${from}&to=${to}`),
+}
+
 export interface TransfersListResponse {
   transfers: Transfer[]
   total: number

@@ -146,7 +146,9 @@
     "no_budgets": "Tiada bajet ditetapkan",
     "set_budget": "Tetapkan bajet untuk mengawal perbelanjaan",
     "view_transactions": "Transaksi",
-    "no_transactions": "Tiada transaksi dalam tempoh ini"
+    "no_transactions": "Tiada transaksi dalam tempoh ini",
+    "notifications": "Pemberitahuan",
+    "notify_threshold": "Amaran pada 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Berulang",

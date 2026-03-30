@@ -146,7 +146,9 @@
     "no_budgets": "Keine Budgets festgelegt",
     "set_budget": "Lege ein Budget fest, um Ausgaben zu kontrollieren",
     "view_transactions": "Transaktionen",
-    "no_transactions": "Keine Transaktionen in diesem Zeitraum"
+    "no_transactions": "Keine Transaktionen in diesem Zeitraum",
+    "notifications": "Benachrichtigungen",
+    "notify_threshold": "Warnung bei 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Wiederkehrend",

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence } from 'framer-motion'
-import { Plus, Warning, ClockCounterClockwise, ArrowCircleDown, ChartBar } from '@phosphor-icons/react'
+import { Plus, Warning, ClockCounterClockwise, ArrowCircleDown, ChartBar, Bell, BellSlash } from '@phosphor-icons/react'
 import { fetchBudgets, createBudget, updateBudget, deleteBudget, fetchBudgetTransactions } from '../api/budgets'
 import type { BudgetTransaction } from '../api/budgets'
 import { categoriesApi } from '../api/categories'
@@ -191,6 +191,7 @@ function BudgetForm({
   const [categoryID, setCategoryID] = useState<number | null>(editBudget?.category_id ?? null)
   const [limitStr, setLimitStr] = useState(editBudget ? String(editBudget.limit_cents / 100) : '')
   const [period, setPeriod] = useState(editBudget?.period ?? 'monthly')
+  const [notificationsEnabled, setNotificationsEnabled] = useState(editBudget?.notifications_enabled ?? true)
 
   const catsQ = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list('expense') })
   const categories = catsQ.data?.categories ?? []
@@ -201,6 +202,7 @@ function BudgetForm({
       limit_cents: parseCents(limitStr),
       period,
       currency_code: currencyCode,
+      notifications_enabled: notificationsEnabled,
     }),
     onSuccess: () => {
       notification('success')
@@ -215,6 +217,7 @@ function BudgetForm({
       category_id: categoryID ?? undefined,
       limit_cents: parseCents(limitStr),
       period,
+      notifications_enabled: notificationsEnabled,
     }),
     onSuccess: () => {
       notification('success')
@@ -305,6 +308,27 @@ function BudgetForm({
             ))}
           </div>
         </div>
+
+        {/* Notifications toggle */}
+        <button
+          type="button"
+          onClick={() => setNotificationsEnabled(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-surface transition-colors active:bg-accent-subtle/30"
+        >
+          <div className="flex items-center gap-3">
+            {notificationsEnabled
+              ? <Bell size={18} weight="fill" className="text-accent" />
+              : <BellSlash size={18} weight="fill" className="text-muted" />
+            }
+            <div className="text-left">
+              <p className="text-[13px] font-semibold text-text">{t('budgets.notifications')}</p>
+              <p className="text-[11px] text-muted">{t('budgets.notify_threshold')}</p>
+            </div>
+          </div>
+          <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${notificationsEnabled ? 'bg-accent' : 'bg-border'}`}>
+            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${notificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+          </div>
+        </button>
 
         {/* Submit */}
         <button

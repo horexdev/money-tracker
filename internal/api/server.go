@@ -197,6 +197,9 @@ func NewServer(d Deps) http.Handler {
 	mux.Handle("/api/v1/transfers", protected(transfersHandler(d.TransferSvc, d.Log)))
 	mux.Handle("/api/v1/transfers/", protected(transfersHandler(d.TransferSvc, d.Log)))
 
+	// Exchange rate lookup.
+	mux.Handle("/api/v1/exchange/rate", protected(exchangeRateHandler(d.ExchangeSvc, d.Log)))
+
 	// Data export.
 	mux.Handle("/api/v1/export", protected(exportHandler(d.ExportSvc, d.Log)))
 

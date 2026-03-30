@@ -11,6 +11,7 @@ export function createBudget(body: {
   period: string
   currency_code: string
   notify_at_percent?: number
+  notifications_enabled?: boolean
 }): Promise<Budget> {
   return api.post('/v1/budgets', body)
 }
@@ -20,6 +21,7 @@ export function updateBudget(id: number, body: {
   limit_cents?: number
   period?: string
   notify_at_percent?: number
+  notifications_enabled?: boolean
 }): Promise<Budget> {
   return api.put(`/v1/budgets/${id}`, body)
 }

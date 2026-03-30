@@ -146,7 +146,9 @@
     "no_budgets": "Bütçe belirlenmemiş",
     "set_budget": "Harcama limitlerini takip etmek için bütçe belirleyin",
     "view_transactions": "İşlemler",
-    "no_transactions": "Bu dönemde işlem yok"
+    "no_transactions": "Bu dönemde işlem yok",
+    "notifications": "Bildirimler",
+    "notify_threshold": "50%, 75%, 95%, 100% uyarısı"
   },
   "recurring": {
     "title": "Tekrarlayan",

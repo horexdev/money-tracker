@@ -63,8 +63,8 @@ func (m *MockBudgetStorer) GetSpentInPeriod(ctx context.Context, userID, categor
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockBudgetStorer) UpdateLastNotified(ctx context.Context, id int64) error {
-	args := m.Called(ctx, id)
+func (m *MockBudgetStorer) UpdateLastNotified(ctx context.Context, id int64, notifiedPercent int) error {
+	args := m.Called(ctx, id, notifiedPercent)
 	return args.Error(0)
 }
 

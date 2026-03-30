@@ -146,7 +146,9 @@
     "no_budgets": "Geen budgetten ingesteld",
     "set_budget": "Stel een budget in om uitgaven te beheersen",
     "view_transactions": "Transacties",
-    "no_transactions": "Geen transacties in deze periode"
+    "no_transactions": "Geen transacties in deze periode",
+    "notifications": "Meldingen",
+    "notify_threshold": "Melding bij 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Terugkerend",

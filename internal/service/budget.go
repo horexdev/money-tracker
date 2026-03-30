@@ -12,19 +12,20 @@ import (
 
 // BudgetNotifier sends budget threshold alerts to users.
 type BudgetNotifier interface {
-	SendBudgetAlert(ctx context.Context, chatID int64, categoryName string, spentPercent int, limitCents, spentCents int64) error
+	SendBudgetAlert(ctx context.Context, chatID int64, lang, categoryName, currencyCode string, spentPercent int, limitCents, spentCents int64) error
 }
 
 // BudgetService handles business logic for budgets.
 type BudgetService struct {
 	repo     BudgetStorer
 	txRepo   TransactionStorer
+	userRepo UserStorer
 	notifier BudgetNotifier
 	log      *slog.Logger
 }
 
-func NewBudgetService(repo BudgetStorer, txRepo TransactionStorer, log *slog.Logger) *BudgetService {
-	return &BudgetService{repo: repo, txRepo: txRepo, log: log}
+func NewBudgetService(repo BudgetStorer, txRepo TransactionStorer, userRepo UserStorer, log *slog.Logger) *BudgetService {
+	return &BudgetService{repo: repo, txRepo: txRepo, userRepo: userRepo, log: log}
 }
 
 // WithNotifier sets the notifier used by CheckAndNotify.
@@ -128,11 +129,20 @@ func (s *BudgetService) ListDistinctUserIDs(ctx context.Context) ([]int64, error
 	return s.repo.ListDistinctUserIDs(ctx)
 }
 
-// CheckAndNotify sends Telegram alerts for budgets that have crossed their threshold
-// and have not yet been notified in the current period.
+// CheckAndNotify sends Telegram alerts for budgets that have crossed a threshold
+// and have not yet been notified for that threshold in the current period.
 func (s *BudgetService) CheckAndNotify(ctx context.Context, userID int64) error {
 	if s.notifier == nil {
 		return nil
+	}
+
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("get user %d: %w", userID, err)
+	}
+	lang := string(user.Language)
+	if lang == "" {
+		lang = "en"
 	}
 
 	budgets, err := s.ListWithProgress(ctx, userID)
@@ -140,20 +150,13 @@ func (s *BudgetService) CheckAndNotify(ctx context.Context, userID int64) error 
 		return fmt.Errorf("list budgets: %w", err)
 	}
 
-	now := time.Now()
 	for _, b := range budgets {
-		if !b.ShouldNotify() {
+		threshold := b.NextAlertThreshold()
+		if threshold == 0 {
 			continue
 		}
 
-		from, _ := periodBounds(b.Period, now)
-
-		// Only notify once per period.
-		if b.LastNotifiedAt != nil && !b.LastNotifiedAt.Before(from) {
-			continue
-		}
-
-		if err := s.notifier.SendBudgetAlert(ctx, userID, b.CategoryName, int(b.UsagePercent()), b.LimitCents, b.SpentCents); err != nil {
+		if err := s.notifier.SendBudgetAlert(ctx, userID, lang, b.CategoryName, b.CurrencyCode, threshold, b.LimitCents, b.SpentCents); err != nil {
 			s.log.WarnContext(ctx, "failed to send budget alert",
 				slog.Int64("user_id", userID),
 				slog.Int64("budget_id", b.ID),
@@ -162,7 +165,7 @@ func (s *BudgetService) CheckAndNotify(ctx context.Context, userID int64) error 
 			continue
 		}
 
-		if err := s.repo.UpdateLastNotified(ctx, b.ID); err != nil {
+		if err := s.repo.UpdateLastNotified(ctx, b.ID, threshold); err != nil {
 			s.log.WarnContext(ctx, "failed to update last_notified_at",
 				slog.Int64("budget_id", b.ID),
 				slog.String("error", err.Error()),

@@ -146,7 +146,9 @@
     "no_budgets": "No hay presupuestos",
     "set_budget": "Establece un presupuesto para controlar tus gastos",
     "view_transactions": "Transacciones",
-    "no_transactions": "Sin transacciones en este período"
+    "no_transactions": "Sin transacciones en este período",
+    "notifications": "Notificaciones",
+    "notify_threshold": "Alerta al 50%, 75%, 95%, 100%"
   },
   "recurring": {
     "title": "Recurrentes",
