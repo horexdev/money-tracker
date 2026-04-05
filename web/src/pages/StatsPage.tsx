@@ -279,9 +279,6 @@ export function StatsPage() {
         {/* Hero block with type toggle */}
         <div className="mx-4 mt-4 hero-gradient px-5 pt-5 pb-4 relative shrink-0"
              style={{ boxShadow: 'var(--shadow-hero)' }}>
-          <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/[0.06] blur-xl pointer-events-none" />
-          <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-indigo-400/15 blur-2xl pointer-events-none" />
-
           <div className="relative z-10">
             {/* Type toggle + account selector row */}
             <div className="flex items-center justify-between gap-2 flex-wrap">

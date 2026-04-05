@@ -100,11 +100,8 @@ export function DashboardPage() {
         <div className="px-4 pt-4 flex flex-col gap-3 shrink-0">
 
           {/* Hero card */}
-          <div className="hero-gradient p-6 relative"
+          <div className="hero-gradient p-6"
                style={{ boxShadow: 'var(--shadow-hero)' }}>
-            <div className="absolute -top-4 -right-4 w-40 h-40 rounded-full bg-white/[0.07] blur-xl pointer-events-none" />
-            <div className="absolute -bottom-4 -left-4 w-32 h-32 rounded-full bg-indigo-400/20 blur-2xl pointer-events-none" />
-            <div className="absolute top-1/2 right-1/3 w-20 h-20 rounded-full bg-white/[0.04] pointer-events-none" />
 
             <div className="relative z-10">
               {/* Top row: label + add button */}

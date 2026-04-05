@@ -67,8 +67,6 @@ export function MorePage() {
           className="block hero-gradient p-6 relative active:scale-[0.98] transition-transform"
           style={{ boxShadow: 'var(--shadow-hero)' }}
         >
-          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/[0.08] blur-xl pointer-events-none" />
-          <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-indigo-400/20 blur-2xl pointer-events-none" />
           <div className="relative z-10">
             <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-white mb-4 border border-white/10">
               {FEATURED.icon}

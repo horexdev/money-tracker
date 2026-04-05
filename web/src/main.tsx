@@ -30,7 +30,7 @@ if (!isTelegram && import.meta.env.DEV) {
   let backendAvailable = false
   try {
     const probe = await fetch('/api/v1/settings', { signal: AbortSignal.timeout(1000) })
-    backendAvailable = probe.status !== 0
+    backendAvailable = probe.ok || probe.status === 401 || probe.status === 403
   } catch {
     backendAvailable = false
   }
