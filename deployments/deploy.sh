@@ -59,6 +59,21 @@ sudo systemctl daemon-reload
 sudo systemctl enable "$BOT_SERVICE"
 sudo systemctl enable "$API_SERVICE"
 
+echo "[deploy] installing backup systemd units..."
+[ -f /tmp/moneytracker-backup.service ] && \
+  sudo mv /tmp/moneytracker-backup.service /etc/systemd/system/moneytracker-backup.service
+[ -f /tmp/moneytracker-backup.timer ] && \
+  sudo mv /tmp/moneytracker-backup.timer /etc/systemd/system/moneytracker-backup.timer
+sudo systemctl daemon-reload
+sudo systemctl enable moneytracker-backup.timer || true
+sudo systemctl start moneytracker-backup.timer  || true
+
+echo "[deploy] installing backup scripts..."
+[ -f "$DEPLOY_DIR/backup.sh.new" ]  && mv "$DEPLOY_DIR/backup.sh.new"  "$DEPLOY_DIR/backup.sh"  && chmod +x "$DEPLOY_DIR/backup.sh"
+[ -f "$DEPLOY_DIR/restore.sh.new" ] && mv "$DEPLOY_DIR/restore.sh.new" "$DEPLOY_DIR/restore.sh" && chmod +x "$DEPLOY_DIR/restore.sh"
+mkdir -p "$DEPLOY_DIR/backups"
+chmod 750 "$DEPLOY_DIR/backups"
+
 DOMAIN=money-tracker.hrxdev.cc
 CERT_PATH=/etc/letsencrypt/live/${DOMAIN}/fullchain.pem
 

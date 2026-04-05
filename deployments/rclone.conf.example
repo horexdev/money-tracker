@@ -1,0 +1,74 @@
+# rclone configuration for MoneyTracker Google Drive backups.
+#
+# Copy this file to /opt/moneytracker/rclone.conf and fill in your credentials.
+# The backup script uses this file via: rclone --config /opt/moneytracker/rclone.conf
+#
+# Secure the file after filling in:
+#   sudo chown moneytracker:moneytracker /opt/moneytracker/rclone.conf
+#   sudo chmod 600 /opt/moneytracker/rclone.conf
+#
+# ── OPTION A: Service Account (RECOMMENDED for server deployments) ────────────
+#
+# Service accounts run without a browser and tokens never expire — ideal for
+# unattended server use.
+#
+# Setup steps:
+#   1. Go to https://console.cloud.google.com/
+#   2. Create or select a project
+#   3. Enable the Google Drive API: APIs & Services → Enable APIs → Google Drive API
+#   4. Create a service account: IAM & Admin → Service Accounts → Create Service Account
+#      - Name: moneytracker-backup (or any name)
+#      - No roles needed (Drive access is granted by folder sharing)
+#   5. Create a JSON key: click the service account → Keys → Add Key → JSON
+#      Upload the downloaded JSON to /opt/moneytracker/gdrive-service-account.json
+#      and set permissions: sudo chmod 600 /opt/moneytracker/gdrive-service-account.json
+#   6. In Google Drive, create a folder named "moneytracker-backups" (or any name)
+#   7. Share that folder with the service account email
+#      (shown in the JSON key as "client_email", e.g. moneytracker-backup@project.iam.gserviceaccount.com)
+#      with "Editor" access
+#   8. Get the folder ID: open the folder in your browser; copy the string after /folders/
+#      in the URL (e.g. https://drive.google.com/drive/folders/1ABC...XYZ → ID is 1ABC...XYZ)
+#   9. Fill in the values below and save as /opt/moneytracker/rclone.conf
+
+[gdrive]
+type = drive
+scope = drive.file
+service_account_file = /opt/moneytracker/gdrive-service-account.json
+root_folder_id = YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE
+
+# ── OPTION B: OAuth (personal use — requires browser once) ───────────────────
+#
+# Run rclone config ONCE on a machine with a browser (e.g. your laptop), then
+# copy the generated rclone.conf to the server.
+#
+#   rclone config
+#   → n (new remote)
+#   → name: gdrive
+#   → storage: drive (Google Drive)
+#   → client_id: (leave blank)
+#   → client_secret: (leave blank)
+#   → scope: 2 (drive.file — access only to files created by rclone)
+#   → root_folder_id: (leave blank or paste your folder ID)
+#   → service_account_file: (leave blank)
+#   → auto config: y (opens browser)
+#   → Authenticate, then finish
+#
+# The generated config will look like:
+#
+# [gdrive]
+# type = drive
+# scope = drive.file
+# token = {"access_token":"...","token_type":"Bearer","refresh_token":"...","expiry":"..."}
+#
+# WARNING: OAuth refresh tokens can expire if unused for 6+ months.
+#          Service Account (Option A) is preferred for production servers.
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+#
+# After filling in this file, verify the connection:
+#   rclone --config /opt/moneytracker/rclone.conf lsd gdrive:
+#   rclone --config /opt/moneytracker/rclone.conf ls gdrive:moneytracker-backups/
+#
+# Trigger a manual backup to test the full flow:
+#   sudo systemctl start moneytracker-backup.service
+#   journalctl -u moneytracker-backup.service -f

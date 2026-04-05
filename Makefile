@@ -8,7 +8,7 @@ DATABASE_URL := $(shell grep -v '^\#' .env | grep '^DATABASE_URL=' | cut -d'=' -
 GOOSE      := $(GOOSE_BIN) -dir db/migrations postgres "$(DATABASE_URL)"
 SQLC       := cd db && sqlc generate
 
-.PHONY: help up down migrate migrate-down migrate-status sqlc build build-api build-check run run-api web-dev web-build test test-unit test-integration lint vet vuln tidy clean smoke-test rollback
+.PHONY: help up down migrate migrate-down migrate-status sqlc build build-api build-check run run-api web-dev web-build test test-unit test-integration lint vet vuln tidy clean smoke-test rollback backup backup-status
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
@@ -87,5 +87,13 @@ rollback: ## Restore previous binary on server and restart service (requires DEP
 	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) \
 		'cp /opt/moneytracker/bot.prev /opt/moneytracker/bot && \
 		 sudo systemctl restart moneytracker'
+
+backup: ## Trigger manual backup on server (requires DEPLOY_USER, DEPLOY_HOST)
+	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) 'sudo systemctl start moneytracker-backup.service'
+
+backup-status: ## Show backup timer status and recent logs on server (requires DEPLOY_USER, DEPLOY_HOST)
+	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) \
+		'systemctl list-timers moneytracker-backup.timer --no-pager; \
+		 echo; journalctl -u moneytracker-backup.service --no-pager -n 30'
 
 .DEFAULT_GOAL := help

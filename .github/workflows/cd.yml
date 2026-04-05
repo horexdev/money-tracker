@@ -64,16 +64,24 @@ jobs:
             --transform 's|^web/dist|web-dist|' \
             --transform 's|^deployments/moneytracker\.service$|moneytracker.service|' \
             --transform 's|^deployments/moneytracker-api\.service$|moneytracker-api.service|' \
+            --transform 's|^deployments/moneytracker-backup\.service$|moneytracker-backup.service|' \
+            --transform 's|^deployments/moneytracker-backup\.timer$|moneytracker-backup.timer|' \
             --transform 's|^deployments/docker-compose\.yml$|docker-compose.yml|' \
             --transform 's|^deployments/nginx\.conf$|nginx.conf|' \
             --transform 's|^deployments/deploy\.sh$|deploy.sh|' \
+            --transform 's|^deployments/backup\.sh$|backup.sh.new|' \
+            --transform 's|^deployments/restore\.sh$|restore.sh.new|' \
             bin/bot bin/api bin/goose db/migrations web/dist \
             deployments/moneytracker.service deployments/moneytracker-api.service \
+            deployments/moneytracker-backup.service deployments/moneytracker-backup.timer \
             deployments/docker-compose.yml deployments/nginx.conf deployments/deploy.sh \
+            deployments/backup.sh deployments/restore.sh \
             | ssh "${DEPLOY_USER}@${DEPLOY_HOST}" \
                 'tar xzf - -C /opt/moneytracker \
                  && mv /opt/moneytracker/moneytracker.service /tmp/ \
                  && mv /opt/moneytracker/moneytracker-api.service /tmp/ \
+                 && mv /opt/moneytracker/moneytracker-backup.service /tmp/ \
+                 && mv /opt/moneytracker/moneytracker-backup.timer /tmp/ \
                  && chmod +x /opt/moneytracker/deploy.sh'
 
       - name: Deploy on server

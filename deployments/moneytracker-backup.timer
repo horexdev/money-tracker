@@ -1,0 +1,24 @@
+# systemd timer that triggers moneytracker-backup.service every 2 hours.
+#
+# Install (done automatically by deploy.sh):
+#   sudo cp moneytracker-backup.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now moneytracker-backup.timer
+#
+# Check status:
+#   systemctl list-timers moneytracker-backup.timer
+#   journalctl -u moneytracker-backup.service -n 50
+
+[Unit]
+Description=MoneyTracker PostgreSQL Backup Timer (every 2 hours)
+Requires=moneytracker-backup.service
+
+[Timer]
+# Fires at 00:00, 02:00, 04:00, 06:00 ... 22:00 (server local time)
+OnCalendar=*-*-* 00/2:00:00
+# Run a missed backup if the server was down during a scheduled window
+Persistent=true
+Unit=moneytracker-backup.service
+
+[Install]
+WantedBy=timers.target
