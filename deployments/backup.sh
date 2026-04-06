@@ -11,7 +11,7 @@ CONTAINER=moneytracker-postgres-1
 DBNAME=moneytracker
 DBUSER=moneytracker
 RCLONE_REMOTE="${RCLONE_REMOTE:-gdrive}"
-RCLONE_DEST="${RCLONE_REMOTE}:moneytracker-backups"
+RCLONE_DEST="${RCLONE_REMOTE}:"
 RETENTION_DAYS=7
 
 # ── guards ────────────────────────────────────────────────────────────────────
