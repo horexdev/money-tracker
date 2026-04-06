@@ -38,9 +38,18 @@
   --radius-xs:   12px;
 
   /* Shadows */
-  --shadow-card:    0 2px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-card-lg: 0 8px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-hero:    0 12px 40px rgba(30, 27, 75, 0.4), 0 4px 12px rgba(30, 27, 75, 0.25);
+  --shadow-card:        0 2px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card-lg:     0 8px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-hero:        0 12px 40px rgba(30, 27, 75, 0.4), 0 4px 12px rgba(30, 27, 75, 0.25);
+  --shadow-focus:       0 0 0 3px color-mix(in srgb, var(--app-accent) 20%, transparent);
+  --shadow-fab:         0 4px 20px color-mix(in srgb, var(--app-accent) 45%, transparent);
+  --shadow-fab-active:  0 2px 8px  color-mix(in srgb, var(--app-accent) 30%, transparent);
+  --shadow-modal:       0 -8px 40px rgba(0, 0, 0, 0.15);
+  --shadow-button:      0 4px 16px color-mix(in srgb, var(--app-accent) 25%, transparent);
+  --shadow-dropdown:    0 8px 32px rgba(0, 0, 0, 0.18);
+  --shadow-accent-pill: 0 2px 12px color-mix(in srgb, var(--app-accent) 40%, transparent);
+  --shadow-income:      0 4px 16px color-mix(in srgb, var(--color-income) 30%, transparent);
+  --shadow-expense:     0 4px 16px color-mix(in srgb, var(--color-expense) 30%, transparent);
 }
 
 /* ─── Light theme palette ─── */

@@ -11,7 +11,7 @@ import type {
   Transfer,
   AdminUsersResponse,
   AdminStatsResponse,
-} from '../types'
+} from '../shared/types'
 
 export const mockBalance: BalanceResponse = {
   by_currency: [
