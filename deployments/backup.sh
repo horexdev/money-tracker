@@ -45,7 +45,7 @@ FILEPATH="${BACKUP_DIR}/${FILENAME}"
 echo "[backup] starting backup: ${FILENAME}"
 
 # ── pg_dump ───────────────────────────────────────────────────────────────────
-if ! docker exec -T "$CONTAINER" \
+if ! docker exec "$CONTAINER" \
     env PGPASSWORD="$PGPASSWORD" \
     pg_dump -U "$DBUSER" -d "$DBNAME" --no-password \
     | gzip -9 > "$FILEPATH"; then
