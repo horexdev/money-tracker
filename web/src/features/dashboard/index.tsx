@@ -68,7 +68,7 @@ export function DashboardPage() {
 
   const txQ = useQuery({
     queryKey: ['transactions', 1, selectedAccountId],
-    queryFn: () => transactionsApi.list(1, 5, selectedAccountId),
+    queryFn: () => transactionsApi.list(1, 5, { accountId: selectedAccountId }),
     placeholderData: keepPreviousData,
   })
 

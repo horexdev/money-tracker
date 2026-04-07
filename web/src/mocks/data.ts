@@ -117,6 +117,10 @@ export const mockSettings: UserSettings = {
   display_currencies: ['EUR', 'GBP'],
   language: 'en',
   is_admin: true,
+  notify_budget_alerts: false,
+  notify_recurring_reminders: false,
+  notify_weekly_summary: false,
+  notify_goal_milestones: false,
 }
 
 export const mockAccounts: { accounts: Account[] } = {
