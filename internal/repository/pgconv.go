@@ -69,15 +69,6 @@ func pgOptionalTimestamptz(t *time.Time) pgtype.Timestamptz {
 	return pgtype.Timestamptz{Time: *t, Valid: true}
 }
 
-// goStringPtr converts a pgtype.Text to a *string (nil if invalid).
-func goStringPtr(v pgtype.Text) *string {
-	if !v.Valid {
-		return nil
-	}
-	s := v.String
-	return &s
-}
-
 // goInt64Ptr converts a pgtype.Int8 to a *int64 (nil if invalid).
 func goInt64Ptr(v pgtype.Int8) *int64 {
 	if !v.Valid {

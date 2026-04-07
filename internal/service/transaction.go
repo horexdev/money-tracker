@@ -191,7 +191,8 @@ func (s *TransactionService) ListPaged(ctx context.Context, userID int64, page, 
 	if err != nil {
 		return nil, 0, fmt.Errorf("count transactions for user %d: %w", userID, err)
 	}
-	totalPages, page, offset := calcPage(total, page, pageSize)
+	var totalPages, offset int
+	totalPages, page, offset = calcPage(total, page, pageSize)
 	txs, err := s.txRepo.List(ctx, userID, pageSize, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list transactions for user %d: %w", userID, err)
@@ -205,7 +206,8 @@ func (s *TransactionService) ListPagedByAccount(ctx context.Context, userID, acc
 	if err != nil {
 		return nil, 0, fmt.Errorf("count transactions for account %d: %w", accountID, err)
 	}
-	totalPages, page, offset := calcPage(total, page, pageSize)
+	var totalPages, offset int
+	totalPages, page, offset = calcPage(total, page, pageSize)
 	txs, err := s.txRepo.ListByAccount(ctx, userID, accountID, pageSize, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list transactions for account %d: %w", accountID, err)
@@ -219,7 +221,8 @@ func (s *TransactionService) ListPagedWithDateRange(ctx context.Context, userID 
 	if err != nil {
 		return nil, 0, fmt.Errorf("count transactions with date range for user %d: %w", userID, err)
 	}
-	totalPages, page, offset := calcPage(total, page, pageSize)
+	var totalPages, offset int
+	totalPages, page, offset = calcPage(total, page, pageSize)
 	txs, err := s.txRepo.ListWithDateRange(ctx, userID, from, to, pageSize, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list transactions with date range for user %d: %w", userID, err)
@@ -233,7 +236,8 @@ func (s *TransactionService) ListPagedByAccountWithDateRange(ctx context.Context
 	if err != nil {
 		return nil, 0, fmt.Errorf("count transactions with date range for account %d: %w", accountID, err)
 	}
-	totalPages, page, offset := calcPage(total, page, pageSize)
+	var totalPages, offset int
+	totalPages, page, offset = calcPage(total, page, pageSize)
 	txs, err := s.txRepo.ListByAccountWithDateRange(ctx, userID, accountID, from, to, pageSize, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list transactions with date range for account %d: %w", accountID, err)
