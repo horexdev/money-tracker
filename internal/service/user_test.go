@@ -113,3 +113,43 @@ func TestUserService_UpdateDisplayCurrencies_Valid(t *testing.T) {
 	require.NoError(t, err)
 	repo.AssertExpectations(t)
 }
+
+func TestUserService_UpdateNotificationPreferences_Success(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	prefs := domain.NotificationPrefs{
+		BudgetAlerts:       true,
+		RecurringReminders: false,
+		WeeklySummary:      true,
+		GoalMilestones:     false,
+	}
+	expected := &domain.User{
+		ID:                       1,
+		NotifyBudgetAlerts:       true,
+		NotifyRecurringReminders: false,
+		NotifyWeeklySummary:      true,
+		NotifyGoalMilestones:     false,
+	}
+	repo.On("UpdateNotificationPreferences", context.Background(), int64(1), prefs).Return(expected, nil)
+
+	got, err := svc.UpdateNotificationPreferences(context.Background(), 1, prefs)
+	require.NoError(t, err)
+	assert.True(t, got.NotifyBudgetAlerts)
+	assert.True(t, got.NotifyWeeklySummary)
+	assert.False(t, got.NotifyRecurringReminders)
+	repo.AssertExpectations(t)
+}
+
+func TestUserService_UpdateNotificationPreferences_RepoError(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	svc := service.NewUserService(repo, testutil.TestLogger())
+
+	prefs := domain.NotificationPrefs{}
+	repo.On("UpdateNotificationPreferences", context.Background(), int64(1), prefs).Return(nil, domain.ErrUserNotFound)
+
+	_, err := svc.UpdateNotificationPreferences(context.Background(), 1, prefs)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrUserNotFound)
+	repo.AssertExpectations(t)
+}

@@ -61,11 +61,19 @@
     "all_types": "Усі",
     "expenses": "Витрати",
     "incomes": "Доходи",
-    "search_placeholder": "Пошук за нотаткою...",
+    "search_placeholder": "Пошук транзакцій...",
     "day_total": "Разом",
     "no_more": "Ви все переглянули",
-    "swipe_to_delete": "Проведіть вліво, щоб видалити",
-    "page_of": "{{page}} з {{total}}"
+    "page_of": "{{page}} з {{total}}",
+    "account_filter": "Рахунок",
+    "date_filter": "Дата",
+    "sort": "Сортування",
+    "sort_newest": "Спочатку нові",
+    "sort_oldest": "Спочатку старі",
+    "sort_amount_high": "Сума: за спаданням",
+    "sort_amount_low": "Сума: за зростанням",
+    "clear_filters": "Скинути фільтри",
+    "category_filter": "Категорія"
   },
   "stats": {
     "title": "Статистика",
@@ -131,7 +139,8 @@
       "Other": "Інше",
       "Savings": "Накопичення",
       "Transfer": "Переказ"
-    }
+    },
+    "type_savings": "Заощадження"
   },
   "budgets": {
     "title": "Бюджети",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Скинути всі дані?",
     "reset_confirm_desc": "Це безповоротно видалить всі транзакції, бюджети, цілі накопичень та повторювані транзакції. Цю дію не можна скасувати.",
     "reset_confirm_btn": "Так, видалити все",
-    "reset_success": "Всі дані видалено"
+    "reset_success": "Всі дані видалено",
+    "theme": "Тема",
+    "theme_system": "Авто",
+    "theme_light": "Світла",
+    "theme_dark": "Темна",
+    "notifications": "Сповіщення",
+    "notify_budget_alerts": "Сповіщення про бюджет",
+    "notify_budget_alerts_desc": "Коли витрати наближаються до ліміту",
+    "notify_recurring_reminders": "Регулярні нагадування",
+    "notify_recurring_reminders_desc": "Нагадування в день виконання транзакції",
+    "notify_weekly_summary": "Підсумок тижня",
+    "notify_weekly_summary_desc": "Понеділковий огляд витрат за тиждень",
+    "notify_goal_milestones": "Досягнення цілей",
+    "notify_goal_milestones_desc": "Сповіщення при 25%, 50%, 75%, 100% цілі"
   },
   "more": {
     "title": "Ще",
@@ -273,5 +295,15 @@
     "credit": "Кредитний",
     "crypto": "Крипто"
   },
-  "setDefault": "Зробити основним"
+  "setDefault": "Зробити основним",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

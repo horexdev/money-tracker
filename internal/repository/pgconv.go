@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -59,6 +61,23 @@ func pgOptionalInt8(v *int64) pgtype.Int8 {
 	return pgtype.Int8{Int64: *v, Valid: true}
 }
 
+// pgOptionalTimestamptz converts a *time.Time to a pgtype.Timestamptz (invalid/null when nil).
+func pgOptionalTimestamptz(t *time.Time) pgtype.Timestamptz {
+	if t == nil {
+		return pgtype.Timestamptz{}
+	}
+	return pgtype.Timestamptz{Time: *t, Valid: true}
+}
+
+// goStringPtr converts a pgtype.Text to a *string (nil if invalid).
+func goStringPtr(v pgtype.Text) *string {
+	if !v.Valid {
+		return nil
+	}
+	s := v.String
+	return &s
+}
+
 // goInt64Ptr converts a pgtype.Int8 to a *int64 (nil if invalid).
 func goInt64Ptr(v pgtype.Int8) *int64 {
 	if !v.Valid {
@@ -82,6 +101,15 @@ func pgNumeric(v float64) pgtype.Numeric {
 	var num pgtype.Numeric
 	_ = num.Scan(s)
 	return num
+}
+
+// isDuplicateError returns true when err is a PostgreSQL unique-constraint violation (23505).
+func isDuplicateError(err error) bool {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code == "23505"
+	}
+	return false
 }
 
 // goFloat64 converts a pgtype.Numeric to a float64 (1.0 if invalid).

@@ -15,7 +15,7 @@ import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
-import { EmptyState, SwipeToDelete, FAB, BottomSheet } from '../../shared/ui'
+import { EmptyState, ActionRow, FAB, BottomSheet } from '../../shared/ui'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
 import { CurrencyBadge } from '../../shared/lib/currencyIcons'
@@ -109,7 +109,7 @@ function BudgetCard({
   const barColor = pct >= 100 ? '#ef4444' : pct >= 80 ? '#f59e0b' : '#22c55e'
 
   return (
-    <SwipeToDelete onDelete={() => onDelete(budget.id)}>
+    <ActionRow onDelete={() => onDelete(budget.id)}>
       <button
         onClick={() => onEdit(budget)}
         className="w-full px-4 py-4 text-left active:bg-accent-subtle/30 transition-colors"
@@ -157,7 +157,7 @@ function BudgetCard({
           <span>{t('budgets.limit')}: <span className="font-semibold text-text">{formatCents(budget.limit_cents, baseCurrency)}</span></span>
         </div>
       </button>
-    </SwipeToDelete>
+    </ActionRow>
   )
 }
 

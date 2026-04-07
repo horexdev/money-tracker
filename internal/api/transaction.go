@@ -14,16 +14,19 @@ import (
 )
 
 type transactionResponse struct {
-	ID             int64  `json:"id"`
-	Type           string `json:"type"`
-	AmountCents    int64  `json:"amount_cents"`
-	CurrencyCode   string `json:"currency_code"`
-	CategoryID     int64  `json:"category_id"`
-	CategoryName   string `json:"category_name"`
-	CategoryEmoji  string `json:"category_emoji"`
-	CategoryColor  string `json:"category_color"`
-	Note           string `json:"note"`
-	CreatedAt      string `json:"created_at"`
+	ID            int64  `json:"id"`
+	Type          string `json:"type"`
+	AmountCents   int64  `json:"amount_cents"`
+	CurrencyCode  string `json:"currency_code"`
+	CategoryID    int64  `json:"category_id"`
+	CategoryName  string `json:"category_name"`
+	CategoryEmoji string `json:"category_emoji"`
+	CategoryColor string `json:"category_color"`
+	Note          string `json:"note"`
+	CreatedAt     string `json:"created_at"`
+	AccountID     *int64 `json:"account_id,omitempty"`
+	AccountName   string `json:"account_name,omitempty"`
+	IsAdjustment  bool   `json:"is_adjustment,omitempty"`
 }
 
 type listTransactionsResponse struct {
@@ -47,6 +50,8 @@ type transactionManager interface {
 	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error)
 	ListPaged(ctx context.Context, userID int64, page, pageSize int) ([]*domain.Transaction, int, error)
 	ListPagedByAccount(ctx context.Context, userID, accountID int64, page, pageSize int) ([]*domain.Transaction, int, error)
+	ListPagedWithDateRange(ctx context.Context, userID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error)
+	ListPagedByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error)
 	Delete(ctx context.Context, id, userID int64) error
 	UpdateTransaction(ctx context.Context, userID, id, amountCents, categoryID int64, note string, createdAt time.Time) (*domain.Transaction, error)
 }
@@ -106,17 +111,49 @@ func listTransactions(w http.ResponseWriter, r *http.Request, userID int64, txSv
 		pageSize = defaultPageSize
 	}
 
+	// Parse optional date range params (format: YYYY-MM-DD).
+	var from, to *time.Time
+	if fromStr := q.Get("from"); fromStr != "" {
+		t, err := time.Parse("2006-01-02", fromStr)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, errorResponse{Error: "from must be in YYYY-MM-DD format"})
+			return
+		}
+		from = &t
+	}
+	if toStr := q.Get("to"); toStr != "" {
+		t, err := time.Parse("2006-01-02", toStr)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, errorResponse{Error: "to must be in YYYY-MM-DD format"})
+			return
+		}
+		// Include the entire "to" day.
+		endOfDay := t.Add(24*time.Hour - time.Second)
+		to = &endOfDay
+	}
+
+	useDateRange := from != nil || to != nil
+
 	var txs []*domain.Transaction
 	var totalPages int
 	var err error
 	if accountIDStr := q.Get("account_id"); accountIDStr != "" {
-		if accountID, parseErr := strconv.ParseInt(accountIDStr, 10, 64); parseErr == nil && accountID > 0 {
+		accountID, parseErr := strconv.ParseInt(accountIDStr, 10, 64)
+		if parseErr != nil || accountID <= 0 {
+			writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid account_id"})
+			return
+		}
+		if useDateRange {
+			txs, totalPages, err = txSvc.ListPagedByAccountWithDateRange(r.Context(), userID, accountID, from, to, page, pageSize)
+		} else {
 			txs, totalPages, err = txSvc.ListPagedByAccount(r.Context(), userID, accountID, page, pageSize)
+		}
+	} else {
+		if useDateRange {
+			txs, totalPages, err = txSvc.ListPagedWithDateRange(r.Context(), userID, from, to, page, pageSize)
 		} else {
 			txs, totalPages, err = txSvc.ListPaged(r.Context(), userID, page, pageSize)
 		}
-	} else {
-		txs, totalPages, err = txSvc.ListPaged(r.Context(), userID, page, pageSize)
 	}
 	if err != nil {
 		writeError(w, log, err)
@@ -252,7 +289,7 @@ func updateTransaction(w http.ResponseWriter, r *http.Request, userID, id int64,
 }
 
 func txToResponse(tx *domain.Transaction) transactionResponse {
-	return transactionResponse{
+	resp := transactionResponse{
 		ID:            tx.ID,
 		Type:          string(tx.Type),
 		AmountCents:   tx.AmountCents,
@@ -263,5 +300,12 @@ func txToResponse(tx *domain.Transaction) transactionResponse {
 		CategoryColor: tx.CategoryColor,
 		Note:          tx.Note,
 		CreatedAt:     tx.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		AccountName:  tx.AccountName,
+		IsAdjustment: tx.IsAdjustment,
 	}
+	if tx.AccountID != 0 {
+		id := tx.AccountID
+		resp.AccountID = &id
+	}
+	return resp
 }

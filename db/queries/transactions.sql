@@ -13,7 +13,7 @@ SELECT
     COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
     COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
 FROM transactions
-WHERE user_id = $1;
+WHERE user_id = $1 AND is_adjustment = false;
 
 -- name: ListTransactions :many
 SELECT
@@ -33,11 +33,12 @@ SELECT
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
 WHERE t.user_id = $1
+  AND t.is_adjustment = false
 ORDER BY t.created_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: CountUserTransactions :one
-SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1;
+SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND is_adjustment = false;
 
 -- name: GetStatsByCategory :many
 SELECT
@@ -53,6 +54,7 @@ JOIN categories c ON c.id = t.category_id
 WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
+  AND t.is_adjustment = false
 GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
@@ -78,6 +80,7 @@ WHERE t.user_id      = $1
   AND t.type         = 'expense'
   AND t.created_at  >= $3
   AND t.created_at  <  $4
+  AND t.is_adjustment = false
 ORDER BY t.created_at DESC;
 
 -- name: DeleteTransaction :exec
@@ -89,7 +92,7 @@ SELECT
     COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
     COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
 FROM transactions
-WHERE user_id = $1
+WHERE user_id = $1 AND is_adjustment = false
 GROUP BY currency_code;
 
 -- name: GetTotalInBaseCurrency :one
@@ -102,7 +105,7 @@ SELECT COALESCE(
     ), 0
 )::BIGINT AS total_net_base_cents
 FROM transactions
-WHERE user_id = $1;
+WHERE user_id = $1 AND is_adjustment = false;
 
 -- name: ListTransactionsByAccount :many
 SELECT
@@ -122,11 +125,12 @@ SELECT
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
 WHERE t.user_id = $1 AND t.account_id = $2
+  AND t.is_adjustment = false
 ORDER BY t.created_at DESC
 LIMIT $3 OFFSET $4;
 
 -- name: CountUserTransactionsByAccount :one
-SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2;
+SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false;
 
 -- name: GetStatsByCategoryAndAccount :many
 SELECT
@@ -143,6 +147,7 @@ WHERE t.user_id    = $1
   AND t.account_id = $2
   AND t.created_at >= $3
   AND t.created_at <  $4
+  AND t.is_adjustment = false
 GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
@@ -152,7 +157,7 @@ SELECT
     COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
     COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
 FROM transactions
-WHERE user_id = $1 AND account_id = $2
+WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
 GROUP BY currency_code;
 
 -- name: UpdateTransaction :one
@@ -162,4 +167,78 @@ SET amount_cents = $3,
     note         = $5,
     created_at   = $6
 WHERE id = $1 AND user_id = $2
+RETURNING *;
+
+-- name: ListTransactionsWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.exchange_rate_snapshot,
+    t.base_currency_at_creation,
+    t.account_id,
+    c.name  AS category_name,
+    c.emoji AS category_emoji,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1
+  AND t.is_adjustment = false
+  AND ($4::TIMESTAMPTZ IS NULL OR t.created_at >= $4)
+  AND ($5::TIMESTAMPTZ IS NULL OR t.created_at <= $5)
+ORDER BY t.created_at DESC
+LIMIT $2 OFFSET $3;
+
+-- name: CountUserTransactionsWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND is_adjustment = false
+  AND ($2::TIMESTAMPTZ IS NULL OR created_at >= $2)
+  AND ($3::TIMESTAMPTZ IS NULL OR created_at <= $3);
+
+-- name: ListTransactionsByAccountWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.exchange_rate_snapshot,
+    t.base_currency_at_creation,
+    t.account_id,
+    c.name  AS category_name,
+    c.emoji AS category_emoji,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1 AND t.account_id = $2
+  AND t.is_adjustment = false
+  AND ($5::TIMESTAMPTZ IS NULL OR t.created_at >= $5)
+  AND ($6::TIMESTAMPTZ IS NULL OR t.created_at <= $6)
+ORDER BY t.created_at DESC
+LIMIT $3 OFFSET $4;
+
+-- name: CountUserTransactionsByAccountWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
+  AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3)
+  AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4);
+
+-- name: CreateAdjustmentTransaction :one
+-- Creates a balance-adjustment transaction that is hidden from history and statistics
+-- but is included in balance calculations. is_adjustment is always set to true.
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note,
+    currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
 RETURNING *;

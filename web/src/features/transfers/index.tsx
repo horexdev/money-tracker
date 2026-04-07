@@ -14,7 +14,7 @@ import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
-import { EmptyState, SwipeToDelete, FAB, BottomSheet } from '../../shared/ui'
+import { EmptyState, ActionRow, FAB, BottomSheet } from '../../shared/ui'
 import type { Transfer, Account } from '../../shared/types'
 
 /* ─── Transfer Row ─── */
@@ -31,7 +31,7 @@ function TransferRow({
 
   return (
     <div className={`transition-opacity ${isDeleting ? 'opacity-30 pointer-events-none' : ''}`}>
-      <SwipeToDelete onDelete={() => onDelete(transfer.id)}>
+      <ActionRow onDelete={() => onDelete(transfer.id)}>
         <div className="flex items-center gap-3 px-4 py-3">
           {/* Icon */}
           <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 bg-accent/10">
@@ -68,7 +68,7 @@ function TransferRow({
             )}
           </div>
         </div>
-      </SwipeToDelete>
+      </ActionRow>
     </div>
   )
 }

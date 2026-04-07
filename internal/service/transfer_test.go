@@ -20,7 +20,7 @@ func newTransferService(transfers *mocks.MockTransferStorer, accounts *mocks.Moc
 var transferCat = &domain.Category{ID: 99, Name: "Transfer"}
 
 func setupTransferMocks(catRepo *mocks.MockCategoryStorer, txRepo *mocks.MockTransactionStorer, userID, fromAccID, toAccID, fromTxID, toTxID int64) {
-	catRepo.On("GetByName", mock.Anything, int64(0), "transfer").Return(transferCat, nil)
+	catRepo.On("GetSystemCategoryByType", mock.Anything, "transfer").Return(transferCat, nil)
 	txRepo.On("Create", mock.Anything, mock.MatchedBy(func(t *domain.Transaction) bool {
 		return t.Type == domain.TransactionTypeExpense
 	})).Return(&domain.Transaction{ID: fromTxID}, nil)

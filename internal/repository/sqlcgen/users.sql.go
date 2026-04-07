@@ -84,7 +84,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language FROM users WHERE id = $1
+SELECT id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -100,6 +100,10 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
 		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
 	)
 	return i, err
 }
@@ -109,7 +113,7 @@ UPDATE users
 SET display_currencies = $2,
     updated_at         = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language
+RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpdateDisplayCurrenciesParams struct {
@@ -130,6 +134,56 @@ func (q *Queries) UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplay
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
 		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
+	)
+	return i, err
+}
+
+const updateNotificationPreferences = `-- name: UpdateNotificationPreferences :one
+UPDATE users
+SET notify_budget_alerts       = $2,
+    notify_recurring_reminders = $3,
+    notify_weekly_summary      = $4,
+    notify_goal_milestones     = $5,
+    updated_at                 = NOW()
+WHERE id = $1
+RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+`
+
+type UpdateNotificationPreferencesParams struct {
+	ID                       int64 `json:"id"`
+	NotifyBudgetAlerts       bool  `json:"notify_budget_alerts"`
+	NotifyRecurringReminders bool  `json:"notify_recurring_reminders"`
+	NotifyWeeklySummary      bool  `json:"notify_weekly_summary"`
+	NotifyGoalMilestones     bool  `json:"notify_goal_milestones"`
+}
+
+func (q *Queries) UpdateNotificationPreferences(ctx context.Context, arg UpdateNotificationPreferencesParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateNotificationPreferences,
+		arg.ID,
+		arg.NotifyBudgetAlerts,
+		arg.NotifyRecurringReminders,
+		arg.NotifyWeeklySummary,
+		arg.NotifyGoalMilestones,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.CurrencyCode,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisplayCurrencies,
+		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
 	)
 	return i, err
 }
@@ -139,7 +193,7 @@ UPDATE users
 SET currency_code = $2,
     updated_at    = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language
+RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpdateUserCurrencyParams struct {
@@ -160,6 +214,10 @@ func (q *Queries) UpdateUserCurrency(ctx context.Context, arg UpdateUserCurrency
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
 		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
 	)
 	return i, err
 }
@@ -169,7 +227,7 @@ UPDATE users
 SET language   = $2,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language
+RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpdateUserLanguageParams struct {
@@ -190,6 +248,10 @@ func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguage
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
 		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
 	)
 	return i, err
 }
@@ -204,7 +266,7 @@ ON CONFLICT (id) DO UPDATE
         language      = CASE WHEN users.language = '' OR users.language IS NULL THEN EXCLUDED.language ELSE users.language END,
         currency_code = CASE WHEN users.currency_code = '' OR users.currency_code IS NULL THEN EXCLUDED.currency_code ELSE users.currency_code END,
         updated_at    = NOW()
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language
+RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpsertUserParams struct {
@@ -236,6 +298,10 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
 		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
 	)
 	return i, err
 }

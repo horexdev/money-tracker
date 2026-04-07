@@ -98,3 +98,71 @@ func TestSettingsHandler_UnsupportedMethod(t *testing.T) {
 	h.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
 }
+
+func TestSettingsHandler_GET_IncludesNotificationPrefs(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:                       1,
+		CurrencyCode:             "USD",
+		Language:                 domain.LangEN,
+		NotifyBudgetAlerts:       true,
+		NotifyRecurringReminders: false,
+		NotifyWeeklySummary:      true,
+		NotifyGoalMilestones:     false,
+	}, nil)
+
+	h := buildSettingsHandler(repo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, true, resp["notify_budget_alerts"])
+	assert.Equal(t, false, resp["notify_recurring_reminders"])
+	assert.Equal(t, true, resp["notify_weekly_summary"])
+	assert.Equal(t, false, resp["notify_goal_milestones"])
+}
+
+func TestSettingsHandler_PATCH_NotificationPrefs(t *testing.T) {
+	repo := &mocks.MockUserStorer{}
+	existing := &domain.User{
+		ID:                       1,
+		CurrencyCode:             "USD",
+		Language:                 domain.LangEN,
+		NotifyBudgetAlerts:       true,
+		NotifyRecurringReminders: false,
+		NotifyWeeklySummary:      false,
+		NotifyGoalMilestones:     false,
+	}
+	repo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
+
+	updatedPrefs := domain.NotificationPrefs{
+		BudgetAlerts:       false,
+		RecurringReminders: false,
+		WeeklySummary:      false,
+		GoalMilestones:     false,
+	}
+	updated := &domain.User{
+		ID:                 1,
+		CurrencyCode:       "USD",
+		Language:           domain.LangEN,
+		NotifyBudgetAlerts: false,
+	}
+	repo.On("UpdateNotificationPreferences", mock.Anything, int64(1), updatedPrefs).Return(updated, nil)
+
+	h := buildSettingsHandler(repo)
+	body := `{"notification_preferences":{"notify_budget_alerts":false}}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, false, resp["notify_budget_alerts"])
+	repo.AssertExpectations(t)
+}

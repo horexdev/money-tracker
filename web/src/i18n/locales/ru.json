@@ -65,11 +65,19 @@
     "all_types": "Все",
     "expenses": "Расходы",
     "incomes": "Доходы",
-    "search_placeholder": "Поиск по заметке...",
+    "search_placeholder": "Поиск транзакций...",
     "day_total": "Итого",
     "no_more": "Вы всё просмотрели",
-    "swipe_to_delete": "Свайпните влево для удаления",
-    "page_of": "{{page}} из {{total}}"
+    "page_of": "{{page}} из {{total}}",
+    "account_filter": "Счёт",
+    "date_filter": "Дата",
+    "sort": "Сортировка",
+    "sort_newest": "Сначала новые",
+    "sort_oldest": "Сначала старые",
+    "sort_amount_high": "Сумма: по убыванию",
+    "sort_amount_low": "Сумма: по возрастанию",
+    "clear_filters": "Сбросить фильтры",
+    "category_filter": "Категория"
   },
   "stats": {
     "title": "Статистика",
@@ -135,7 +143,8 @@
       "Other": "Прочее",
       "Savings": "Накопления",
       "Transfer": "Перевод"
-    }
+    },
+    "type_savings": "Накопления"
   },
   "budgets": {
     "title": "Бюджеты",
@@ -210,7 +219,20 @@
     "reset_confirm_title": "Сбросить все данные?",
     "reset_confirm_desc": "Это безвозвратно удалит все транзакции, бюджеты, цели накоплений и повторяющиеся транзакции. Это действие нельзя отменить.",
     "reset_confirm_btn": "Да, удалить всё",
-    "reset_success": "Все данные удалены"
+    "reset_success": "Все данные удалены",
+    "theme": "Тема",
+    "theme_system": "Авто",
+    "theme_light": "Светлая",
+    "theme_dark": "Тёмная",
+    "notifications": "Уведомления",
+    "notify_budget_alerts": "Оповещения о бюджете",
+    "notify_budget_alerts_desc": "Когда расходы приближаются к лимиту",
+    "notify_recurring_reminders": "Регулярные напоминания",
+    "notify_recurring_reminders_desc": "Напоминание в день выполнения транзакции",
+    "notify_weekly_summary": "Итог недели",
+    "notify_weekly_summary_desc": "Понедельничный обзор расходов за неделю",
+    "notify_goal_milestones": "Достижения целей",
+    "notify_goal_milestones_desc": "Оповещение при 25%, 50%, 75%, 100% цели"
   },
   "more": {
     "title": "Ещё",
@@ -280,5 +302,15 @@
     "currency_change_title": "Сменить валюту счёта?",
     "currency_change_desc": "Существующие транзакции останутся в {{oldCurrency}}. Баланс будет пересчитан в {{newCurrency}} с учётом исторических курсов обмена.",
     "currency_change_confirm": "Сменить на {{newCurrency}}"
+  },
+  "adjustment": {
+    "section_title": "Установить баланс",
+    "current_balance": "Текущий баланс",
+    "target_label": "Установить баланс",
+    "note_placeholder": "Причина (необязательно)",
+    "apply_button": "Скорректировать",
+    "delta_hint_increase": "+{{amount}} будет зачислено",
+    "delta_hint_decrease": "{{amount}} будет списано",
+    "no_change": "Введите другую сумму для корректировки"
   }
 }

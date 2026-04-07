@@ -21,7 +21,12 @@ type Querier interface {
 	CountTransfersByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactions(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactionsByAccount(ctx context.Context, arg CountUserTransactionsByAccountParams) (int64, error)
+	CountUserTransactionsByAccountWithDateRange(ctx context.Context, arg CountUserTransactionsByAccountWithDateRangeParams) (int64, error)
+	CountUserTransactionsWithDateRange(ctx context.Context, arg CountUserTransactionsWithDateRangeParams) (int64, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+	// Creates a balance-adjustment transaction that is hidden from history and statistics
+	// but is included in balance calculations. is_adjustment is always set to true.
+	CreateAdjustmentTransaction(ctx context.Context, arg CreateAdjustmentTransactionParams) (Transaction, error)
 	CreateBudget(ctx context.Context, arg CreateBudgetParams) (Budget, error)
 	CreateRecurring(ctx context.Context, arg CreateRecurringParams) (RecurringTransaction, error)
 	CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalParams) (SavingsGoal, error)
@@ -60,6 +65,9 @@ type Querier interface {
 	GetBudgetByUserCategoryPeriod(ctx context.Context, arg GetBudgetByUserCategoryPeriodParams) (Budget, error)
 	GetCategoryByID(ctx context.Context, id int64) (Category, error)
 	GetCategoryByName(ctx context.Context, arg GetCategoryByNameParams) (Category, error)
+	GetCategoryByTypeForUser(ctx context.Context, arg GetCategoryByTypeForUserParams) (Category, error)
+	// Returns the system (user_id IS NULL) category of the given type.
+	GetSystemCategoryByType(ctx context.Context, catType string) (Category, error)
 	GetDefaultAccount(ctx context.Context, userID int64) (Account, error)
 	GetDueRecurring(ctx context.Context, nextRunAt pgtype.Timestamptz) ([]RecurringTransaction, error)
 	GetRecurringByID(ctx context.Context, arg GetRecurringByIDParams) (RecurringTransaction, error)
@@ -73,6 +81,7 @@ type Querier interface {
 	GetTransferByID(ctx context.Context, arg GetTransferByIDParams) (GetTransferByIDRow, error)
 	GetTransferTxIDs(ctx context.Context, arg GetTransferTxIDsParams) (GetTransferTxIDsRow, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
+	HasUserCategories(ctx context.Context, userID pgtype.Int8) (bool, error)
 	InsertGoalTransaction(ctx context.Context, arg InsertGoalTransactionParams) error
 	ListAccountsByUser(ctx context.Context, userID int64) ([]Account, error)
 	ListAllUserIDs(ctx context.Context) ([]int64, error)
@@ -84,11 +93,17 @@ type Querier interface {
 	ListSavingsGoalsByUser(ctx context.Context, userID int64) ([]SavingsGoal, error)
 	ListTransactions(ctx context.Context, arg ListTransactionsParams) ([]ListTransactionsRow, error)
 	ListTransactionsByAccount(ctx context.Context, arg ListTransactionsByAccountParams) ([]ListTransactionsByAccountRow, error)
+	ListTransactionsByAccountWithDateRange(ctx context.Context, arg ListTransactionsByAccountWithDateRangeParams) ([]ListTransactionsByAccountWithDateRangeRow, error)
 	ListTransactionsByCategoryPeriod(ctx context.Context, arg ListTransactionsByCategoryPeriodParams) ([]ListTransactionsByCategoryPeriodRow, error)
+	ListTransactionsWithDateRange(ctx context.Context, arg ListTransactionsWithDateRangeParams) ([]ListTransactionsWithDateRangeRow, error)
 	ListTransfersByAccount(ctx context.Context, arg ListTransfersByAccountParams) ([]ListTransfersByAccountRow, error)
 	ListTransfersByUser(ctx context.Context, arg ListTransfersByUserParams) ([]ListTransfersByUserRow, error)
 	ListUserCategories(ctx context.Context, userID pgtype.Int8) ([]Category, error)
+	ListUserCategoriesByNameAsc(ctx context.Context, userID pgtype.Int8) ([]Category, error)
+	ListUserCategoriesByNameDesc(ctx context.Context, userID pgtype.Int8) ([]Category, error)
 	ListUserCategoriesByType(ctx context.Context, arg ListUserCategoriesByTypeParams) ([]Category, error)
+	ListUserCategoriesByTypeFilterAsc(ctx context.Context, arg ListUserCategoriesByTypeFilterAscParams) ([]Category, error)
+	ListUserCategoriesByTypeFilterDesc(ctx context.Context, arg ListUserCategoriesByTypeFilterDescParams) ([]Category, error)
 	SetAccountDefault(ctx context.Context, arg SetAccountDefaultParams) (Account, error)
 	SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategoryParams) error
 	ToggleRecurringActive(ctx context.Context, arg ToggleRecurringActiveParams) (RecurringTransaction, error)
@@ -97,6 +112,7 @@ type Querier interface {
 	UpdateBudgetLastNotified(ctx context.Context, arg UpdateBudgetLastNotifiedParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplayCurrenciesParams) (User, error)
+	UpdateNotificationPreferences(ctx context.Context, arg UpdateNotificationPreferencesParams) (User, error)
 	UpdateRecurring(ctx context.Context, arg UpdateRecurringParams) (RecurringTransaction, error)
 	UpdateRecurringNextRun(ctx context.Context, arg UpdateRecurringNextRunParams) error
 	UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalParams) (SavingsGoal, error)

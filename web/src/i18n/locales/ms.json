@@ -61,11 +61,19 @@
     "all_types": "Semua",
     "expenses": "Perbelanjaan",
     "incomes": "Pendapatan",
-    "search_placeholder": "Cari mengikut nota...",
+    "search_placeholder": "Cari transaksi...",
     "day_total": "Jumlah",
     "no_more": "Anda telah melihat semuanya",
-    "swipe_to_delete": "Leret ke kiri untuk padam",
-    "page_of": "{{page}} daripada {{total}}"
+    "page_of": "{{page}} daripada {{total}}",
+    "account_filter": "Akaun",
+    "date_filter": "Tarikh",
+    "sort": "Susun",
+    "sort_newest": "Terbaru dahulu",
+    "sort_oldest": "Terlama dahulu",
+    "sort_amount_high": "Jumlah: tertinggi",
+    "sort_amount_low": "Jumlah: terendah",
+    "clear_filters": "Kosongkan penapis",
+    "category_filter": "Kategori"
   },
   "stats": {
     "title": "Statistik",
@@ -131,7 +139,8 @@
       "Other": "Lain-lain",
       "Savings": "Simpanan",
       "Transfer": "Pindahan"
-    }
+    },
+    "type_savings": "Simpanan"
   },
   "budgets": {
     "title": "Bajet",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Tetapkan semula semua data?",
     "reset_confirm_desc": "Ini akan memadam secara kekal semua transaksi, belanjawan, matlamat simpanan dan transaksi berulang anda. Tindakan ini tidak boleh dibatalkan.",
     "reset_confirm_btn": "Ya, padam semua",
-    "reset_success": "Semua data dipadam"
+    "reset_success": "Semua data dipadam",
+    "theme": "Tema",
+    "theme_system": "Auto",
+    "theme_light": "Cerah",
+    "theme_dark": "Gelap",
+    "notifications": "Pemberitahuan",
+    "notify_budget_alerts": "Amaran Belanjawan",
+    "notify_budget_alerts_desc": "Apabila perbelanjaan menghampiri had",
+    "notify_recurring_reminders": "Peringatan Berulang",
+    "notify_recurring_reminders_desc": "Peringatan pada hari transaksi dijalankan",
+    "notify_weekly_summary": "Ringkasan Mingguan",
+    "notify_weekly_summary_desc": "Ringkasan hari Isnin tentang perbelanjaan minggu lalu",
+    "notify_goal_milestones": "Pencapaian Matlamat",
+    "notify_goal_milestones_desc": "Amaran pada 25%, 50%, 75%, 100% matlamat"
   },
   "more": {
     "title": "Lagi",
@@ -273,5 +295,15 @@
     "credit": "Kredit",
     "crypto": "Kripto"
   },
-  "setDefault": "Tetapkan sebagai lalai"
+  "setDefault": "Tetapkan sebagai lalai",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

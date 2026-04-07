@@ -85,6 +85,7 @@ func main() {
 	exportSvc := service.NewExportService(txRepo, log)
 	accountSvc := service.NewAccountService(accountRepo, exchangeSvc, log)
 	transferSvc := service.NewTransferService(transferRepo, accountRepo, goalRepo, txRepo, catRepo, log)
+	adjustSvc := service.NewAdjustmentService(txRepo, accountRepo, catRepo, log)
 	adminSvc := service.NewAdminService(adminRepo, log)
 
 	// Wire budget notifier if a bot token is configured.
@@ -109,6 +110,7 @@ func main() {
 		ExportSvc:      exportSvc,
 		AccountSvc:     accountSvc,
 		TransferSvc:    transferSvc,
+		AdjustSvc:      adjustSvc,
 		AdminSvc:       adminSvc,
 		BotToken:       cfg.BotToken,
 		AllowedOrigins: cfg.AllowedOrigins,

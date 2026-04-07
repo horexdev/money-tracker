@@ -61,11 +61,19 @@
     "all_types": "Semua",
     "expenses": "Pengeluaran",
     "incomes": "Pemasukan",
-    "search_placeholder": "Cari berdasarkan catatan...",
+    "search_placeholder": "Cari transaksi...",
     "day_total": "Total",
     "no_more": "Anda sudah melihat semuanya",
-    "swipe_to_delete": "Geser ke kiri untuk menghapus",
-    "page_of": "{{page}} dari {{total}}"
+    "page_of": "{{page}} dari {{total}}",
+    "account_filter": "Akun",
+    "date_filter": "Tanggal",
+    "sort": "Urutkan",
+    "sort_newest": "Terbaru",
+    "sort_oldest": "Terlama",
+    "sort_amount_high": "Jumlah: terbesar",
+    "sort_amount_low": "Jumlah: terkecil",
+    "clear_filters": "Hapus filter",
+    "category_filter": "Kategori"
   },
   "stats": {
     "title": "Statistik",
@@ -131,7 +139,8 @@
       "Other": "Lainnya",
       "Savings": "Tabungan",
       "Transfer": "Transfer"
-    }
+    },
+    "type_savings": "Tabungan"
   },
   "budgets": {
     "title": "Anggaran",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Setel ulang semua data?",
     "reset_confirm_desc": "Ini akan menghapus secara permanen semua transaksi, anggaran, tujuan tabungan, dan transaksi berulang Anda. Tindakan ini tidak dapat dibatalkan.",
     "reset_confirm_btn": "Ya, hapus semuanya",
-    "reset_success": "Semua data dihapus"
+    "reset_success": "Semua data dihapus",
+    "theme": "Tema",
+    "theme_system": "Otomatis",
+    "theme_light": "Terang",
+    "theme_dark": "Gelap",
+    "notifications": "Notifikasi",
+    "notify_budget_alerts": "Peringatan Anggaran",
+    "notify_budget_alerts_desc": "Saat pengeluaran mendekati batas",
+    "notify_recurring_reminders": "Pengingat Rutin",
+    "notify_recurring_reminders_desc": "Pengingat di hari transaksi rutin",
+    "notify_weekly_summary": "Ringkasan Mingguan",
+    "notify_weekly_summary_desc": "Rekap hari Senin tentang pengeluaran minggu lalu",
+    "notify_goal_milestones": "Pencapaian Tujuan",
+    "notify_goal_milestones_desc": "Peringatan di 25%, 50%, 75%, 100% tujuan"
   },
   "more": {
     "title": "Lainnya",
@@ -273,5 +295,15 @@
     "credit": "Kredit",
     "crypto": "Kripto"
   },
-  "setDefault": "Jadikan default"
+  "setDefault": "Jadikan default",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

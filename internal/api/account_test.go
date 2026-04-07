@@ -20,7 +20,9 @@ import (
 func buildAccountHandler(repo *mocks.MockAccountStorer) http.HandlerFunc {
 	// nil ExchangeService — tests avoid balance conversion paths.
 	accountSvc := service.NewAccountService(repo, nil, testutil.TestLogger())
-	return api.AccountsHandlerForTest(accountSvc, testutil.TestLogger())
+	// nil repositories for AdjustmentService — adjust endpoint not exercised in these tests.
+	adjustSvc := service.NewAdjustmentService(&mocks.MockTransactionStorer{}, repo, &mocks.MockCategoryStorer{}, testutil.TestLogger())
+	return api.AccountsHandlerForTest(accountSvc, adjustSvc, testutil.TestLogger())
 }
 
 func TestAccountsHandler_GET_List(t *testing.T) {

@@ -42,8 +42,8 @@ type updateAccountRequest struct {
 	IncludeInTotal *bool  `json:"include_in_total"`
 }
 
-// accountsHandler routes requests for /api/v1/accounts[/{id}[/set-default]].
-func accountsHandler(svc *service.AccountService, log *slog.Logger) http.HandlerFunc {
+// accountsHandler routes requests for /api/v1/accounts[/{id}[/set-default|/adjust]].
+func accountsHandler(svc *service.AccountService, adjustSvc *service.AdjustmentService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		userID := userIDFromContext(ctx)
@@ -72,6 +72,8 @@ func accountsHandler(svc *service.AccountService, log *slog.Logger) http.Handler
 						return
 					}
 					writeJSON(w, http.StatusOK, accountToResponse(a))
+				case "adjust":
+					adjustAccountHandler(adjustSvc, log, id)(w, r)
 				default:
 					w.WriteHeader(http.StatusNotFound)
 				}

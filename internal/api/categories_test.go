@@ -24,8 +24,8 @@ func buildCatHandler(repo *mocks.MockCategoryStorer) http.HandlerFunc {
 
 func TestCategoriesHandler_GET_All(t *testing.T) {
 	repo := &mocks.MockCategoryStorer{}
-	repo.On("ListForUser", mock.Anything, int64(1)).Return([]*domain.Category{
-		{ID: 1, UserID: 0, Name: "Food"},
+	repo.On("ListSorted", mock.Anything, int64(1), "", "asc").Return([]*domain.Category{
+		{ID: 1, UserID: 1, Name: "Food"},
 		{ID: 2, UserID: 1, Name: "Salary"},
 	}, nil)
 
@@ -40,6 +40,63 @@ func TestCategoriesHandler_GET_All(t *testing.T) {
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
 	cats := resp["categories"].([]any)
 	assert.Len(t, cats, 2)
+}
+
+func TestCategoriesHandler_GET_OrderDesc(t *testing.T) {
+	repo := &mocks.MockCategoryStorer{}
+	repo.On("ListSorted", mock.Anything, int64(1), "", "desc").Return([]*domain.Category{
+		{ID: 2, UserID: 1, Name: "Transport"},
+		{ID: 1, UserID: 1, Name: "Food"},
+	}, nil)
+
+	h := buildCatHandler(repo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/categories?order=desc", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	cats := resp["categories"].([]any)
+	assert.Len(t, cats, 2)
+}
+
+func TestCategoriesHandler_GET_TypeFilter(t *testing.T) {
+	repo := &mocks.MockCategoryStorer{}
+	repo.On("ListSorted", mock.Anything, int64(1), "expense", "asc").Return([]*domain.Category{
+		{ID: 1, UserID: 1, Name: "Food", Type: domain.CategoryTypeExpense},
+	}, nil)
+
+	h := buildCatHandler(repo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/categories?type=expense", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	cats := resp["categories"].([]any)
+	assert.Len(t, cats, 1)
+}
+
+func TestCategoriesHandler_GET_InvalidOrder(t *testing.T) {
+	h := buildCatHandler(&mocks.MockCategoryStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/categories?order=random", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestCategoriesHandler_GET_InvalidType(t *testing.T) {
+	h := buildCatHandler(&mocks.MockCategoryStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/categories?type=transfer", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestCategoriesHandler_POST_InvalidJSON(t *testing.T) {
@@ -77,7 +134,7 @@ func TestCategoriesHandler_POST_Create(t *testing.T) {
 
 func TestCategoriesHandler_PUT_SystemCategory(t *testing.T) {
 	repo := &mocks.MockCategoryStorer{}
-	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.Category{ID: 1, UserID: 0}, nil)
+	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.Category{ID: 1, UserID: 0, IsProtected: true}, nil)
 
 	h := buildCatHandler(repo)
 	body := `{"name":"Changed","emoji":"","type":"expense","color":"#fff"}`

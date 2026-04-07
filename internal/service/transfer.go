@@ -56,7 +56,7 @@ func (s *TransferService) Execute(ctx context.Context, userID, fromAccountID, to
 	}
 
 	// Look up the system "Transfer" category for the linked transactions.
-	transferCat, err := s.catRepo.GetByName(ctx, 0, "transfer")
+	transferCat, err := s.catRepo.GetSystemCategoryByType(ctx, string(domain.CategoryTypeTransfer))
 	if err != nil {
 		return nil, fmt.Errorf("get transfer category: %w", err)
 	}

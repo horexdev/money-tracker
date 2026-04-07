@@ -29,6 +29,7 @@ type Transaction struct {
 	AccountID              int64  // 0 means no account assigned (legacy)
 	AccountName            string // joined for display
 	CreatedAt              time.Time
+	IsAdjustment           bool   // true = hidden from history/stats; affects balance only
 }
 
 // BalanceByCurrency holds income and expense totals for a single currency.

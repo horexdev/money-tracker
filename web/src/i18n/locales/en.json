@@ -65,11 +65,19 @@
     "all_types": "All",
     "expenses": "Expenses",
     "incomes": "Incomes",
-    "search_placeholder": "Search by note...",
+    "search_placeholder": "Search transactions...",
     "day_total": "Total",
     "no_more": "You've seen it all",
-    "swipe_to_delete": "Swipe left to delete",
-    "page_of": "{{page}} of {{total}}"
+    "page_of": "{{page}} of {{total}}",
+    "account_filter": "Account",
+    "date_filter": "Date",
+    "sort": "Sort",
+    "sort_newest": "Newest first",
+    "sort_oldest": "Oldest first",
+    "sort_amount_high": "Amount: high to low",
+    "sort_amount_low": "Amount: low to high",
+    "clear_filters": "Clear filters",
+    "category_filter": "Category"
   },
   "stats": {
     "title": "Statistics",
@@ -135,7 +143,8 @@
       "Other": "Other",
       "Savings": "Savings",
       "Transfer": "Transfer"
-    }
+    },
+    "type_savings": "Savings"
   },
   "budgets": {
     "title": "Budgets",
@@ -210,7 +219,20 @@
     "reset_confirm_title": "Reset all data?",
     "reset_confirm_desc": "This will permanently delete all your transactions, budgets, savings goals, and recurring transactions. This action cannot be undone.",
     "reset_confirm_btn": "Yes, delete everything",
-    "reset_success": "All data deleted"
+    "reset_success": "All data deleted",
+    "theme": "Theme",
+    "theme_system": "Auto",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "notifications": "Notifications",
+    "notify_budget_alerts": "Budget Alerts",
+    "notify_budget_alerts_desc": "Get notified when spending nears the limit",
+    "notify_recurring_reminders": "Recurring Reminders",
+    "notify_recurring_reminders_desc": "Reminder on the day a recurring runs",
+    "notify_weekly_summary": "Weekly Summary",
+    "notify_weekly_summary_desc": "Monday recap of last week spending",
+    "notify_goal_milestones": "Goal Milestones",
+    "notify_goal_milestones_desc": "Alert at 25%, 50%, 75%, 100% of a goal"
   },
   "more": {
     "title": "More",
@@ -280,5 +302,15 @@
     "currency_change_title": "Change account currency?",
     "currency_change_desc": "Existing transactions will remain in {{oldCurrency}}. The balance will be recalculated to {{newCurrency}} using historical exchange rates.",
     "currency_change_confirm": "Change to {{newCurrency}}"
+  },
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
   }
 }

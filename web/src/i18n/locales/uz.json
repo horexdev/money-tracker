@@ -61,11 +61,19 @@
     "all_types": "Barchasi",
     "expenses": "Xarajatlar",
     "incomes": "Daromadlar",
-    "search_placeholder": "Izoh bo'yicha qidirish...",
+    "search_placeholder": "Tranzaksiyalarni qidirish...",
     "day_total": "Jami",
     "no_more": "Hammasini ko'rib chiqdingiz",
-    "swipe_to_delete": "O'chirish uchun chapga suring",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "account_filter": "Hisob",
+    "date_filter": "Sana",
+    "sort": "Saralash",
+    "sort_newest": "Eng yangi",
+    "sort_oldest": "Eng eski",
+    "sort_amount_high": "Miqdor: kamayish tartibida",
+    "sort_amount_low": "Miqdor: ortish tartibida",
+    "clear_filters": "Fil'trlarni tozalash",
+    "category_filter": "Kategoriya"
   },
   "stats": {
     "title": "Statistika",
@@ -131,7 +139,8 @@
       "Other": "Boshqa",
       "Savings": "Jamg'armalar",
       "Transfer": "O'tkazma"
-    }
+    },
+    "type_savings": "Jamgʻarma"
   },
   "budgets": {
     "title": "Byudjetlar",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Barcha ma'lumotlarni o'chirasizmi?",
     "reset_confirm_desc": "Bu barcha tranzaksiyalar, byudjetlar, jamg'arma maqsadlari va takroriy tranzaksiyalarni butunlay o'chiradi. Bu amalni ortga qaytarib bo'lmaydi.",
     "reset_confirm_btn": "Ha, hammasini o'chir",
-    "reset_success": "Barcha ma'lumotlar o'chirildi"
+    "reset_success": "Barcha ma'lumotlar o'chirildi",
+    "theme": "Mavzu",
+    "theme_system": "Avtomatik",
+    "theme_light": "Yorqin",
+    "theme_dark": "Qorongʻi",
+    "notifications": "Bildirishnomalar",
+    "notify_budget_alerts": "Byudjet ogohlantirishlari",
+    "notify_budget_alerts_desc": "Xarajatlar chegara yaqinlashganda",
+    "notify_recurring_reminders": "Muntazam eslatmalar",
+    "notify_recurring_reminders_desc": "Tranzaksiya bajarilgan kuni eslatma",
+    "notify_weekly_summary": "Haftalik xulosa",
+    "notify_weekly_summary_desc": "Dushanba kuni haftalik xarajatlar sharhi",
+    "notify_goal_milestones": "Maqsad yutuklar",
+    "notify_goal_milestones_desc": "Maqsadning 25%, 50%, 75%, 100%'ida ogohlantirish"
   },
   "more": {
     "title": "Ko'proq",
@@ -273,5 +295,15 @@
     "credit": "Kredit",
     "crypto": "Kripto"
   },
-  "setDefault": "Asosiy qilish"
+  "setDefault": "Asosiy qilish",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

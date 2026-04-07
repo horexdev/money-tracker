@@ -158,3 +158,35 @@ func TestTransactionService_UpdateTransaction_InvalidAmount(t *testing.T) {
 	_, err := svc.UpdateTransaction(context.Background(), 1, 1, 0, 1, "", time.Now())
 	assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 }
+
+func TestTransactionService_ListPagedWithDateRange_NoFilter(t *testing.T) {
+	txRepo := &mocks.MockTransactionStorer{}
+	catRepo := &mocks.MockCategoryStorer{}
+	svc := newTxService(txRepo, catRepo)
+
+	txs := []*domain.Transaction{{ID: 1}, {ID: 2}}
+	txRepo.On("CountWithDateRange", mock.Anything, int64(1), (*time.Time)(nil), (*time.Time)(nil)).Return(int64(2), nil)
+	txRepo.On("ListWithDateRange", mock.Anything, int64(1), (*time.Time)(nil), (*time.Time)(nil), 20, 0).Return(txs, nil)
+
+	got, pages, err := svc.ListPagedWithDateRange(context.Background(), 1, nil, nil, 1, 20)
+	require.NoError(t, err)
+	assert.Equal(t, 1, pages)
+	assert.Len(t, got, 2)
+}
+
+func TestTransactionService_ListPagedWithDateRange_WithRange(t *testing.T) {
+	txRepo := &mocks.MockTransactionStorer{}
+	catRepo := &mocks.MockCategoryStorer{}
+	svc := newTxService(txRepo, catRepo)
+
+	from := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)
+	txs := []*domain.Transaction{{ID: 1}}
+	txRepo.On("CountWithDateRange", mock.Anything, int64(1), &from, &to).Return(int64(1), nil)
+	txRepo.On("ListWithDateRange", mock.Anything, int64(1), &from, &to, 20, 0).Return(txs, nil)
+
+	got, pages, err := svc.ListPagedWithDateRange(context.Background(), 1, &from, &to, 1, 20)
+	require.NoError(t, err)
+	assert.Equal(t, 1, pages)
+	assert.Len(t, got, 1)
+}

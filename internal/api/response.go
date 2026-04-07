@@ -42,6 +42,7 @@ func httpStatus(err error) int {
 		errors.Is(err, domain.ErrAccountNotFound):
 		return http.StatusNotFound
 	case errors.Is(err, domain.ErrInvalidAmount),
+		errors.Is(err, domain.ErrCategoryNameEmpty),
 		errors.Is(err, domain.ErrInvalidPeriod),
 		errors.Is(err, domain.ErrInvalidCurrency),
 		errors.Is(err, domain.ErrInvalidFrequency),
@@ -54,7 +55,8 @@ func httpStatus(err error) int {
 		return http.StatusConflict
 	case errors.Is(err, domain.ErrAccountHasTransactions):
 		return http.StatusConflict
-	case errors.Is(err, domain.ErrCategorySystemReadOnly):
+	case errors.Is(err, domain.ErrCategorySystemReadOnly),
+		errors.Is(err, domain.ErrCategoryProtected):
 		return http.StatusForbidden
 	case errors.Is(err, domain.ErrInsufficientGoalFunds):
 		return http.StatusUnprocessableEntity
@@ -82,6 +84,8 @@ func userMessage(err error) string {
 		return "savings goal not found"
 	case errors.Is(err, domain.ErrAccountNotFound):
 		return "account not found"
+	case errors.Is(err, domain.ErrCategoryNameEmpty):
+		return "category name cannot be empty"
 	case errors.Is(err, domain.ErrInvalidAmount):
 		return "invalid amount: must be a positive integer number of cents"
 	case errors.Is(err, domain.ErrInvalidPeriod):
@@ -98,8 +102,9 @@ func userMessage(err error) string {
 		return "budget already exists for this category and period"
 	case errors.Is(err, domain.ErrCategoryInUse):
 		return "category has transactions and cannot be deleted"
-	case errors.Is(err, domain.ErrCategorySystemReadOnly):
-		return "system categories cannot be modified"
+	case errors.Is(err, domain.ErrCategorySystemReadOnly),
+		errors.Is(err, domain.ErrCategoryProtected):
+		return "this category cannot be modified"
 	case errors.Is(err, domain.ErrInsufficientGoalFunds):
 		return "insufficient funds in savings goal"
 	case errors.Is(err, domain.ErrExchangeRateUnavailable):

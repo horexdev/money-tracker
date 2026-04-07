@@ -34,6 +34,16 @@ SET language   = $2,
 WHERE id = $1
 RETURNING *;
 
+-- name: UpdateNotificationPreferences :one
+UPDATE users
+SET notify_budget_alerts       = $2,
+    notify_recurring_reminders = $3,
+    notify_weekly_summary      = $4,
+    notify_goal_milestones     = $5,
+    updated_at                 = NOW()
+WHERE id = $1
+RETURNING *;
+
 -- name: DeleteAllUserTransactions :exec
 DELETE FROM transactions WHERE user_id = $1;
 

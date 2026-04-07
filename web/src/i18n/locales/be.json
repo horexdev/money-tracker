@@ -61,11 +61,19 @@
     "all_types": "Усе",
     "expenses": "Выдаткі",
     "incomes": "Даходы",
-    "search_placeholder": "Пошук па нататцы...",
+    "search_placeholder": "Пошук транзакцый...",
     "day_total": "Разам",
     "no_more": "Вы ўсё праглядзелі",
-    "swipe_to_delete": "Правядзіце ўлева, каб выдаліць",
-    "page_of": "{{page}} з {{total}}"
+    "page_of": "{{page}} з {{total}}",
+    "account_filter": "Рахунак",
+    "date_filter": "Дата",
+    "sort": "Сартаванне",
+    "sort_newest": "Спачатку новыя",
+    "sort_oldest": "Спачатку старыя",
+    "sort_amount_high": "Сума: па змяншэнні",
+    "sort_amount_low": "Сума: па ўзрастанні",
+    "clear_filters": "Ачысціць фільтры",
+    "category_filter": "Катэгорыя"
   },
   "stats": {
     "title": "Статыстыка",
@@ -131,7 +139,8 @@
       "Other": "Іншае",
       "Savings": "Назапашванні",
       "Transfer": "Пераклад"
-    }
+    },
+    "type_savings": "Зберажэнні"
   },
   "budgets": {
     "title": "Бюджэты",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Скінуць усе дадзеныя?",
     "reset_confirm_desc": "Гэта назаўсёды выдаліць усе транзакцыі, бюджэты, мэты зберажэнняў і паўтаральныя транзакцыі. Гэта дзеянне нельга адмяніць.",
     "reset_confirm_btn": "Так, выдаліць усё",
-    "reset_success": "Усе дадзеныя выдалены"
+    "reset_success": "Усе дадзеныя выдалены",
+    "theme": "Тэма",
+    "theme_system": "Аўта",
+    "theme_light": "Светлая",
+    "theme_dark": "Цёмная",
+    "notifications": "Апавяшчэнні",
+    "notify_budget_alerts": "Апавяшчэнні аб бюджэце",
+    "notify_budget_alerts_desc": "Калі расходы набліжаюцца да ліміту",
+    "notify_recurring_reminders": "Рэгулярныя напамінанні",
+    "notify_recurring_reminders_desc": "Напамін у дзень выканання транзакцыі",
+    "notify_weekly_summary": "Вынік тыдня",
+    "notify_weekly_summary_desc": "Панядзелкавы агляд расходаў за тыдзень",
+    "notify_goal_milestones": "Дасягненні мэт",
+    "notify_goal_milestones_desc": "Апавяшчэнне пры 25%, 50%, 75%, 100% мэты"
   },
   "more": {
     "title": "Яшчэ",
@@ -273,5 +295,15 @@
     "credit": "Крэдытны",
     "crypto": "Крыпта"
   },
-  "setDefault": "Зрабіць асноўным"
+  "setDefault": "Зрабіць асноўным",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

@@ -13,7 +13,7 @@ import (
 )
 
 const countUserTransactions = `-- name: CountUserTransactions :one
-SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1
+SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND is_adjustment = false
 `
 
 func (q *Queries) CountUserTransactions(ctx context.Context, userID int64) (int64, error) {
@@ -24,7 +24,7 @@ func (q *Queries) CountUserTransactions(ctx context.Context, userID int64) (int6
 }
 
 const countUserTransactionsByAccount = `-- name: CountUserTransactionsByAccount :one
-SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2
+SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
 `
 
 type CountUserTransactionsByAccountParams struct {
@@ -39,10 +39,107 @@ func (q *Queries) CountUserTransactionsByAccount(ctx context.Context, arg CountU
 	return column_1, err
 }
 
+const countUserTransactionsByAccountWithDateRange = `-- name: CountUserTransactionsByAccountWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
+  AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3)
+  AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4)
+`
+
+type CountUserTransactionsByAccountWithDateRangeParams struct {
+	UserID    int64              `json:"user_id"`
+	AccountID pgtype.Int8        `json:"account_id"`
+	Column3   pgtype.Timestamptz `json:"column_3"`
+	Column4   pgtype.Timestamptz `json:"column_4"`
+}
+
+func (q *Queries) CountUserTransactionsByAccountWithDateRange(ctx context.Context, arg CountUserTransactionsByAccountWithDateRangeParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserTransactionsByAccountWithDateRange,
+		arg.UserID,
+		arg.AccountID,
+		arg.Column3,
+		arg.Column4,
+	)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const countUserTransactionsWithDateRange = `-- name: CountUserTransactionsWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND is_adjustment = false
+  AND ($2::TIMESTAMPTZ IS NULL OR created_at >= $2)
+  AND ($3::TIMESTAMPTZ IS NULL OR created_at <= $3)
+`
+
+type CountUserTransactionsWithDateRangeParams struct {
+	UserID  int64              `json:"user_id"`
+	Column2 pgtype.Timestamptz `json:"column_2"`
+	Column3 pgtype.Timestamptz `json:"column_3"`
+}
+
+func (q *Queries) CountUserTransactionsWithDateRange(ctx context.Context, arg CountUserTransactionsWithDateRangeParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserTransactionsWithDateRange, arg.UserID, arg.Column2, arg.Column3)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const createAdjustmentTransaction = `-- name: CreateAdjustmentTransaction :one
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note,
+    currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
+`
+
+type CreateAdjustmentTransactionParams struct {
+	UserID                 int64                  `json:"user_id"`
+	Type                   domain.TransactionType `json:"type"`
+	AmountCents            int64                  `json:"amount_cents"`
+	CategoryID             int64                  `json:"category_id"`
+	Note                   string                 `json:"note"`
+	CurrencyCode           string                 `json:"currency_code"`
+	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
+	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
+	AccountID              pgtype.Int8            `json:"account_id"`
+}
+
+// Creates a balance-adjustment transaction that is hidden from history and statistics
+// but is included in balance calculations. is_adjustment is always set to true.
+func (q *Queries) CreateAdjustmentTransaction(ctx context.Context, arg CreateAdjustmentTransactionParams) (Transaction, error) {
+	row := q.db.QueryRow(ctx, createAdjustmentTransaction,
+		arg.UserID,
+		arg.Type,
+		arg.AmountCents,
+		arg.CategoryID,
+		arg.Note,
+		arg.CurrencyCode,
+		arg.ExchangeRateSnapshot,
+		arg.BaseCurrencyAtCreation,
+		arg.AccountID,
+	)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Type,
+		&i.AmountCents,
+		&i.CategoryID,
+		&i.Note,
+		&i.CreatedAt,
+		&i.CurrencyCode,
+		&i.ExchangeRateSnapshot,
+		&i.BaseCurrencyAtCreation,
+		&i.AccountID,
+		&i.IsAdjustment,
+	)
+	return i, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
 `
 
 type CreateTransactionParams struct {
@@ -82,6 +179,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		&i.ExchangeRateSnapshot,
 		&i.BaseCurrencyAtCreation,
 		&i.AccountID,
+		&i.IsAdjustment,
 	)
 	return i, err
 }
@@ -89,7 +187,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 const createTransactionWithDate = `-- name: CreateTransactionWithDate :one
 INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, created_at, account_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
 `
 
 type CreateTransactionWithDateParams struct {
@@ -131,6 +229,7 @@ func (q *Queries) CreateTransactionWithDate(ctx context.Context, arg CreateTrans
 		&i.ExchangeRateSnapshot,
 		&i.BaseCurrencyAtCreation,
 		&i.AccountID,
+		&i.IsAdjustment,
 	)
 	return i, err
 }
@@ -154,7 +253,7 @@ SELECT
     COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
     COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
 FROM transactions
-WHERE user_id = $1
+WHERE user_id = $1 AND is_adjustment = false
 `
 
 type GetBalanceRow struct {
@@ -175,7 +274,7 @@ SELECT
     COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
     COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
 FROM transactions
-WHERE user_id = $1
+WHERE user_id = $1 AND is_adjustment = false
 GROUP BY currency_code
 `
 
@@ -211,7 +310,7 @@ SELECT
     COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_income,
     COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents ELSE 0 END), 0)::BIGINT AS total_expense
 FROM transactions
-WHERE user_id = $1 AND account_id = $2
+WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
 GROUP BY currency_code
 `
 
@@ -260,6 +359,7 @@ JOIN categories c ON c.id = t.category_id
 WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
+  AND t.is_adjustment = false
 GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC
 `
@@ -323,6 +423,7 @@ WHERE t.user_id    = $1
   AND t.account_id = $2
   AND t.created_at >= $3
   AND t.created_at <  $4
+  AND t.is_adjustment = false
 GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC
 `
@@ -385,7 +486,7 @@ SELECT COALESCE(
     ), 0
 )::BIGINT AS total_net_base_cents
 FROM transactions
-WHERE user_id = $1
+WHERE user_id = $1 AND is_adjustment = false
 `
 
 // Returns net balance (income - expense) summed across all transactions converted to the user's
@@ -415,6 +516,7 @@ SELECT
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
 WHERE t.user_id = $1
+  AND t.is_adjustment = false
 ORDER BY t.created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -493,6 +595,7 @@ SELECT
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
 WHERE t.user_id = $1 AND t.account_id = $2
+  AND t.is_adjustment = false
 ORDER BY t.created_at DESC
 LIMIT $3 OFFSET $4
 `
@@ -559,6 +662,104 @@ func (q *Queries) ListTransactionsByAccount(ctx context.Context, arg ListTransac
 	return items, nil
 }
 
+const listTransactionsByAccountWithDateRange = `-- name: ListTransactionsByAccountWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.exchange_rate_snapshot,
+    t.base_currency_at_creation,
+    t.account_id,
+    c.name  AS category_name,
+    c.emoji AS category_emoji,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1 AND t.account_id = $2
+  AND t.is_adjustment = false
+  AND ($5::TIMESTAMPTZ IS NULL OR t.created_at >= $5)
+  AND ($6::TIMESTAMPTZ IS NULL OR t.created_at <= $6)
+ORDER BY t.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type ListTransactionsByAccountWithDateRangeParams struct {
+	UserID    int64              `json:"user_id"`
+	AccountID pgtype.Int8        `json:"account_id"`
+	Limit     int32              `json:"limit"`
+	Offset    int32              `json:"offset"`
+	Column5   pgtype.Timestamptz `json:"column_5"`
+	Column6   pgtype.Timestamptz `json:"column_6"`
+}
+
+type ListTransactionsByAccountWithDateRangeRow struct {
+	ID                     int64                  `json:"id"`
+	UserID                 int64                  `json:"user_id"`
+	Type                   domain.TransactionType `json:"type"`
+	AmountCents            int64                  `json:"amount_cents"`
+	CategoryID             int64                  `json:"category_id"`
+	Note                   string                 `json:"note"`
+	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode           string                 `json:"currency_code"`
+	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
+	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
+	AccountID              pgtype.Int8            `json:"account_id"`
+	CategoryName           string                 `json:"category_name"`
+	CategoryEmoji          string                 `json:"category_emoji"`
+	CategoryColor          string                 `json:"category_color"`
+	AccountName            pgtype.Text            `json:"account_name"`
+}
+
+func (q *Queries) ListTransactionsByAccountWithDateRange(ctx context.Context, arg ListTransactionsByAccountWithDateRangeParams) ([]ListTransactionsByAccountWithDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, listTransactionsByAccountWithDateRange,
+		arg.UserID,
+		arg.AccountID,
+		arg.Limit,
+		arg.Offset,
+		arg.Column5,
+		arg.Column6,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTransactionsByAccountWithDateRangeRow{}
+	for rows.Next() {
+		var i ListTransactionsByAccountWithDateRangeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Type,
+			&i.AmountCents,
+			&i.CategoryID,
+			&i.Note,
+			&i.CreatedAt,
+			&i.CurrencyCode,
+			&i.ExchangeRateSnapshot,
+			&i.BaseCurrencyAtCreation,
+			&i.AccountID,
+			&i.CategoryName,
+			&i.CategoryEmoji,
+			&i.CategoryColor,
+			&i.AccountName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactionsByCategoryPeriod = `-- name: ListTransactionsByCategoryPeriod :many
 SELECT
     t.id,
@@ -581,6 +782,7 @@ WHERE t.user_id      = $1
   AND t.type         = 'expense'
   AND t.created_at  >= $3
   AND t.created_at  <  $4
+  AND t.is_adjustment = false
 ORDER BY t.created_at DESC
 `
 
@@ -646,6 +848,102 @@ func (q *Queries) ListTransactionsByCategoryPeriod(ctx context.Context, arg List
 	return items, nil
 }
 
+const listTransactionsWithDateRange = `-- name: ListTransactionsWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.exchange_rate_snapshot,
+    t.base_currency_at_creation,
+    t.account_id,
+    c.name  AS category_name,
+    c.emoji AS category_emoji,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1
+  AND t.is_adjustment = false
+  AND ($4::TIMESTAMPTZ IS NULL OR t.created_at >= $4)
+  AND ($5::TIMESTAMPTZ IS NULL OR t.created_at <= $5)
+ORDER BY t.created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListTransactionsWithDateRangeParams struct {
+	UserID  int64              `json:"user_id"`
+	Limit   int32              `json:"limit"`
+	Offset  int32              `json:"offset"`
+	Column4 pgtype.Timestamptz `json:"column_4"`
+	Column5 pgtype.Timestamptz `json:"column_5"`
+}
+
+type ListTransactionsWithDateRangeRow struct {
+	ID                     int64                  `json:"id"`
+	UserID                 int64                  `json:"user_id"`
+	Type                   domain.TransactionType `json:"type"`
+	AmountCents            int64                  `json:"amount_cents"`
+	CategoryID             int64                  `json:"category_id"`
+	Note                   string                 `json:"note"`
+	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode           string                 `json:"currency_code"`
+	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
+	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
+	AccountID              pgtype.Int8            `json:"account_id"`
+	CategoryName           string                 `json:"category_name"`
+	CategoryEmoji          string                 `json:"category_emoji"`
+	CategoryColor          string                 `json:"category_color"`
+	AccountName            pgtype.Text            `json:"account_name"`
+}
+
+func (q *Queries) ListTransactionsWithDateRange(ctx context.Context, arg ListTransactionsWithDateRangeParams) ([]ListTransactionsWithDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, listTransactionsWithDateRange,
+		arg.UserID,
+		arg.Limit,
+		arg.Offset,
+		arg.Column4,
+		arg.Column5,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTransactionsWithDateRangeRow{}
+	for rows.Next() {
+		var i ListTransactionsWithDateRangeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Type,
+			&i.AmountCents,
+			&i.CategoryID,
+			&i.Note,
+			&i.CreatedAt,
+			&i.CurrencyCode,
+			&i.ExchangeRateSnapshot,
+			&i.BaseCurrencyAtCreation,
+			&i.AccountID,
+			&i.CategoryName,
+			&i.CategoryEmoji,
+			&i.CategoryColor,
+			&i.AccountName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateTransaction = `-- name: UpdateTransaction :one
 UPDATE transactions
 SET amount_cents = $3,
@@ -653,7 +951,7 @@ SET amount_cents = $3,
     note         = $5,
     created_at   = $6
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
 `
 
 type UpdateTransactionParams struct {
@@ -687,6 +985,7 @@ func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionPa
 		&i.ExchangeRateSnapshot,
 		&i.BaseCurrencyAtCreation,
 		&i.AccountID,
+		&i.IsAdjustment,
 	)
 	return i, err
 }

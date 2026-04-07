@@ -61,11 +61,19 @@
     "all_types": "Барлығы",
     "expenses": "Шығыстар",
     "incomes": "Кірістер",
-    "search_placeholder": "Жазба бойынша іздеу...",
+    "search_placeholder": "Транзакцияларды іздеу...",
     "day_total": "Барлығы",
     "no_more": "Бәрін көріп шықтыңыз",
-    "swipe_to_delete": "Жою үшін солға сырғытыңыз",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "account_filter": "Шот",
+    "date_filter": "Күні",
+    "sort": "Сұрыптау",
+    "sort_newest": "Ең жаңа",
+    "sort_oldest": "Ең ескі",
+    "sort_amount_high": "Сома: кемуі бойынша",
+    "sort_amount_low": "Сома: өсуі бойынша",
+    "clear_filters": "Сүзгілерді тазалау",
+    "category_filter": "Санат"
   },
   "stats": {
     "title": "Статистика",
@@ -131,7 +139,8 @@
       "Other": "Басқа",
       "Savings": "Жинақтар",
       "Transfer": "Аудару"
-    }
+    },
+    "type_savings": "Жинақтар"
   },
   "budgets": {
     "title": "Бюджеттер",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Барлық деректерді қалпына келтіру керек пе?",
     "reset_confirm_desc": "Бұл барлық транзакцияларды, бюджеттерді, жинақ мақсаттарын және қайталанатын транзакцияларды біржола жояды. Бұл әрекетті болдырмау мүмкін емес.",
     "reset_confirm_btn": "Иә, барлығын жою",
-    "reset_success": "Барлық деректер жойылды"
+    "reset_success": "Барлық деректер жойылды",
+    "theme": "Тема",
+    "theme_system": "Авто",
+    "theme_light": "Ашық",
+    "theme_dark": "Қараңғы",
+    "notifications": "Хабарландырулар",
+    "notify_budget_alerts": "Бюджет ескертулері",
+    "notify_budget_alerts_desc": "Шығыс лимитке жақындағанда",
+    "notify_recurring_reminders": "Тұрақты еске салулар",
+    "notify_recurring_reminders_desc": "Транзакция орындалатын күні еске салу",
+    "notify_weekly_summary": "Апталық қорытынды",
+    "notify_weekly_summary_desc": "Дүйсенбідегі апталық шығыс шолуы",
+    "notify_goal_milestones": "Мақсат жетістіктері",
+    "notify_goal_milestones_desc": "25%, 50%, 75%, 100% кезінде хабарландыру"
   },
   "more": {
     "title": "Тағы",
@@ -273,5 +295,15 @@
     "credit": "Кредиттік",
     "crypto": "Крипто"
   },
-  "setDefault": "Негізгі ету"
+  "setDefault": "Негізгі ету",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

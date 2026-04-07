@@ -61,11 +61,19 @@
     "all_types": "الكل",
     "expenses": "المصروفات",
     "incomes": "الدخل",
-    "search_placeholder": "البحث بالملاحظة...",
+    "search_placeholder": "البحث في المعاملات...",
     "day_total": "الإجمالي",
     "no_more": "لقد رأيت كل شيء",
-    "swipe_to_delete": "اسحب لليسار للحذف",
-    "page_of": "{{page}} من {{total}}"
+    "page_of": "{{page}} من {{total}}",
+    "account_filter": "الحساب",
+    "date_filter": "التاريخ",
+    "sort": "الترتيب",
+    "sort_newest": "الأحدث أولاً",
+    "sort_oldest": "الأقدم أولاً",
+    "sort_amount_high": "المبلغ: من الأكبر",
+    "sort_amount_low": "المبلغ: من الأصغر",
+    "clear_filters": "مسح الفلاتر",
+    "category_filter": "الفئة"
   },
   "stats": {
     "title": "الإحصائيات",
@@ -131,7 +139,8 @@
       "Other": "أخرى",
       "Savings": "المدخرات",
       "Transfer": "تحويل"
-    }
+    },
+    "type_savings": "مدخرات"
   },
   "budgets": {
     "title": "الميزانيات",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "إعادة تعيين جميع البيانات؟",
     "reset_confirm_desc": "سيؤدي هذا إلى حذف جميع معاملاتك وميزانياتك وأهداف المدخرات والمعاملات المتكررة بشكل دائم. لا يمكن التراجع عن هذا الإجراء.",
     "reset_confirm_btn": "نعم، احذف كل شيء",
-    "reset_success": "تم حذف جميع البيانات"
+    "reset_success": "تم حذف جميع البيانات",
+    "theme": "المظهر",
+    "theme_system": "تلقائي",
+    "theme_light": "فاتح",
+    "theme_dark": "داكن",
+    "notifications": "الإشعارات",
+    "notify_budget_alerts": "تنبيهات الميزانية",
+    "notify_budget_alerts_desc": "عند اقتراب الإنفاق من الحد",
+    "notify_recurring_reminders": "تذكيرات متكررة",
+    "notify_recurring_reminders_desc": "تذكير في يوم تنفيذ المعاملة",
+    "notify_weekly_summary": "ملخص أسبوعي",
+    "notify_weekly_summary_desc": "مراجعة الإنفاق كل يوم اثنين",
+    "notify_goal_milestones": "إنجازات الأهداف",
+    "notify_goal_milestones_desc": "تنبيه عند 25% و50% و75% و100%"
   },
   "more": {
     "title": "المزيد",
@@ -273,5 +295,15 @@
     "credit": "ائتمان",
     "crypto": "كريبتو"
   },
-  "setDefault": "تعيين كافتراضي"
+  "setDefault": "تعيين كافتراضي",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

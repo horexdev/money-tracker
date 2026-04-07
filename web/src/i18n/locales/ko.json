@@ -61,11 +61,19 @@
     "all_types": "전체",
     "expenses": "지출",
     "incomes": "수입",
-    "search_placeholder": "메모로 검색...",
+    "search_placeholder": "거래 검색...",
     "day_total": "합계",
     "no_more": "모두 확인했습니다",
-    "swipe_to_delete": "왼쪽으로 밀어 삭제",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "account_filter": "계좌",
+    "date_filter": "날짜",
+    "sort": "정렬",
+    "sort_newest": "최신순",
+    "sort_oldest": "오래된순",
+    "sort_amount_high": "금액: 높은순",
+    "sort_amount_low": "금액: 낮은순",
+    "clear_filters": "필터 초기화",
+    "category_filter": "카테고리"
   },
   "stats": {
     "title": "통계",
@@ -131,7 +139,8 @@
       "Other": "기타",
       "Savings": "저축",
       "Transfer": "이체"
-    }
+    },
+    "type_savings": "저축"
   },
   "budgets": {
     "title": "예산",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "모든 데이터를 초기화할까요?",
     "reset_confirm_desc": "이렇게 하면 모든 거래, 예산, 저축 목표 및 반복 거래가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
     "reset_confirm_btn": "예, 모두 삭제",
-    "reset_success": "모든 데이터가 삭제되었습니다"
+    "reset_success": "모든 데이터가 삭제되었습니다",
+    "theme": "테마",
+    "theme_system": "자동",
+    "theme_light": "라이트",
+    "theme_dark": "다크",
+    "notifications": "알림",
+    "notify_budget_alerts": "예산 알림",
+    "notify_budget_alerts_desc": "지출이 한도에 가까워질 때 알림",
+    "notify_recurring_reminders": "반복 알림",
+    "notify_recurring_reminders_desc": "반복 거래 실행일에 알림",
+    "notify_weekly_summary": "주간 요약",
+    "notify_weekly_summary_desc": "월요일 주간 지출 요약",
+    "notify_goal_milestones": "목표 달성",
+    "notify_goal_milestones_desc": "목표의 25%, 50%, 75%, 100% 시 알림"
   },
   "more": {
     "title": "더보기",
@@ -273,5 +295,15 @@
     "credit": "신용",
     "crypto": "크립토"
   },
-  "setDefault": "기본으로 설정"
+  "setDefault": "기본으로 설정",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

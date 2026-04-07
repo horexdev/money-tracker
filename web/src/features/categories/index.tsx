@@ -13,7 +13,7 @@ import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
-import { Badge, EmptyState, SwipeToDelete, FAB, BottomSheet, ColorPicker, IconPicker } from '../../shared/ui'
+import { Badge, EmptyState, ActionRow, FAB, BottomSheet, ColorPicker, IconPicker } from '../../shared/ui'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import type { Category } from '../../shared/types'
 
@@ -34,12 +34,13 @@ function CategoryForm({
   onClose: () => void
 }) {
   const { t } = useTranslation()
+  const tCategory = useCategoryName()
   const qc = useQueryClient()
   const { notification } = useHaptic()
 
   const defaultColor = editingCat?.color ?? COLOR_SWATCHES[categoryCount % COLOR_SWATCHES.length]
 
-  const [name, setName] = useState(editingCat?.name ?? '')
+  const [name, setName] = useState(editingCat ? tCategory(editingCat.name) : '')
   const [iconId, setIconId] = useState(editingCat?.emoji ?? 'star')
   const [catType, setCatType] = useState(editingCat?.type ?? 'both')
   const [color, setColor] = useState(defaultColor)
@@ -171,7 +172,7 @@ function CategoryRow({
   const tCategory = useCategoryName()
   return (
     <div className={`transition-opacity ${isDeleting ? 'opacity-30 pointer-events-none' : ''}`}>
-      <SwipeToDelete onDelete={() => onDelete(cat.id)}>
+      <ActionRow onDelete={() => onDelete(cat.id)}>
         <div className="flex items-center gap-3 px-4 py-3">
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
@@ -195,7 +196,7 @@ function CategoryRow({
             <PencilSimple size={18} weight="bold" />
           </button>
         </div>
-      </SwipeToDelete>
+      </ActionRow>
     </div>
   )
 }

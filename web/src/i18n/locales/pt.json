@@ -61,11 +61,19 @@
     "all_types": "Todos",
     "expenses": "Despesas",
     "incomes": "Receitas",
-    "search_placeholder": "Pesquisar por nota...",
+    "search_placeholder": "Pesquisar transações...",
     "day_total": "Total",
     "no_more": "Você já viu tudo",
-    "swipe_to_delete": "Deslize para a esquerda para excluir",
-    "page_of": "{{page}} de {{total}}"
+    "page_of": "{{page}} de {{total}}",
+    "account_filter": "Conta",
+    "date_filter": "Data",
+    "sort": "Ordenar",
+    "sort_newest": "Mais recente",
+    "sort_oldest": "Mais antigo",
+    "sort_amount_high": "Valor: decrescente",
+    "sort_amount_low": "Valor: crescente",
+    "clear_filters": "Limpar filtros",
+    "category_filter": "Categoria"
   },
   "stats": {
     "title": "Estatísticas",
@@ -131,7 +139,8 @@
       "Other": "Outros",
       "Savings": "Poupanças",
       "Transfer": "Transferência"
-    }
+    },
+    "type_savings": "Poupança"
   },
   "budgets": {
     "title": "Orçamentos",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Redefinir todos os dados?",
     "reset_confirm_desc": "Isso excluirá permanentemente todas as suas transações, orçamentos, metas de poupança e transações recorrentes. Esta ação não pode ser desfeita.",
     "reset_confirm_btn": "Sim, excluir tudo",
-    "reset_success": "Todos os dados excluídos"
+    "reset_success": "Todos os dados excluídos",
+    "theme": "Tema",
+    "theme_system": "Automático",
+    "theme_light": "Claro",
+    "theme_dark": "Escuro",
+    "notifications": "Notificações",
+    "notify_budget_alerts": "Alertas de orçamento",
+    "notify_budget_alerts_desc": "Quando os gastos se aproximam do limite",
+    "notify_recurring_reminders": "Lembretes recorrentes",
+    "notify_recurring_reminders_desc": "Lembrete no dia de execução",
+    "notify_weekly_summary": "Resumo semanal",
+    "notify_weekly_summary_desc": "Resumo de segunda-feira sobre os gastos semanais",
+    "notify_goal_milestones": "Marcos de objetivos",
+    "notify_goal_milestones_desc": "Alerta a 25%, 50%, 75%, 100% de um objetivo"
   },
   "more": {
     "title": "Mais",
@@ -273,5 +295,15 @@
     "credit": "Crédito",
     "crypto": "Cripto"
   },
-  "setDefault": "Definir como padrão"
+  "setDefault": "Definir como padrão",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

@@ -39,6 +39,14 @@ func ValidLanguage(code string) bool {
 	return ok
 }
 
+// NotificationPrefs holds a user's notification opt-in settings.
+type NotificationPrefs struct {
+	BudgetAlerts       bool
+	RecurringReminders bool
+	WeeklySummary      bool
+	GoalMilestones     bool
+}
+
 // User represents a registered Telegram user.
 type User struct {
 	ID                int64
@@ -50,6 +58,10 @@ type User struct {
 	DisplayCurrencies []string
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	NotifyBudgetAlerts       bool
+	NotifyRecurringReminders bool
+	NotifyWeeklySummary      bool
+	NotifyGoalMilestones     bool
 }
 
 // DisplayName returns the best available name for the user.

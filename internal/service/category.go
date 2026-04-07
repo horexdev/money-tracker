@@ -37,10 +37,59 @@ func (s *CategoryService) ListForUserByType(ctx context.Context, userID int64, c
 	return cats, nil
 }
 
+// ListSorted returns categories optionally filtered by type and sorted by name.
+// catType filters by category type when non-empty ("expense", "income", "both").
+// order controls sort direction: "asc" (default) or "desc".
+func (s *CategoryService) ListSorted(ctx context.Context, userID int64, catType, order string) ([]*domain.Category, error) {
+	switch order {
+	case "", "asc":
+		order = "asc"
+	case "desc":
+		// valid
+	default:
+		return nil, fmt.Errorf("order %q: %w", order, domain.ErrInvalidSortParam)
+	}
+
+	switch catType {
+	case "", "expense", "income", "both":
+		// valid
+	default:
+		return nil, fmt.Errorf("type %q: %w", catType, domain.ErrInvalidSortParam)
+	}
+
+	cats, err := s.repo.ListSorted(ctx, userID, catType, order)
+	if err != nil {
+		return nil, fmt.Errorf("list sorted categories for user %d: %w", userID, err)
+	}
+	return cats, nil
+}
+
+// HasCategories reports whether the user has at least one personal category.
+func (s *CategoryService) HasCategories(ctx context.Context, userID int64) (bool, error) {
+	has, err := s.repo.HasCategories(ctx, userID)
+	if err != nil {
+		return false, fmt.Errorf("check categories for user %d: %w", userID, err)
+	}
+	return has, nil
+}
+
+// InitDefaultForUser seeds a set of default categories for a new user.
+// Seeds are provided by the caller (API layer) with the appropriate locale.
+func (s *CategoryService) InitDefaultForUser(ctx context.Context, userID int64, seeds []domain.CategorySeed) error {
+	if err := s.repo.BulkCreateForUser(ctx, userID, seeds); err != nil {
+		return fmt.Errorf("init default categories for user %d: %w", userID, err)
+	}
+	s.log.InfoContext(ctx, "default categories seeded",
+		slog.Int64("user_id", userID),
+		slog.Int("count", len(seeds)),
+	)
+	return nil
+}
+
 // Create adds a new custom category for a user.
 func (s *CategoryService) Create(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error) {
 	if name == "" {
-		return nil, fmt.Errorf("category name is required: %w", domain.ErrInvalidAmount)
+		return nil, domain.ErrCategoryNameEmpty
 	}
 	if catType == "" {
 		catType = string(domain.CategoryTypeBoth)
@@ -68,8 +117,8 @@ func (s *CategoryService) Update(ctx context.Context, userID, categoryID int64, 
 	if err != nil {
 		return nil, fmt.Errorf("get category %d: %w", categoryID, err)
 	}
-	if existing.IsSystem() {
-		return nil, domain.ErrCategorySystemReadOnly
+	if existing.IsSystem() || existing.IsProtected {
+		return nil, domain.ErrCategoryProtected
 	}
 	if existing.UserID != userID {
 		return nil, domain.ErrCategoryNotFound
@@ -96,8 +145,8 @@ func (s *CategoryService) Delete(ctx context.Context, userID, categoryID int64) 
 	if err != nil {
 		return fmt.Errorf("get category %d: %w", categoryID, err)
 	}
-	if existing.IsSystem() {
-		return domain.ErrCategorySystemReadOnly
+	if existing.IsSystem() || existing.IsProtected {
+		return domain.ErrCategoryProtected
 	}
 	if existing.UserID != userID {
 		return domain.ErrCategoryNotFound
@@ -131,7 +180,7 @@ func (s *CategoryService) GetByID(ctx context.Context, userID, categoryID int64)
 		}
 		return nil, fmt.Errorf("get category %d: %w", categoryID, err)
 	}
-	if !cat.IsSystem() && cat.UserID != userID {
+	if cat.IsPersonal() && cat.UserID != userID {
 		return nil, domain.ErrCategoryNotFound
 	}
 	return cat, nil

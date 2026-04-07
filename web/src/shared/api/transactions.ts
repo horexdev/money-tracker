@@ -19,9 +19,16 @@ export interface UpdateTransactionPayload {
 }
 
 export const transactionsApi = {
-  list(page = 1, pageSize = 20, accountId?: number | null): Promise<ListTransactionsResponse> {
-    const qs = accountId ? `&account_id=${accountId}` : ''
-    return api.get(`/v1/transactions?page=${page}&page_size=${pageSize}${qs}`)
+  list(
+    page = 1,
+    pageSize = 20,
+    params?: { accountId?: number | null; from?: string | null; to?: string | null },
+  ): Promise<ListTransactionsResponse> {
+    const qs = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
+    if (params?.accountId) qs.set('account_id', String(params.accountId))
+    if (params?.from) qs.set('from', params.from)
+    if (params?.to) qs.set('to', params.to)
+    return api.get(`/v1/transactions?${qs.toString()}`)
   },
 
   create(payload: CreateTransactionPayload): Promise<Transaction> {

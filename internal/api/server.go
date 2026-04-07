@@ -56,11 +56,12 @@ func localizedAccountName(lang string) string {
 }
 
 // userEnsurer wraps UserService to satisfy the ensurer interface required by authMiddleware.
-// It also creates a default account for first-time users.
+// It also creates a default account and seeds default categories for first-time users.
 type userEnsurer struct {
-	svc        *service.UserService
-	accountSvc *service.AccountService
-	log        *slog.Logger
+	svc         *service.UserService
+	accountSvc  *service.AccountService
+	categorySvc *service.CategoryService
+	log         *slog.Logger
 }
 
 func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error {
@@ -81,51 +82,77 @@ func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error
 		return err
 	}
 
+	// Prefer the persisted language; fall back to the Telegram-reported one.
+	lang := string(user.Language)
+	if lang == "" {
+		lang = tgUser.LanguageCode
+	}
+
 	accounts, err := u.accountSvc.List(ctx, user.ID)
 	if err != nil {
 		u.log.WarnContext(ctx, "ensureUser: failed to list accounts",
 			slog.Int64("user_id", user.ID),
 			slog.String("error", err.Error()),
 		)
-		return nil
-	}
-	if len(accounts) > 0 {
-		return nil
+	} else if len(accounts) == 0 {
+		name := localizedAccountName(lang)
+		// Derive currency from the Telegram language_code so the first account
+		// gets a sensible default even before the frontend persists a preference.
+		currency := localizedAccountCurrency(lang)
+		if _, err := u.accountSvc.Create(ctx, user.ID, name, "wallet", "#6366f1", domain.AccountTypeChecking, currency, true); err != nil {
+			u.log.WarnContext(ctx, "ensureUser: failed to create default account",
+				slog.Int64("user_id", user.ID),
+				slog.String("error", err.Error()),
+			)
+		}
 	}
 
-	// Prefer the persisted language; fall back to the Telegram-reported one.
-	lang := string(user.Language)
-	if lang == "" {
-		lang = tgUser.LanguageCode
-	}
-	name := localizedAccountName(lang)
-	// Derive currency from the Telegram language_code so the first account
-	// gets a sensible default even before the frontend persists a preference.
-	currency := localizedAccountCurrency(lang)
+	// Seed default categories if the user has none yet.
+	// This covers both new users and users who reset their data.
+	u.seedCategoriesIfEmpty(ctx, user.ID, lang)
+	return nil
+}
 
-	if _, err := u.accountSvc.Create(ctx, user.ID, name, "wallet", "#6366f1", domain.AccountTypeChecking, currency, true); err != nil {
-		u.log.WarnContext(ctx, "ensureUser: failed to create default account",
-			slog.Int64("user_id", user.ID),
+// seedCategoriesIfEmpty seeds localized default categories when the user has none yet.
+func (u *userEnsurer) seedCategoriesIfEmpty(ctx context.Context, userID int64, lang string) {
+	if u.categorySvc == nil {
+		return
+	}
+	has, err := u.categorySvc.HasCategories(ctx, userID)
+	if err != nil {
+		u.log.WarnContext(ctx, "ensureUser: failed to check categories",
+			slog.Int64("user_id", userID),
+			slog.String("error", err.Error()),
+		)
+		return
+	}
+	if has {
+		return
+	}
+	seeds := defaultCategoriesFor(lang)
+	if err := u.categorySvc.InitDefaultForUser(ctx, userID, seeds); err != nil {
+		u.log.WarnContext(ctx, "ensureUser: failed to seed categories",
+			slog.Int64("user_id", userID),
 			slog.String("error", err.Error()),
 		)
 	}
-	return nil
 }
 
 // Deps holds all service dependencies needed to build the HTTP server.
 type Deps struct {
-	UserSvc        *service.UserService
-	TxSvc          *service.TransactionService
-	StatsSvc       *service.StatsService
-	ExchangeSvc    *service.ExchangeService
-	CategorySvc    *service.CategoryService
-	BudgetSvc      *service.BudgetService
-	RecurringSvc   *service.RecurringService
-	GoalSvc        *service.SavingsGoalService
-	ExportSvc      *service.ExportService
-	AccountSvc     *service.AccountService
-	TransferSvc    *service.TransferService
-	AdminSvc       *service.AdminService
+	UserSvc       *service.UserService
+	TxSvc         *service.TransactionService
+	StatsSvc      *service.StatsService
+	ExchangeSvc   *service.ExchangeService
+	CategorySvc   *service.CategoryService
+	BudgetSvc     *service.BudgetService
+	RecurringSvc  *service.RecurringService
+	GoalSvc       *service.SavingsGoalService
+	ExportSvc     *service.ExportService
+	AccountSvc    *service.AccountService
+	TransferSvc   *service.TransferService
+	AdjustSvc     *service.AdjustmentService
+	AdminSvc      *service.AdminService
 	BotToken       string
 	AllowedOrigins string
 	AdminUserID    int64
@@ -140,7 +167,7 @@ type Deps struct {
 func NewServer(d Deps) http.Handler {
 	mux := http.NewServeMux()
 
-	eu := &userEnsurer{svc: d.UserSvc, accountSvc: d.AccountSvc, log: d.Log}
+	eu := &userEnsurer{svc: d.UserSvc, accountSvc: d.AccountSvc, categorySvc: d.CategorySvc, log: d.Log}
 
 	auth := authMiddleware(d.BotToken, d.DevMode, d.DevLang, eu, d.Log)
 	cors := corsMiddleware(d.AllowedOrigins)
@@ -189,9 +216,9 @@ func NewServer(d Deps) http.Handler {
 	mux.Handle("/api/v1/goals", protected(goalsHandler(d.GoalSvc, d.Log)))
 	mux.Handle("/api/v1/goals/", protected(goalsHandler(d.GoalSvc, d.Log)))
 
-	// Accounts CRUD.
-	mux.Handle("/api/v1/accounts", protected(accountsHandler(d.AccountSvc, d.Log)))
-	mux.Handle("/api/v1/accounts/", protected(accountsHandler(d.AccountSvc, d.Log)))
+	// Accounts CRUD + balance adjustment.
+	mux.Handle("/api/v1/accounts", protected(accountsHandler(d.AccountSvc, d.AdjustSvc, d.Log)))
+	mux.Handle("/api/v1/accounts/", protected(accountsHandler(d.AccountSvc, d.AdjustSvc, d.Log)))
 
 	// Transfers.
 	mux.Handle("/api/v1/transfers", protected(transfersHandler(d.TransferSvc, d.Log)))

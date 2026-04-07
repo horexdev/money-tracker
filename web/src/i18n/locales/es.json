@@ -61,11 +61,19 @@
     "all_types": "Todo",
     "expenses": "Gastos",
     "incomes": "Ingresos",
-    "search_placeholder": "Buscar por nota...",
+    "search_placeholder": "Buscar transacciones...",
     "day_total": "Total",
     "no_more": "Ya lo has visto todo",
-    "swipe_to_delete": "Desliza a la izquierda para eliminar",
-    "page_of": "{{page}} de {{total}}"
+    "page_of": "{{page}} de {{total}}",
+    "account_filter": "Cuenta",
+    "date_filter": "Fecha",
+    "sort": "Ordenar",
+    "sort_newest": "Más reciente primero",
+    "sort_oldest": "Más antiguo primero",
+    "sort_amount_high": "Importe: mayor a menor",
+    "sort_amount_low": "Importe: menor a mayor",
+    "clear_filters": "Limpiar filtros",
+    "category_filter": "Categoría"
   },
   "stats": {
     "title": "Estadísticas",
@@ -131,7 +139,8 @@
       "Other": "Otros",
       "Savings": "Ahorros",
       "Transfer": "Transferencia"
-    }
+    },
+    "type_savings": "Ahorros"
   },
   "budgets": {
     "title": "Presupuestos",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "¿Restablecer todos los datos?",
     "reset_confirm_desc": "Esto eliminará permanentemente todas tus transacciones, presupuestos, metas de ahorro y transacciones recurrentes. Esta acción no se puede deshacer.",
     "reset_confirm_btn": "Sí, eliminar todo",
-    "reset_success": "Todos los datos eliminados"
+    "reset_success": "Todos los datos eliminados",
+    "theme": "Tema",
+    "theme_system": "Automático",
+    "theme_light": "Claro",
+    "theme_dark": "Oscuro",
+    "notifications": "Notificaciones",
+    "notify_budget_alerts": "Alertas de presupuesto",
+    "notify_budget_alerts_desc": "Cuando el gasto se acerca al límite",
+    "notify_recurring_reminders": "Recordatorios recurrentes",
+    "notify_recurring_reminders_desc": "Recordatorio el día de ejecución",
+    "notify_weekly_summary": "Resumen semanal",
+    "notify_weekly_summary_desc": "Resumen del lunes sobre el gasto semanal",
+    "notify_goal_milestones": "Hitos de objetivos",
+    "notify_goal_milestones_desc": "Alerta al 25%, 50%, 75%, 100% de un objetivo"
   },
   "more": {
     "title": "Más",
@@ -273,5 +295,15 @@
     "credit": "Crédito",
     "crypto": "Cripto"
   },
-  "setDefault": "Establecer como predeterminada"
+  "setDefault": "Establecer como predeterminada",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

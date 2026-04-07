@@ -20,7 +20,7 @@ func NewCategoryRepository(pool *pgxpool.Pool) *CategoryRepository {
 	return &CategoryRepository{q: sqlcgen.New(pool)}
 }
 
-// ListForUser returns all system categories plus user-specific ones.
+// ListForUser returns all personal categories for the user (excludes transfer/adjustment).
 func (r *CategoryRepository) ListForUser(ctx context.Context, userID int64) ([]*domain.Category, error) {
 	rows, err := r.q.ListUserCategories(ctx, pgInt8(userID))
 	if err != nil {
@@ -49,7 +49,51 @@ func (r *CategoryRepository) ListForUserByType(ctx context.Context, userID int64
 	return cats, nil
 }
 
-// GetByName returns a category by name for a user (includes system categories).
+// ListSorted returns categories sorted by name in the given direction.
+// catType filters by category type when non-empty; order is "asc" or "desc".
+func (r *CategoryRepository) ListSorted(ctx context.Context, userID int64, catType, order string) ([]*domain.Category, error) {
+	var (
+		rows []sqlcgen.Category
+		err  error
+		desc = order == "desc"
+	)
+
+	if catType != "" {
+		if desc {
+			rows, err = r.q.ListUserCategoriesByTypeFilterDesc(ctx, sqlcgen.ListUserCategoriesByTypeFilterDescParams{
+				UserID: pgInt8(userID),
+				Type:   catType,
+			})
+		} else {
+			rows, err = r.q.ListUserCategoriesByTypeFilterAsc(ctx, sqlcgen.ListUserCategoriesByTypeFilterAscParams{
+				UserID: pgInt8(userID),
+				Type:   catType,
+			})
+		}
+	} else {
+		if desc {
+			rows, err = r.q.ListUserCategoriesByNameDesc(ctx, pgInt8(userID))
+		} else {
+			rows, err = r.q.ListUserCategoriesByNameAsc(ctx, pgInt8(userID))
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	cats := make([]*domain.Category, 0, len(rows))
+	for _, row := range rows {
+		cats = append(cats, rowToCategory(row))
+	}
+	return cats, nil
+}
+
+// HasCategories returns true if the user has at least one personal (non-protected) category.
+func (r *CategoryRepository) HasCategories(ctx context.Context, userID int64) (bool, error) {
+	return r.q.HasUserCategories(ctx, pgInt8(userID))
+}
+
+// GetByName returns a category by name for a user (includes system/infrastructure categories).
 func (r *CategoryRepository) GetByName(ctx context.Context, userID int64, name string) (*domain.Category, error) {
 	row, err := r.q.GetCategoryByName(ctx, sqlcgen.GetCategoryByNameParams{
 		UserID: pgInt8(userID),
@@ -76,6 +120,35 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*domain.Cat
 	return rowToCategory(row), nil
 }
 
+// GetSystemCategoryByType returns the system (user_id IS NULL) category of the given type.
+// Use this for infrastructure categories like "transfer" and "adjustment" instead of GetByName,
+// to avoid collisions with user-owned categories of the same name.
+func (r *CategoryRepository) GetSystemCategoryByType(ctx context.Context, catType string) (*domain.Category, error) {
+	row, err := r.q.GetSystemCategoryByType(ctx, catType)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrCategoryNotFound
+		}
+		return nil, err
+	}
+	return rowToCategory(row), nil
+}
+
+// GetBySavingsType returns the user's savings category by type (not by name).
+func (r *CategoryRepository) GetBySavingsType(ctx context.Context, userID int64) (*domain.Category, error) {
+	row, err := r.q.GetCategoryByTypeForUser(ctx, sqlcgen.GetCategoryByTypeForUserParams{
+		UserID: pgInt8(userID),
+		Type:   string(domain.CategoryTypeSavings),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrCategoryNotFound
+		}
+		return nil, err
+	}
+	return rowToCategory(row), nil
+}
+
 // CreateForUser adds a custom category for a specific user.
 func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error) {
 	row, err := r.q.CreateUserCategory(ctx, sqlcgen.CreateUserCategoryParams{
@@ -89,6 +162,28 @@ func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, na
 		return nil, err
 	}
 	return rowToCategory(row), nil
+}
+
+// BulkCreateForUser inserts a set of default categories for the user, ignoring conflicts.
+func (r *CategoryRepository) BulkCreateForUser(ctx context.Context, userID int64, seeds []domain.CategorySeed) error {
+	for _, s := range seeds {
+		_, err := r.q.CreateUserCategory(ctx, sqlcgen.CreateUserCategoryParams{
+			UserID: pgInt8(userID),
+			Name:   s.Name,
+			Emoji:  s.Emoji,
+			Type:   string(s.Type),
+			Color:  s.Color,
+		})
+		if err != nil {
+			// ON CONFLICT is not part of CreateUserCategory; skip duplicates gracefully.
+			// A unique violation (23505) means the user already has this category — not an error.
+			if isDuplicateError(err) {
+				continue
+			}
+			return err
+		}
+	}
+	return nil
 }
 
 // Update modifies an existing category (must be user-owned).
@@ -125,14 +220,15 @@ func (r *CategoryRepository) CountTransactions(ctx context.Context, categoryID i
 
 func rowToCategory(row sqlcgen.Category) *domain.Category {
 	cat := &domain.Category{
-		ID:        row.ID,
-		UserID:    goInt64(row.UserID),
-		Name:      row.Name,
-		Emoji:     row.Emoji,
-		Type:      domain.CategoryType(row.Type),
-		Color:     row.Color,
-		UpdatedAt: goTime(row.UpdatedAt),
-		DeletedAt: goTimePtr(row.DeletedAt),
+		ID:          row.ID,
+		UserID:      goInt64(row.UserID),
+		Name:        row.Name,
+		Emoji:       row.Emoji,
+		Type:        domain.CategoryType(row.Type),
+		Color:       row.Color,
+		IsProtected: row.IsProtected,
+		UpdatedAt:   goTime(row.UpdatedAt),
+		DeletedAt:   goTimePtr(row.DeletedAt),
 	}
 	return cat
 }

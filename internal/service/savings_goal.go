@@ -8,8 +8,6 @@ import (
 	"github.com/horexdev/money-tracker/internal/domain"
 )
 
-const savingsCategoryName = "Savings"
-
 // SavingsGoalService handles business logic for savings goals.
 type SavingsGoalService struct {
 	repo        SavingsGoalStorer
@@ -127,7 +125,7 @@ func (s *SavingsGoalService) Withdraw(ctx context.Context, id, userID, amountCen
 
 // createLinkedTransaction creates a real expense/income transaction on the linked account.
 func (s *SavingsGoalService) createLinkedTransaction(ctx context.Context, userID, accountID, amountCents int64, txType domain.TransactionType, note string) error {
-	cat, err := s.catRepo.GetByName(ctx, userID, savingsCategoryName)
+	cat, err := s.catRepo.GetBySavingsType(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("get savings category: %w", err)
 	}

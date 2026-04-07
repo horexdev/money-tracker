@@ -129,14 +129,15 @@ type Budget struct {
 }
 
 type Category struct {
-	ID        int64              `json:"id"`
-	UserID    pgtype.Int8        `json:"user_id"`
-	Name      string             `json:"name"`
-	Emoji     string             `json:"emoji"`
-	Type      string             `json:"type"`
-	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
-	DeletedAt pgtype.Timestamptz `json:"deleted_at"`
-	Color     string             `json:"color"`
+	ID          int64              `json:"id"`
+	UserID      pgtype.Int8        `json:"user_id"`
+	Name        string             `json:"name"`
+	Emoji       string             `json:"emoji"`
+	Type        string             `json:"type"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
+	Color       string             `json:"color"`
+	IsProtected bool               `json:"is_protected"`
 }
 
 type GoalTransaction struct {
@@ -188,6 +189,7 @@ type Transaction struct {
 	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
 	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
 	AccountID              pgtype.Int8            `json:"account_id"`
+	IsAdjustment           bool                   `json:"is_adjustment"`
 }
 
 type Transfer struct {
@@ -206,13 +208,17 @@ type Transfer struct {
 }
 
 type User struct {
-	ID                int64              `json:"id"`
-	Username          string             `json:"username"`
-	FirstName         string             `json:"first_name"`
-	LastName          string             `json:"last_name"`
-	CurrencyCode      string             `json:"currency_code"`
-	CreatedAt         pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
-	DisplayCurrencies string             `json:"display_currencies"`
-	Language          string             `json:"language"`
+	ID                       int64              `json:"id"`
+	Username                 string             `json:"username"`
+	FirstName                string             `json:"first_name"`
+	LastName                 string             `json:"last_name"`
+	CurrencyCode             string             `json:"currency_code"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+	DisplayCurrencies        string             `json:"display_currencies"`
+	Language                 string             `json:"language"`
+	NotifyBudgetAlerts       bool               `json:"notify_budget_alerts"`
+	NotifyRecurringReminders bool               `json:"notify_recurring_reminders"`
+	NotifyWeeklySummary      bool               `json:"notify_weekly_summary"`
+	NotifyGoalMilestones     bool               `json:"notify_goal_milestones"`
 }

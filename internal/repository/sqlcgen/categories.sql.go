@@ -25,7 +25,7 @@ func (q *Queries) CountTransactionsByCategory(ctx context.Context, categoryID in
 const createUserCategory = `-- name: CreateUserCategory :one
 INSERT INTO categories (user_id, name, emoji, type, color)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color
+RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected
 `
 
 type CreateUserCategoryParams struct {
@@ -54,12 +54,13 @@ func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategory
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.Color,
+		&i.IsProtected,
 	)
 	return i, err
 }
 
 const getCategoryByID = `-- name: GetCategoryByID :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories WHERE id = $1
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories WHERE id = $1
 `
 
 func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, error) {
@@ -74,15 +75,17 @@ func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, erro
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.Color,
+		&i.IsProtected,
 	)
 	return i, err
 }
 
 const getCategoryByName = `-- name: GetCategoryByName :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE (user_id IS NULL OR user_id = $1)
   AND LOWER(name) = LOWER($2)
   AND deleted_at IS NULL
+ORDER BY user_id NULLS LAST
 LIMIT 1
 `
 
@@ -103,14 +106,57 @@ func (q *Queries) GetCategoryByName(ctx context.Context, arg GetCategoryByNamePa
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.Color,
+		&i.IsProtected,
 	)
 	return i, err
 }
 
+const getCategoryByTypeForUser = `-- name: GetCategoryByTypeForUser :one
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id = $1 AND type = $2 AND deleted_at IS NULL
+LIMIT 1
+`
+
+type GetCategoryByTypeForUserParams struct {
+	UserID pgtype.Int8 `json:"user_id"`
+	Type   string      `json:"type"`
+}
+
+func (q *Queries) GetCategoryByTypeForUser(ctx context.Context, arg GetCategoryByTypeForUserParams) (Category, error) {
+	row := q.db.QueryRow(ctx, getCategoryByTypeForUser, arg.UserID, arg.Type)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Emoji,
+		&i.Type,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Color,
+		&i.IsProtected,
+	)
+	return i, err
+}
+
+const hasUserCategories = `-- name: HasUserCategories :one
+SELECT EXISTS(
+  SELECT 1 FROM categories
+  WHERE user_id = $1 AND deleted_at IS NULL AND is_protected = false
+) AS has_categories
+`
+
+func (q *Queries) HasUserCategories(ctx context.Context, userID pgtype.Int8) (bool, error) {
+	row := q.db.QueryRow(ctx, hasUserCategories, userID)
+	var has_categories bool
+	err := row.Scan(&has_categories)
+	return has_categories, err
+}
+
 const listUserCategories = `-- name: ListUserCategories :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories
-WHERE (user_id IS NULL OR user_id = $1) AND deleted_at IS NULL AND type != 'transfer'
-ORDER BY user_id NULLS FIRST, name
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id = $1 AND deleted_at IS NULL AND type NOT IN ('transfer', 'adjustment')
+ORDER BY name
 `
 
 func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([]Category, error) {
@@ -131,6 +177,79 @@ func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.Color,
+			&i.IsProtected,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserCategoriesByNameAsc = `-- name: ListUserCategoriesByNameAsc :many
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id = $1 AND deleted_at IS NULL AND type NOT IN ('transfer', 'adjustment')
+ORDER BY name
+`
+
+func (q *Queries) ListUserCategoriesByNameAsc(ctx context.Context, userID pgtype.Int8) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listUserCategoriesByNameAsc, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Emoji,
+			&i.Type,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Color,
+			&i.IsProtected,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserCategoriesByNameDesc = `-- name: ListUserCategoriesByNameDesc :many
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id = $1 AND deleted_at IS NULL AND type NOT IN ('transfer', 'adjustment')
+ORDER BY name DESC
+`
+
+func (q *Queries) ListUserCategoriesByNameDesc(ctx context.Context, userID pgtype.Int8) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listUserCategoriesByNameDesc, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Emoji,
+			&i.Type,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Color,
+			&i.IsProtected,
 		); err != nil {
 			return nil, err
 		}
@@ -143,11 +262,12 @@ func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([
 }
 
 const listUserCategoriesByType = `-- name: ListUserCategoriesByType :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color FROM categories
-WHERE (user_id IS NULL OR user_id = $1)
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id = $1
   AND deleted_at IS NULL
+  AND type NOT IN ('transfer', 'adjustment')
   AND (type = $2 OR type = 'both')
-ORDER BY user_id NULLS FIRST, name
+ORDER BY name
 `
 
 type ListUserCategoriesByTypeParams struct {
@@ -173,6 +293,93 @@ func (q *Queries) ListUserCategoriesByType(ctx context.Context, arg ListUserCate
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.Color,
+			&i.IsProtected,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserCategoriesByTypeFilterAsc = `-- name: ListUserCategoriesByTypeFilterAsc :many
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id = $1
+  AND deleted_at IS NULL
+  AND (type = $2 OR type = 'both')
+ORDER BY name
+`
+
+type ListUserCategoriesByTypeFilterAscParams struct {
+	UserID pgtype.Int8 `json:"user_id"`
+	Type   string      `json:"type"`
+}
+
+func (q *Queries) ListUserCategoriesByTypeFilterAsc(ctx context.Context, arg ListUserCategoriesByTypeFilterAscParams) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listUserCategoriesByTypeFilterAsc, arg.UserID, arg.Type)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Emoji,
+			&i.Type,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Color,
+			&i.IsProtected,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserCategoriesByTypeFilterDesc = `-- name: ListUserCategoriesByTypeFilterDesc :many
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id = $1
+  AND deleted_at IS NULL
+  AND (type = $2 OR type = 'both')
+ORDER BY name DESC
+`
+
+type ListUserCategoriesByTypeFilterDescParams struct {
+	UserID pgtype.Int8 `json:"user_id"`
+	Type   string      `json:"type"`
+}
+
+func (q *Queries) ListUserCategoriesByTypeFilterDesc(ctx context.Context, arg ListUserCategoriesByTypeFilterDescParams) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listUserCategoriesByTypeFilterDesc, arg.UserID, arg.Type)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Emoji,
+			&i.Type,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Color,
+			&i.IsProtected,
 		); err != nil {
 			return nil, err
 		}
@@ -201,6 +408,29 @@ func (q *Queries) SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategory
 	return err
 }
 
+const getSystemCategoryByType = `-- name: GetSystemCategoryByType :one
+SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id IS NULL AND type = $1 AND deleted_at IS NULL
+LIMIT 1
+`
+
+func (q *Queries) GetSystemCategoryByType(ctx context.Context, catType string) (Category, error) {
+	row := q.db.QueryRow(ctx, getSystemCategoryByType, catType)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Emoji,
+		&i.Type,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Color,
+		&i.IsProtected,
+	)
+	return i, err
+}
+
 const updateCategory = `-- name: UpdateCategory :one
 UPDATE categories
 SET name       = $3,
@@ -209,7 +439,7 @@ SET name       = $3,
     color      = $6,
     updated_at = now()
 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
-RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color
+RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected
 `
 
 type UpdateCategoryParams struct {
@@ -240,6 +470,7 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.Color,
+		&i.IsProtected,
 	)
 	return i, err
 }

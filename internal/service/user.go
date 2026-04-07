@@ -64,6 +64,16 @@ func (s *UserService) UpdateLanguage(ctx context.Context, id int64, lang string)
 	return u, nil
 }
 
+// UpdateNotificationPreferences saves the user's notification opt-in settings.
+func (s *UserService) UpdateNotificationPreferences(ctx context.Context, id int64, prefs domain.NotificationPrefs) (*domain.User, error) {
+	u, err := s.repo.UpdateNotificationPreferences(ctx, id, prefs)
+	if err != nil {
+		return nil, fmt.Errorf("update notification preferences for user %d: %w", id, err)
+	}
+	s.log.InfoContext(ctx, "notification preferences updated", slog.Int64("user_id", id))
+	return u, nil
+}
+
 // ResetData deletes all user-owned data while keeping the user account and settings.
 func (s *UserService) ResetData(ctx context.Context, userID int64) error {
 	if err := s.repo.ResetData(ctx, userID); err != nil {

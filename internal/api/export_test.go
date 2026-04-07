@@ -71,8 +71,8 @@ func CategoriesHandlerForTest(catSvc *service.CategoryService, log *slog.Logger)
 }
 
 // AccountsHandlerForTest exposes accountsHandler for testing.
-func AccountsHandlerForTest(accountSvc *service.AccountService, log *slog.Logger) http.HandlerFunc {
-	return accountsHandler(accountSvc, log)
+func AccountsHandlerForTest(accountSvc *service.AccountService, adjustSvc *service.AdjustmentService, log *slog.Logger) http.HandlerFunc {
+	return accountsHandler(accountSvc, adjustSvc, log)
 }
 
 // BudgetHandlerForTest exposes budgetHandler for testing.
@@ -113,7 +113,7 @@ func LocalizedAccountCurrency(lang string) string { return localizedAccountCurre
 
 // NewUserEnsurer constructs a userEnsurer for testing.
 func NewUserEnsurer(userSvc *service.UserService, accountSvc *service.AccountService, log *slog.Logger) *userEnsurer {
-	return &userEnsurer{svc: userSvc, accountSvc: accountSvc, log: log}
+	return &userEnsurer{svc: userSvc, accountSvc: accountSvc, categorySvc: nil, log: log}
 }
 
 // EnsureUserForTest calls ensureUser on a userEnsurer, exposing it for tests.

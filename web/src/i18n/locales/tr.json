@@ -61,11 +61,19 @@
     "all_types": "Tümü",
     "expenses": "Giderler",
     "incomes": "Gelirler",
-    "search_placeholder": "Nota göre ara...",
+    "search_placeholder": "İşlem ara...",
     "day_total": "Toplam",
     "no_more": "Hepsini gördünüz",
-    "swipe_to_delete": "Silmek için sola kaydırın",
-    "page_of": "{{page}} / {{total}}"
+    "page_of": "{{page}} / {{total}}",
+    "account_filter": "Hesap",
+    "date_filter": "Tarih",
+    "sort": "Sırala",
+    "sort_newest": "En yeni",
+    "sort_oldest": "En eski",
+    "sort_amount_high": "Tutar: azalan",
+    "sort_amount_low": "Tutar: artan",
+    "clear_filters": "Filtreleri temizle",
+    "category_filter": "Kategori"
   },
   "stats": {
     "title": "İstatistikler",
@@ -131,7 +139,8 @@
       "Other": "Diğer",
       "Savings": "Tasarruflar",
       "Transfer": "Transfer"
-    }
+    },
+    "type_savings": "Tasarruf"
   },
   "budgets": {
     "title": "Bütçeler",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Tüm verileri sıfırla?",
     "reset_confirm_desc": "Bu, tüm işlemlerinizi, bütçelerinizi, birikim hedeflerinizi ve yinelenen işlemlerinizi kalıcı olarak silecek. Bu işlem geri alınamaz.",
     "reset_confirm_btn": "Evet, hepsini sil",
-    "reset_success": "Tüm veriler silindi"
+    "reset_success": "Tüm veriler silindi",
+    "theme": "Tema",
+    "theme_system": "Otomatik",
+    "theme_light": "Açık",
+    "theme_dark": "Koyu",
+    "notifications": "Bildirimler",
+    "notify_budget_alerts": "Bütçe Uyarıları",
+    "notify_budget_alerts_desc": "Harcamalar limite yaklaştığında",
+    "notify_recurring_reminders": "Tekrarlayan Hatırlatıcılar",
+    "notify_recurring_reminders_desc": "İşlem çalışma günü hatırlatıcısı",
+    "notify_weekly_summary": "Haftalık Özet",
+    "notify_weekly_summary_desc": "Pazartesi haftalık harcama özeti",
+    "notify_goal_milestones": "Hedef Dönüm Noktaları",
+    "notify_goal_milestones_desc": "%25, %50, %75, %100'de uyarı"
   },
   "more": {
     "title": "Daha Fazla",
@@ -273,5 +295,15 @@
     "credit": "Kredi",
     "crypto": "Kripto"
   },
-  "setDefault": "Varsayılan olarak ayarla"
+  "setDefault": "Varsayılan olarak ayarla",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

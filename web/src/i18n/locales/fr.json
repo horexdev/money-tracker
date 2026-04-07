@@ -61,11 +61,19 @@
     "all_types": "Tout",
     "expenses": "Dépenses",
     "incomes": "Revenus",
-    "search_placeholder": "Rechercher par note...",
+    "search_placeholder": "Rechercher des transactions...",
     "day_total": "Total",
     "no_more": "Vous avez tout vu",
-    "swipe_to_delete": "Glissez vers la gauche pour supprimer",
-    "page_of": "{{page}} sur {{total}}"
+    "page_of": "{{page}} sur {{total}}",
+    "account_filter": "Compte",
+    "date_filter": "Date",
+    "sort": "Trier",
+    "sort_newest": "Plus récent d'abord",
+    "sort_oldest": "Plus ancien d'abord",
+    "sort_amount_high": "Montant : décroissant",
+    "sort_amount_low": "Montant : croissant",
+    "clear_filters": "Effacer les filtres",
+    "category_filter": "Catégorie"
   },
   "stats": {
     "title": "Statistiques",
@@ -131,7 +139,8 @@
       "Other": "Autre",
       "Savings": "Épargne",
       "Transfer": "Virement"
-    }
+    },
+    "type_savings": "Épargne"
   },
   "budgets": {
     "title": "Budgets",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Réinitialiser toutes les données ?",
     "reset_confirm_desc": "Cela supprimera définitivement toutes vos transactions, budgets, objectifs d'épargne et transactions récurrentes. Cette action est irréversible.",
     "reset_confirm_btn": "Oui, tout supprimer",
-    "reset_success": "Toutes les données supprimées"
+    "reset_success": "Toutes les données supprimées",
+    "theme": "Thème",
+    "theme_system": "Automatique",
+    "theme_light": "Clair",
+    "theme_dark": "Sombre",
+    "notifications": "Notifications",
+    "notify_budget_alerts": "Alertes budget",
+    "notify_budget_alerts_desc": "Quand les dépenses approchent la limite",
+    "notify_recurring_reminders": "Rappels récurrents",
+    "notify_recurring_reminders_desc": "Rappel le jour d'exécution",
+    "notify_weekly_summary": "Bilan hebdomadaire",
+    "notify_weekly_summary_desc": "Récapitulatif du lundi sur les dépenses",
+    "notify_goal_milestones": "Jalons d'objectifs",
+    "notify_goal_milestones_desc": "Alerte à 25%, 50%, 75%, 100% d'un objectif"
   },
   "more": {
     "title": "Plus",
@@ -273,5 +295,15 @@
     "credit": "Crédit",
     "crypto": "Crypto"
   },
-  "setDefault": "Définir par défaut"
+  "setDefault": "Définir par défaut",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

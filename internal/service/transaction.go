@@ -191,23 +191,7 @@ func (s *TransactionService) ListPaged(ctx context.Context, userID int64, page, 
 	if err != nil {
 		return nil, 0, fmt.Errorf("count transactions for user %d: %w", userID, err)
 	}
-
-	totalPages := int(total) / pageSize
-	if int(total)%pageSize != 0 {
-		totalPages++
-	}
-	if totalPages == 0 {
-		totalPages = 1
-	}
-
-	if page < 1 {
-		page = 1
-	}
-	if page > totalPages {
-		page = totalPages
-	}
-
-	offset := (page - 1) * pageSize
+	totalPages, page, offset := calcPage(total, page, pageSize)
 	txs, err := s.txRepo.List(ctx, userID, pageSize, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list transactions for user %d: %w", userID, err)
@@ -221,8 +205,46 @@ func (s *TransactionService) ListPagedByAccount(ctx context.Context, userID, acc
 	if err != nil {
 		return nil, 0, fmt.Errorf("count transactions for account %d: %w", accountID, err)
 	}
+	totalPages, page, offset := calcPage(total, page, pageSize)
+	txs, err := s.txRepo.ListByAccount(ctx, userID, accountID, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list transactions for account %d: %w", accountID, err)
+	}
+	return txs, totalPages, nil
+}
 
-	totalPages := int(total) / pageSize
+// ListPagedWithDateRange returns a page of transactions filtered by an optional date range.
+func (s *TransactionService) ListPagedWithDateRange(ctx context.Context, userID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error) {
+	total, err := s.txRepo.CountWithDateRange(ctx, userID, from, to)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count transactions with date range for user %d: %w", userID, err)
+	}
+	totalPages, page, offset := calcPage(total, page, pageSize)
+	txs, err := s.txRepo.ListWithDateRange(ctx, userID, from, to, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list transactions with date range for user %d: %w", userID, err)
+	}
+	return txs, totalPages, nil
+}
+
+// ListPagedByAccountWithDateRange returns a page of transactions for an account filtered by date range.
+func (s *TransactionService) ListPagedByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error) {
+	total, err := s.txRepo.CountByAccountWithDateRange(ctx, userID, accountID, from, to)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count transactions with date range for account %d: %w", accountID, err)
+	}
+	totalPages, page, offset := calcPage(total, page, pageSize)
+	txs, err := s.txRepo.ListByAccountWithDateRange(ctx, userID, accountID, from, to, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list transactions with date range for account %d: %w", accountID, err)
+	}
+	return txs, totalPages, nil
+}
+
+// calcPage computes totalPages and the clamped page index from a total record count.
+// Returns (totalPages, clampedPage, offset).
+func calcPage(total int64, page, pageSize int) (totalPages, clampedPage, offset int) {
+	totalPages = int(total) / pageSize
 	if int(total)%pageSize != 0 {
 		totalPages++
 	}
@@ -235,13 +257,7 @@ func (s *TransactionService) ListPagedByAccount(ctx context.Context, userID, acc
 	if page > totalPages {
 		page = totalPages
 	}
-
-	offset := (page - 1) * pageSize
-	txs, err := s.txRepo.ListByAccount(ctx, userID, accountID, pageSize, offset)
-	if err != nil {
-		return nil, 0, fmt.Errorf("list transactions for account %d: %w", accountID, err)
-	}
-	return txs, totalPages, nil
+	return totalPages, page, (page - 1) * pageSize
 }
 
 // GetBalanceByCurrencyAndAccount returns per-currency balance for a specific account.

@@ -2,21 +2,24 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/horexdev/money-tracker/internal/domain"
 	"github.com/horexdev/money-tracker/internal/service"
 )
 
 type categoryResponse struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	Emoji    string `json:"emoji"`
-	Type     string `json:"type"`
-	Color    string `json:"color"`
-	IsSystem bool   `json:"is_system"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Emoji       string `json:"emoji"`
+	Type        string `json:"type"`
+	Color       string `json:"color"`
+	IsSystem    bool   `json:"is_system"`
+	IsProtected bool   `json:"is_protected"`
 }
 
 type categoriesListResponse struct {
@@ -65,14 +68,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 					writeError(w, log, err)
 					return
 				}
-				writeJSON(w, http.StatusOK, categoryResponse{
-					ID:       cat.ID,
-					Name:     cat.Name,
-					Emoji:    cat.Emoji,
-					Type:     string(cat.Type),
-					Color:    cat.Color,
-					IsSystem: cat.IsSystem(),
-				})
+				writeJSON(w, http.StatusOK, toCategoryResponse(cat))
 			case http.MethodDelete:
 				if err := catSvc.Delete(ctx, userID, id); err != nil {
 					writeError(w, log, err)
@@ -87,43 +83,21 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 
 		switch r.Method {
 		case http.MethodGet:
-			typeFilter := r.URL.Query().Get("type")
-			var items []categoryResponse
+			catType := r.URL.Query().Get("type")  // "expense" | "income" | "both" | ""
+			order := r.URL.Query().Get("order")    // "asc" | "desc" | ""
 
-			if typeFilter != "" {
-				list, err := catSvc.ListForUserByType(ctx, userID, typeFilter)
-				if err != nil {
-					writeError(w, log, err)
+			list, err := catSvc.ListSorted(ctx, userID, catType, order)
+			if err != nil {
+				if errors.Is(err, domain.ErrInvalidSortParam) {
+					writeJSON(w, http.StatusBadRequest, errorResponse{Error: err.Error()})
 					return
 				}
-				items = make([]categoryResponse, 0, len(list))
-				for _, c := range list {
-					items = append(items, categoryResponse{
-						ID:       c.ID,
-						Name:     c.Name,
-						Emoji:    c.Emoji,
-						Type:     string(c.Type),
-						Color:    c.Color,
-						IsSystem: c.IsSystem(),
-					})
-				}
-			} else {
-				list, err := catSvc.ListForUser(ctx, userID)
-				if err != nil {
-					writeError(w, log, err)
-					return
-				}
-				items = make([]categoryResponse, 0, len(list))
-				for _, c := range list {
-					items = append(items, categoryResponse{
-						ID:       c.ID,
-						Name:     c.Name,
-						Emoji:    c.Emoji,
-						Type:     string(c.Type),
-						Color:    c.Color,
-						IsSystem: c.IsSystem(),
-					})
-				}
+				writeError(w, log, err)
+				return
+			}
+			items := make([]categoryResponse, 0, len(list))
+			for _, c := range list {
+				items = append(items, toCategoryResponse(c))
 			}
 			writeJSON(w, http.StatusOK, categoriesListResponse{Categories: items})
 
@@ -138,17 +112,22 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 				writeError(w, log, err)
 				return
 			}
-			writeJSON(w, http.StatusCreated, categoryResponse{
-				ID:       cat.ID,
-				Name:     cat.Name,
-				Emoji:    cat.Emoji,
-				Type:     string(cat.Type),
-				Color:    cat.Color,
-				IsSystem: cat.IsSystem(),
-			})
+			writeJSON(w, http.StatusCreated, toCategoryResponse(cat))
 
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
+	}
+}
+
+func toCategoryResponse(c *domain.Category) categoryResponse {
+	return categoryResponse{
+		ID:          c.ID,
+		Name:        c.Name,
+		Emoji:       c.Emoji,
+		Type:        string(c.Type),
+		Color:       c.Color,
+		IsSystem:    c.IsSystem(),
+		IsProtected: c.IsProtected,
 	}
 }

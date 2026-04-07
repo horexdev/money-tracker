@@ -15,7 +15,7 @@ import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
-import { EmptyState, SwipeToDelete, SingleDateModal, fmtDisplay, FAB, BottomSheet } from '../../shared/ui'
+import { EmptyState, ActionRow, SingleDateModal, fmtDisplay, FAB, BottomSheet } from '../../shared/ui'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
 import type { SavingsGoal } from '../../shared/types'
 
@@ -42,7 +42,7 @@ function GoalRow({
   const progressColor = isCompleted ? 'var(--color-income)' : 'var(--color-accent)'
 
   return (
-    <SwipeToDelete onDelete={() => onDelete(goal.id)}>
+    <ActionRow onDelete={() => onDelete(goal.id)}>
       <button
         onClick={() => onEdit(goal)}
         className="w-full text-left px-4 pt-4 pb-3 active:opacity-70 transition-opacity"
@@ -103,7 +103,7 @@ function GoalRow({
           <ClockCounterClockwise size={20} weight="fill" />
         </button>
       </div>
-    </SwipeToDelete>
+    </ActionRow>
   )
 }
 

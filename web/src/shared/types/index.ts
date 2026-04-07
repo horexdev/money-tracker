@@ -23,6 +23,7 @@ export interface Transaction {
   created_at: string
   account_id?: number
   account_name?: string
+  is_adjustment?: boolean
 }
 
 export interface ListTransactionsResponse {
@@ -72,6 +73,10 @@ export interface UserSettings {
   display_currencies: string[]
   language: string
   is_admin: boolean
+  notify_budget_alerts: boolean
+  notify_recurring_reminders: boolean
+  notify_weekly_summary: boolean
+  notify_goal_milestones: boolean
 }
 
 // GET /api/v1/categories

@@ -33,4 +33,7 @@ export const accountsApi = {
 
   delete: (id: number): Promise<void> =>
     api.delete<void>(`/v1/accounts/${id}`),
+
+  adjust: (id: number, data: { delta_cents: number; note?: string }): Promise<import('../types').Transaction> =>
+    api.post<import('../types').Transaction>(`/v1/accounts/${id}/adjust`, data),
 }

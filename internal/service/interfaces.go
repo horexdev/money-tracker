@@ -14,6 +14,7 @@ type UserStorer interface {
 	UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error)
 	UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error)
 	UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error)
+	UpdateNotificationPreferences(ctx context.Context, id int64, prefs domain.NotificationPrefs) (*domain.User, error)
 	ResetData(ctx context.Context, userID int64) error
 }
 
@@ -28,21 +29,31 @@ type TransactionStorer interface {
 	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
 	List(ctx context.Context, userID int64, limit, offset int) ([]*domain.Transaction, error)
 	ListByAccount(ctx context.Context, userID, accountID int64, limit, offset int) ([]*domain.Transaction, error)
+	ListWithDateRange(ctx context.Context, userID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error)
+	ListByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error)
 	Count(ctx context.Context, userID int64) (int64, error)
 	CountByAccount(ctx context.Context, userID, accountID int64) (int64, error)
+	CountWithDateRange(ctx context.Context, userID int64, from, to *time.Time) (int64, error)
+	CountByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time) (int64, error)
 	StatsByCategory(ctx context.Context, userID int64, from, to time.Time) ([]domain.CategoryStat, error)
 	StatsByCategoryAndAccount(ctx context.Context, userID, accountID int64, from, to time.Time) ([]domain.CategoryStat, error)
 	ListByCategoryPeriod(ctx context.Context, userID, categoryID int64, from, to time.Time) ([]*domain.Transaction, error)
 	Update(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
+	CreateAdjustment(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
 }
 
 // CategoryStorer is the repository interface for category operations.
 type CategoryStorer interface {
 	GetByID(ctx context.Context, id int64) (*domain.Category, error)
 	GetByName(ctx context.Context, userID int64, name string) (*domain.Category, error)
+	GetSystemCategoryByType(ctx context.Context, catType string) (*domain.Category, error)
+	GetBySavingsType(ctx context.Context, userID int64) (*domain.Category, error)
 	ListForUser(ctx context.Context, userID int64) ([]*domain.Category, error)
 	ListForUserByType(ctx context.Context, userID int64, catType string) ([]*domain.Category, error)
+	ListSorted(ctx context.Context, userID int64, catType, order string) ([]*domain.Category, error)
+	HasCategories(ctx context.Context, userID int64) (bool, error)
 	CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error)
+	BulkCreateForUser(ctx context.Context, userID int64, seeds []domain.CategorySeed) error
 	Update(ctx context.Context, userID, id int64, name, emoji, catType, color string) (*domain.Category, error)
 	SoftDelete(ctx context.Context, id, userID int64) error
 	CountTransactions(ctx context.Context, categoryID int64) (int64, error)

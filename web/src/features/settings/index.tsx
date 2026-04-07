@@ -4,15 +4,16 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, Globe, CaretRight, Trash } from '@phosphor-icons/react'
+import { Check, X, Globe, CaretRight, Trash, Desktop, Sun, Moon, Bell, RepeatOnce, CalendarCheck, Trophy } from '@phosphor-icons/react'
 import { settingsApi } from '../../shared/api/settings'
 import { LANGUAGES } from '../../shared/lib/constants'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
-import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
+import { useTgBackButton, useThemePreference } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
 import { FIRST_LAUNCH_KEY } from '../../shared/hooks/useFirstLaunchSetup'
+import type { ThemePref } from '../../shared/hooks/useTelegramApp'
 
 type Modal = 'none' | 'language' | 'reset-confirm'
 
@@ -87,6 +88,13 @@ export function SettingsPage() {
   const qc = useQueryClient()
   const { selection, notification } = useHaptic()
   const [modal, setModal] = useState<Modal>('none')
+  const [themePref, setThemePref] = useThemePreference()
+
+  const THEME_OPTIONS: { value: ThemePref; labelKey: string; icon: React.ElementType }[] = [
+    { value: 'system', labelKey: 'settings.theme_system', icon: Desktop },
+    { value: 'light',  labelKey: 'settings.theme_light',  icon: Sun },
+    { value: 'dark',   labelKey: 'settings.theme_dark',   icon: Moon },
+  ]
 
   useTgBackButton(() => navigate('/more'))
 
@@ -101,6 +109,19 @@ export function SettingsPage() {
       qc.invalidateQueries({ queryKey: ['settings'] })
       i18n.changeLanguage(data.language)
       notification('success')
+    },
+  })
+
+  const notifMutation = useMutation({
+    mutationFn: (prefs: {
+      notify_budget_alerts?: boolean
+      notify_recurring_reminders?: boolean
+      notify_weekly_summary?: boolean
+      notify_goal_milestones?: boolean
+    }) => settingsApi.update({ notification_preferences: prefs }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['settings'] })
+      selection()
     },
   })
 
@@ -141,6 +162,66 @@ export function SettingsPage() {
     <>
       <PageTransition>
         <div className="px-4 pt-3 pb-4 space-y-3">
+
+              {/* Theme picker */}
+              <div className="card-elevated p-4 space-y-3">
+                <p className="text-[11px] font-bold text-muted uppercase tracking-widest">
+                  {t('settings.theme')}
+                </p>
+                <div className="flex gap-2">
+                  {THEME_OPTIONS.map(({ value, labelKey, icon: Icon }) => {
+                    const isActive = themePref === value
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => { selection(); setThemePref(value) }}
+                        className={`
+                          flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-bold transition-all duration-200 select-none
+                          ${isActive
+                            ? 'bg-accent text-accent-text shadow-(--shadow-accent-pill)'
+                            : 'bg-bg text-muted active:scale-95'
+                          }
+                        `}
+                      >
+                        <Icon size={18} weight={isActive ? 'fill' : 'regular'} />
+                        {t(labelKey)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Notifications section */}
+              <div className="card-elevated divide-y divide-border">
+                {([
+                  { key: 'notify_budget_alerts',       icon: Bell,          labelKey: 'settings.notify_budget_alerts',       descKey: 'settings.notify_budget_alerts_desc' },
+                  { key: 'notify_recurring_reminders', icon: RepeatOnce,    labelKey: 'settings.notify_recurring_reminders', descKey: 'settings.notify_recurring_reminders_desc' },
+                  { key: 'notify_weekly_summary',      icon: CalendarCheck, labelKey: 'settings.notify_weekly_summary',      descKey: 'settings.notify_weekly_summary_desc' },
+                  { key: 'notify_goal_milestones',     icon: Trophy,        labelKey: 'settings.notify_goal_milestones',     descKey: 'settings.notify_goal_milestones_desc' },
+                ] as const).map(({ key, icon: Icon, labelKey, descKey }) => {
+                  const checked = settings[key] ?? false
+                  return (
+                    <div key={key} className="flex items-center gap-4 px-4 py-3.5">
+                      <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                        <Icon size={18} weight="fill" className="text-accent" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-text leading-tight">{t(labelKey)}</p>
+                        <p className="text-[11px] text-muted mt-0.5 leading-tight">{t(descKey)}</p>
+                      </div>
+                      <button
+                        role="switch"
+                        aria-checked={checked}
+                        onClick={() => notifMutation.mutate({ [key]: !checked })}
+                        disabled={notifMutation.isPending}
+                        className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 ${checked ? 'bg-accent' : 'bg-border'}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
 
               {/* Language row */}
               <button

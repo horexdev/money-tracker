@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence } from 'framer-motion'
-import { Star, Plus, MagnifyingGlass, X, Check, Bank } from '@phosphor-icons/react'
+import { Star, Plus, MagnifyingGlass, X, Check, Bank, Scales } from '@phosphor-icons/react'
 import { accountsApi } from '../../shared/api/accounts'
 
-import { formatCents } from '../../shared/lib/money'
+import { formatCents, parseCents } from '../../shared/lib/money'
 import { COLOR_SWATCHES, ACCOUNT_TYPES, ACCOUNT_TYPE_ICONS, POPULAR_CURRENCIES, ALL_CURRENCIES } from '../../shared/lib/constants'
 import { friendlyError } from '../../shared/lib/errors'
 import { Spinner } from '../../shared/ui/Spinner'
@@ -14,7 +14,8 @@ import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
-import { EmptyState, SwipeToDelete, FAB, BottomSheet, ColorPicker } from '../../shared/ui'
+import { EmptyState, ActionRow, FAB, BottomSheet, ColorPicker } from '../../shared/ui'
+import { AmountInput } from '../../shared/ui/AmountInput'
 import type { Account, AccountType } from '../../shared/types'
 
 /* ─── Currency Picker ─── */
@@ -86,6 +87,115 @@ function CurrencyPicker({ selected, onSelect }: { selected: string; onSelect: (c
           ))
         )}
       </div>
+    </div>
+  )
+}
+
+/* ─── Adjust Balance Section ─── */
+function AdjustBalanceSection({
+  account,
+  onClose,
+}: {
+  account: Account
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const { notification } = useHaptic()
+
+  const [targetAmount, setTargetAmount] = useState('')
+  const [note, setNote] = useState('')
+
+  const targetCents = targetAmount ? parseCents(targetAmount) : null
+  const deltaCents = targetCents !== null ? targetCents - account.balance_cents : null
+
+  const adjustMut = useMutation({
+    mutationFn: () => accountsApi.adjust(account.id, {
+      delta_cents: deltaCents!,
+      note: note.trim() || undefined,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounts'] })
+      qc.invalidateQueries({ queryKey: ['balance'] })
+      notification('success')
+      onClose()
+    },
+    onError: () => notification('error'),
+  })
+
+  const canAdjust = deltaCents !== null && deltaCents !== 0 && !adjustMut.isPending
+
+  return (
+    <div className="space-y-3">
+      {/* Section header */}
+      <div className="flex items-center gap-2">
+        <Scales size={14} weight="bold" className="text-muted" />
+        <label className="text-[11px] font-bold text-muted uppercase tracking-widest">
+          {t('adjustment.section_title')}
+        </label>
+      </div>
+
+      {/* Current balance pill */}
+      <div className="flex items-center justify-between bg-bg rounded-2xl px-4 py-2.5">
+        <span className="text-[12px] text-muted font-medium">{t('adjustment.current_balance')}</span>
+        <span className="text-[13px] font-bold text-text tabular-nums">
+          {formatCents(account.balance_cents, account.currency_code)}
+        </span>
+      </div>
+
+      {/* Target balance input */}
+      <div>
+        <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
+          {t('adjustment.target_label')}
+        </label>
+        <AmountInput
+          value={targetAmount}
+          onChange={setTargetAmount}
+          currency={account.currency_code}
+        />
+      </div>
+
+      {/* Delta hint */}
+      {deltaCents !== null && deltaCents !== 0 && (
+        <p
+          className="text-xs font-semibold text-center"
+          style={{ color: deltaCents > 0 ? 'var(--color-income)' : 'var(--color-expense)' }}
+        >
+          {deltaCents > 0
+            ? t('adjustment.delta_hint_increase', { amount: formatCents(deltaCents, account.currency_code) })
+            : t('adjustment.delta_hint_decrease', { amount: formatCents(-deltaCents, account.currency_code) })
+          }
+        </p>
+      )}
+
+      {/* Note input */}
+      <input
+        type="text"
+        value={note}
+        onChange={e => setNote(e.target.value)}
+        placeholder={t('adjustment.note_placeholder')}
+        maxLength={120}
+        className="w-full bg-bg rounded-2xl px-4 py-3 text-sm font-medium outline-none text-text placeholder:text-muted/50 transition-shadow focus:shadow-(--shadow-focus)"
+      />
+
+      {/* Apply button */}
+      <button
+        onClick={() => adjustMut.mutate()}
+        disabled={!canAdjust}
+        className={`
+          w-full py-3.5 rounded-2xl text-[14px] font-bold transition-all active:scale-[0.98]
+          ${canAdjust
+            ? 'bg-accent text-accent-text shadow-(--shadow-button)'
+            : 'bg-border text-muted'
+          }
+        `}
+      >
+        {adjustMut.isPending ? t('common.loading') : t('adjustment.apply_button')}
+      </button>
+
+      {adjustMut.isError && (
+        <p className="text-xs text-destructive text-center">{friendlyError(adjustMut.error, t)}</p>
+      )}
     </div>
   )
 }
@@ -254,6 +364,15 @@ function AccountFormSheet({
           </div>
         </button>
 
+        {/* Balance adjustment — only available when editing an existing account */}
+        {isEdit && (
+          <>
+            <div className="border-t border-border" />
+            <AdjustBalanceSection account={editAccount!} onClose={onClose} />
+            <div className="border-t border-border" />
+          </>
+        )}
+
         {/* Submit */}
         <button
           onClick={handleSubmit}
@@ -332,7 +451,7 @@ function AccountRow({
 
   return (
     <div className={`transition-opacity ${isDeleting ? 'opacity-30 pointer-events-none' : ''}`}>
-      <SwipeToDelete onDelete={() => onDelete(account.id)}>
+      <ActionRow onDelete={() => onDelete(account.id)}>
         <div className="flex items-center gap-3 px-4 py-3">
           {/* Icon */}
           <div
@@ -375,7 +494,7 @@ function AccountRow({
             </button>
           )}
         </div>
-      </SwipeToDelete>
+      </ActionRow>
     </div>
   )
 }

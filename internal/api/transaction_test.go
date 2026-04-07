@@ -173,3 +173,35 @@ func TestTransactionHandler_DELETE_Success(t *testing.T) {
 	h.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusNoContent, w.Code)
 }
+
+func TestTransactionHandler_GET_DateRangeParams(t *testing.T) {
+	txRepo := &mocks.MockTransactionStorer{}
+	txRepo.On("CountWithDateRange", mock.Anything, int64(1), mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time")).Return(int64(1), nil)
+	txRepo.On("ListWithDateRange", mock.Anything, int64(1), mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time"), 20, 0).Return([]*domain.Transaction{
+		{ID: 1, AmountCents: 500, Type: domain.TransactionTypeExpense},
+	}, nil)
+
+	h := buildTxHandler(txRepo, &mocks.MockCategoryStorer{}, &mocks.MockUserStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/transactions?from=2025-01-01&to=2025-01-31", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	txs := resp["transactions"].([]any)
+	assert.Len(t, txs, 1)
+	txRepo.AssertExpectations(t)
+}
+
+func TestTransactionHandler_GET_InvalidDateParam(t *testing.T) {
+	h := buildTxHandler(&mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{}, &mocks.MockUserStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/transactions?from=not-a-date", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}

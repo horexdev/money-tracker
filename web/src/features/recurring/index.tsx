@@ -14,7 +14,7 @@ import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
-import { Badge, EmptyState, SwipeToDelete, FAB, BottomSheet } from '../../shared/ui'
+import { Badge, EmptyState, ActionRow, FAB, BottomSheet } from '../../shared/ui'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
 import { CurrencyBadge } from '../../shared/lib/currencyIcons'
@@ -45,7 +45,7 @@ function RecurringCard({
   const nextDate = formatDate(item.next_run_at, i18n.language)
 
   return (
-    <SwipeToDelete onDelete={() => onDelete(item.id)}>
+    <ActionRow onDelete={() => onDelete(item.id)}>
       <div className="flex items-center gap-3 px-4 py-3.5">
         <button
           onClick={() => onEdit(item)}
@@ -85,7 +85,7 @@ function RecurringCard({
           {item.is_active ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}
         </button>
       </div>
-    </SwipeToDelete>
+    </ActionRow>
   )
 }
 

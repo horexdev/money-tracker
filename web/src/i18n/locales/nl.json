@@ -61,11 +61,19 @@
     "all_types": "Alles",
     "expenses": "Uitgaven",
     "incomes": "Inkomsten",
-    "search_placeholder": "Zoeken op notitie...",
+    "search_placeholder": "Transacties zoeken...",
     "day_total": "Totaal",
     "no_more": "Je hebt alles gezien",
-    "swipe_to_delete": "Veeg naar links om te verwijderen",
-    "page_of": "{{page}} van {{total}}"
+    "page_of": "{{page}} van {{total}}",
+    "account_filter": "Rekening",
+    "date_filter": "Datum",
+    "sort": "Sorteren",
+    "sort_newest": "Nieuwste eerst",
+    "sort_oldest": "Oudste eerst",
+    "sort_amount_high": "Bedrag: aflopend",
+    "sort_amount_low": "Bedrag: oplopend",
+    "clear_filters": "Filters wissen",
+    "category_filter": "Categorie"
   },
   "stats": {
     "title": "Statistieken",
@@ -131,7 +139,8 @@
       "Other": "Overig",
       "Savings": "Spaargeld",
       "Transfer": "Overboeking"
-    }
+    },
+    "type_savings": "Spaargeld"
   },
   "budgets": {
     "title": "Budgetten",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Alle gegevens resetten?",
     "reset_confirm_desc": "Dit verwijdert permanent al uw transacties, budgetten, spaardoelen en terugkerende transacties. Deze actie kan niet ongedaan worden gemaakt.",
     "reset_confirm_btn": "Ja, alles verwijderen",
-    "reset_success": "Alle gegevens verwijderd"
+    "reset_success": "Alle gegevens verwijderd",
+    "theme": "Thema",
+    "theme_system": "Automatisch",
+    "theme_light": "Licht",
+    "theme_dark": "Donker",
+    "notifications": "Meldingen",
+    "notify_budget_alerts": "Budgetwaarschuwingen",
+    "notify_budget_alerts_desc": "Als uitgaven de limiet naderen",
+    "notify_recurring_reminders": "Terugkerende herinneringen",
+    "notify_recurring_reminders_desc": "Herinnering op de dag van uitvoering",
+    "notify_weekly_summary": "Wekelijkse samenvatting",
+    "notify_weekly_summary_desc": "Maandag overzicht van de weekuitgaven",
+    "notify_goal_milestones": "Doelmijlpalen",
+    "notify_goal_milestones_desc": "Melding bij 25%, 50%, 75%, 100% van een doel"
   },
   "more": {
     "title": "Meer",
@@ -273,5 +295,15 @@
     "credit": "Krediet",
     "crypto": "Crypto"
   },
-  "setDefault": "Als standaard instellen"
+  "setDefault": "Als standaard instellen",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

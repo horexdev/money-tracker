@@ -61,11 +61,19 @@
     "all_types": "Alle",
     "expenses": "Ausgaben",
     "incomes": "Einnahmen",
-    "search_placeholder": "Nach Notiz suchen...",
+    "search_placeholder": "Transaktionen suchen...",
     "day_total": "Gesamt",
     "no_more": "Alles gesehen",
-    "swipe_to_delete": "Nach links wischen zum Löschen",
-    "page_of": "{{page}} von {{total}}"
+    "page_of": "{{page}} von {{total}}",
+    "account_filter": "Konto",
+    "date_filter": "Datum",
+    "sort": "Sortierung",
+    "sort_newest": "Neueste zuerst",
+    "sort_oldest": "Älteste zuerst",
+    "sort_amount_high": "Betrag: absteigend",
+    "sort_amount_low": "Betrag: aufsteigend",
+    "clear_filters": "Filter zurücksetzen",
+    "category_filter": "Kategorie"
   },
   "stats": {
     "title": "Statistik",
@@ -131,7 +139,8 @@
       "Other": "Sonstiges",
       "Savings": "Ersparnisse",
       "Transfer": "Überweisung"
-    }
+    },
+    "type_savings": "Ersparnisse"
   },
   "budgets": {
     "title": "Budgets",
@@ -203,7 +212,20 @@
     "reset_confirm_title": "Alle Daten zurücksetzen?",
     "reset_confirm_desc": "Dadurch werden alle Ihre Transaktionen, Budgets, Sparziele und wiederkehrenden Transaktionen dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
     "reset_confirm_btn": "Ja, alles löschen",
-    "reset_success": "Alle Daten gelöscht"
+    "reset_success": "Alle Daten gelöscht",
+    "theme": "Design",
+    "theme_system": "Automatisch",
+    "theme_light": "Hell",
+    "theme_dark": "Dunkel",
+    "notifications": "Benachrichtigungen",
+    "notify_budget_alerts": "Budget-Warnungen",
+    "notify_budget_alerts_desc": "Wenn Ausgaben das Limit erreichen",
+    "notify_recurring_reminders": "Regelmäßige Erinnerungen",
+    "notify_recurring_reminders_desc": "Erinnerung am Ausführungstag",
+    "notify_weekly_summary": "Wochenzusammenfassung",
+    "notify_weekly_summary_desc": "Montags-Rückblick auf die Wochenausgaben",
+    "notify_goal_milestones": "Zielerreichungen",
+    "notify_goal_milestones_desc": "Benachrichtigung bei 25%, 50%, 75%, 100%"
   },
   "more": {
     "title": "Mehr",
@@ -273,5 +295,15 @@
     "credit": "Kredit",
     "crypto": "Krypto"
   },
-  "setDefault": "Als Standard festlegen"
+  "setDefault": "Als Standard festlegen",
+  "adjustment": {
+    "section_title": "Set Balance",
+    "current_balance": "Current balance",
+    "target_label": "Set balance to",
+    "note_placeholder": "Reason (optional)",
+    "apply_button": "Adjust",
+    "delta_hint_increase": "+{{amount}} will be added",
+    "delta_hint_decrease": "{{amount}} will be deducted",
+    "no_change": "Enter a different amount to adjust"
+  }
 }

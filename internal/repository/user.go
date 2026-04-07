@@ -88,6 +88,21 @@ func (r *UserRepository) UpdateLanguage(ctx context.Context, id int64, lang stri
 	return rowToUser(row), nil
 }
 
+// UpdateNotificationPreferences saves the user's notification opt-in settings.
+func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, id int64, prefs domain.NotificationPrefs) (*domain.User, error) {
+	row, err := r.q.UpdateNotificationPreferences(ctx, sqlcgen.UpdateNotificationPreferencesParams{
+		ID:                       id,
+		NotifyBudgetAlerts:       prefs.BudgetAlerts,
+		NotifyRecurringReminders: prefs.RecurringReminders,
+		NotifyWeeklySummary:      prefs.WeeklySummary,
+		NotifyGoalMilestones:     prefs.GoalMilestones,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
 // ResetData deletes all user-owned data atomically. Deletion order respects FK constraints:
 // transfers → transactions → budgets → recurring → savings_goals → categories → accounts.
 func (r *UserRepository) ResetData(ctx context.Context, userID int64) error {
@@ -136,14 +151,18 @@ func rowToUser(row sqlcgen.User) *domain.User {
 		dc = strings.Split(row.DisplayCurrencies, ",")
 	}
 	return &domain.User{
-		ID:                row.ID,
-		Username:          row.Username,
-		FirstName:         row.FirstName,
-		LastName:          row.LastName,
-		CurrencyCode:      row.CurrencyCode,
-		Language:          domain.Language(row.Language),
-		DisplayCurrencies: dc,
-		CreatedAt:         goTime(row.CreatedAt),
-		UpdatedAt:         goTime(row.UpdatedAt),
+		ID:                       row.ID,
+		Username:                 row.Username,
+		FirstName:                row.FirstName,
+		LastName:                 row.LastName,
+		CurrencyCode:             row.CurrencyCode,
+		Language:                 domain.Language(row.Language),
+		DisplayCurrencies:        dc,
+		CreatedAt:                goTime(row.CreatedAt),
+		UpdatedAt:                goTime(row.UpdatedAt),
+		NotifyBudgetAlerts:       row.NotifyBudgetAlerts,
+		NotifyRecurringReminders: row.NotifyRecurringReminders,
+		NotifyWeeklySummary:      row.NotifyWeeklySummary,
+		NotifyGoalMilestones:     row.NotifyGoalMilestones,
 	}
 }

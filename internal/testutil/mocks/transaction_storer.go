@@ -117,3 +117,37 @@ func (m *MockTransactionStorer) GetBalanceByCurrencyAndAccount(ctx context.Conte
 	}
 	return args.Get(0).([]domain.BalanceByCurrency), args.Error(1)
 }
+
+func (m *MockTransactionStorer) CreateAdjustment(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error) {
+	args := m.Called(ctx, t)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionStorer) ListWithDateRange(ctx context.Context, userID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	args := m.Called(ctx, userID, from, to, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*domain.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionStorer) ListByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	args := m.Called(ctx, userID, accountID, from, to, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*domain.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionStorer) CountWithDateRange(ctx context.Context, userID int64, from, to *time.Time) (int64, error) {
+	args := m.Called(ctx, userID, from, to)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockTransactionStorer) CountByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time) (int64, error) {
+	args := m.Called(ctx, userID, accountID, from, to)
+	return args.Get(0).(int64), args.Error(1)
+}

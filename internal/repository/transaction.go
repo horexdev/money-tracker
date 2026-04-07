@@ -71,7 +71,28 @@ func rowToTransaction(row sqlcgen.Transaction) *domain.Transaction {
 		BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
 		CreatedAt:              goTime(row.CreatedAt),
 		AccountID:              goInt64(row.AccountID),
+		IsAdjustment:           row.IsAdjustment,
 	}
+}
+
+// CreateAdjustment inserts a balance-adjustment transaction (is_adjustment = true).
+// The transaction affects account balance but is excluded from history and statistics.
+func (r *TransactionRepository) CreateAdjustment(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error) {
+	row, err := r.q.CreateAdjustmentTransaction(ctx, sqlcgen.CreateAdjustmentTransactionParams{
+		UserID:                 t.UserID,
+		Type:                   t.Type,
+		AmountCents:            t.AmountCents,
+		CategoryID:             t.CategoryID,
+		Note:                   t.Note,
+		CurrencyCode:           t.CurrencyCode,
+		ExchangeRateSnapshot:   pgNumeric(t.ExchangeRateSnapshot),
+		BaseCurrencyAtCreation: t.BaseCurrencyAtCreation,
+		AccountID:              pgOptionalInt8(nonZeroInt64(t.AccountID)),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToTransaction(row), nil
 }
 
 // nonZeroInt64 returns a pointer to v if non-zero, otherwise nil (maps to SQL NULL).
@@ -305,6 +326,104 @@ func (r *TransactionRepository) StatsByCategoryAndAccount(ctx context.Context, u
 		})
 	}
 	return stats, nil
+}
+
+// ListWithDateRange returns paginated transactions filtered by an optional date range.
+func (r *TransactionRepository) ListWithDateRange(ctx context.Context, userID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	rows, err := r.q.ListTransactionsWithDateRange(ctx, sqlcgen.ListTransactionsWithDateRangeParams{
+		UserID:  userID,
+		Limit:   int32(limit),
+		Offset:  int32(offset),
+		Column4: pgOptionalTimestamptz(from),
+		Column5: pgOptionalTimestamptz(to),
+	})
+	if err != nil {
+		return nil, err
+	}
+	txs := make([]*domain.Transaction, 0, len(rows))
+	for _, row := range rows {
+		var accountName string
+		if row.AccountName.Valid {
+			accountName = row.AccountName.String
+		}
+		txs = append(txs, &domain.Transaction{
+			ID:                     row.ID,
+			UserID:                 row.UserID,
+			Type:                   row.Type,
+			AmountCents:            row.AmountCents,
+			CategoryID:             row.CategoryID,
+			CategoryName:           row.CategoryName,
+			CategoryEmoji:          row.CategoryEmoji,
+			CategoryColor:          row.CategoryColor,
+			Note:                   row.Note,
+			CurrencyCode:           row.CurrencyCode,
+			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
+			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
+			CreatedAt:              goTime(row.CreatedAt),
+			AccountID:              goInt64(row.AccountID),
+			AccountName:            accountName,
+		})
+	}
+	return txs, nil
+}
+
+// ListByAccountWithDateRange returns paginated transactions for an account filtered by date range.
+func (r *TransactionRepository) ListByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	rows, err := r.q.ListTransactionsByAccountWithDateRange(ctx, sqlcgen.ListTransactionsByAccountWithDateRangeParams{
+		UserID:    userID,
+		AccountID: pgOptionalInt8(&accountID),
+		Limit:     int32(limit),
+		Offset:    int32(offset),
+		Column5:   pgOptionalTimestamptz(from),
+		Column6:   pgOptionalTimestamptz(to),
+	})
+	if err != nil {
+		return nil, err
+	}
+	txs := make([]*domain.Transaction, 0, len(rows))
+	for _, row := range rows {
+		var accountName string
+		if row.AccountName.Valid {
+			accountName = row.AccountName.String
+		}
+		txs = append(txs, &domain.Transaction{
+			ID:                     row.ID,
+			UserID:                 row.UserID,
+			Type:                   row.Type,
+			AmountCents:            row.AmountCents,
+			CategoryID:             row.CategoryID,
+			CategoryName:           row.CategoryName,
+			CategoryEmoji:          row.CategoryEmoji,
+			CategoryColor:          row.CategoryColor,
+			Note:                   row.Note,
+			CurrencyCode:           row.CurrencyCode,
+			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
+			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
+			CreatedAt:              goTime(row.CreatedAt),
+			AccountID:              goInt64(row.AccountID),
+			AccountName:            accountName,
+		})
+	}
+	return txs, nil
+}
+
+// CountWithDateRange counts transactions for a user within an optional date range.
+func (r *TransactionRepository) CountWithDateRange(ctx context.Context, userID int64, from, to *time.Time) (int64, error) {
+	return r.q.CountUserTransactionsWithDateRange(ctx, sqlcgen.CountUserTransactionsWithDateRangeParams{
+		UserID:  userID,
+		Column2: pgOptionalTimestamptz(from),
+		Column3: pgOptionalTimestamptz(to),
+	})
+}
+
+// CountByAccountWithDateRange counts transactions for an account within an optional date range.
+func (r *TransactionRepository) CountByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time) (int64, error) {
+	return r.q.CountUserTransactionsByAccountWithDateRange(ctx, sqlcgen.CountUserTransactionsByAccountWithDateRangeParams{
+		UserID:    userID,
+		AccountID: pgOptionalInt8(&accountID),
+		Column3:   pgOptionalTimestamptz(from),
+		Column4:   pgOptionalTimestamptz(to),
+	})
 }
 
 // GetBalanceByCurrencyAndAccount returns per-currency income/expense for a specific account.
