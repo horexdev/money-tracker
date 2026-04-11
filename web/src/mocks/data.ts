@@ -97,10 +97,10 @@ export const mockBudgets: BudgetsResponse = {
 
 export const mockRecurring: RecurringListResponse = {
   recurring: [
-    { id: 1, type: 'expense', amount_cents: 75000, currency_code: 'USD', category_id: 8, category_name: 'Rent', category_icon: 'house', category_color: '#f97316', note: 'Monthly rent', frequency: 'monthly', next_run_at: daysAgo(-5), is_active: true, created_at: daysAgo(60) },
-    { id: 2, type: 'expense', amount_cents: 1500, currency_code: 'USD', category_id: 10, category_name: 'Bills', category_icon: 'device-mobile', category_color: '#64748b', note: 'Spotify subscription', frequency: 'monthly', next_run_at: daysAgo(-12), is_active: true, created_at: daysAgo(90) },
-    { id: 3, type: 'income', amount_cents: 250000, currency_code: 'USD', category_id: 6, category_name: 'Salary', category_icon: 'money', category_color: '#10b981', note: 'Monthly salary', frequency: 'monthly', next_run_at: daysAgo(-2), is_active: true, created_at: daysAgo(120) },
-    { id: 4, type: 'expense', amount_cents: 500, currency_code: 'USD', category_id: 9, category_name: 'Coffee', category_icon: 'coffee', category_color: '#eab308', note: 'Daily coffee', frequency: 'daily', next_run_at: daysAgo(-1), is_active: false, created_at: daysAgo(30) },
+    { id: 1, type: 'expense', amount_cents: 75000, currency_code: 'USD', account_id: 1, category_id: 8, category_name: 'Rent', category_icon: 'house', category_color: '#f97316', note: 'Monthly rent', frequency: 'monthly', next_run_at: daysAgo(-5), is_active: true, created_at: daysAgo(60) },
+    { id: 2, type: 'expense', amount_cents: 1500, currency_code: 'USD', account_id: 1, category_id: 10, category_name: 'Bills', category_icon: 'device-mobile', category_color: '#64748b', note: 'Spotify subscription', frequency: 'monthly', next_run_at: daysAgo(-12), is_active: true, created_at: daysAgo(90) },
+    { id: 3, type: 'income', amount_cents: 250000, currency_code: 'USD', account_id: 1, category_id: 6, category_name: 'Salary', category_icon: 'money', category_color: '#10b981', note: 'Monthly salary', frequency: 'monthly', next_run_at: daysAgo(-2), is_active: true, created_at: daysAgo(120) },
+    { id: 4, type: 'expense', amount_cents: 500, currency_code: 'USD', account_id: 1, category_id: 9, category_name: 'Coffee', category_icon: 'coffee', category_color: '#eab308', note: 'Daily coffee', frequency: 'daily', next_run_at: daysAgo(-1), is_active: false, created_at: daysAgo(30) },
   ],
 }
 

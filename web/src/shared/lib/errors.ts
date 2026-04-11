@@ -12,6 +12,9 @@ const ERROR_KEY_MAP: Array<[string, string]> = [
   ['maximum 3 display currencies', 'errors.too_many_currencies'],
   ['invalid currency', 'errors.invalid_currency'],
   ['invalid amount', 'errors.invalid_amount'],
+  ['cannot delete the only account', 'errors.cannot_delete_last_account'],
+  ['set a new default account', 'errors.must_set_new_default'],
+  ['currency cannot be changed', 'errors.currency_immutable'],
 ]
 
 /** Returns a localized, user-friendly message for an API error.

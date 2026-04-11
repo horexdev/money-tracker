@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Taux de change temporairement indisponible.",
     "too_many_currencies": "Maximum 3 devises d'affichage autorisées.",
     "invalid_currency": "Code de devise invalide.",
-    "invalid_amount": "Montant invalide saisi."
+    "invalid_amount": "Montant invalide saisi.",
+    "cannot_delete_last_account": "Impossible de supprimer le seul compte.",
+    "must_set_new_default": "Définissez un autre compte par défaut avant de supprimer celui-ci.",
+    "currency_immutable": "La devise du compte ne peut pas être modifiée après la création."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

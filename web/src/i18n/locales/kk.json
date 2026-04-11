@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Валюта бағамы уақытша қол жетімсіз.",
     "too_many_currencies": "Максимум 3 валюта көрсетілуі мүмкін.",
     "invalid_currency": "Жарамсыз валюта коды.",
-    "invalid_amount": "Жарамсыз сома енгізілді."
+    "invalid_amount": "Жарамсыз сома енгізілді.",
+    "cannot_delete_last_account": "Жалғыз шотты жою мүмкін емес.",
+    "must_set_new_default": "Осы шотты жоймас бұрын басқа шотты негізгі етіп тағайындаңыз.",
+    "currency_immutable": "Шот валютасын жасалғаннан кейін өзгерту мүмкін емес."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

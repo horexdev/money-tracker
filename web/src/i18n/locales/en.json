@@ -295,7 +295,10 @@
     "exchange_rate_unavailable": "Exchange rate temporarily unavailable.",
     "too_many_currencies": "Maximum 3 display currencies allowed.",
     "invalid_currency": "Invalid currency code.",
-    "invalid_amount": "Invalid amount entered."
+    "invalid_amount": "Invalid amount entered.",
+    "cannot_delete_last_account": "Cannot delete the only account.",
+    "must_set_new_default": "Set a different account as default before deleting this one.",
+    "currency_immutable": "Account currency cannot be changed after creation."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

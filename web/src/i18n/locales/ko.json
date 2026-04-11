@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "환율이 일시적으로 이용할 수 없습니다.",
     "too_many_currencies": "최대 3개의 표시 통화가 허용됩니다.",
     "invalid_currency": "유효하지 않은 통화 코드입니다.",
-    "invalid_amount": "유효하지 않은 금액이 입력되었습니다."
+    "invalid_amount": "유효하지 않은 금액이 입력되었습니다.",
+    "cannot_delete_last_account": "유일한 계좌는 삭제할 수 없습니다.",
+    "must_set_new_default": "이 계좌를 삭제하기 전에 다른 계좌를 기본으로 설정하세요.",
+    "currency_immutable": "계좌 통화는 생성 후 변경할 수 없습니다."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

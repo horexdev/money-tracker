@@ -21,7 +21,7 @@ export interface Transaction {
   category_color: string
   note: string
   created_at: string
-  account_id?: number
+  account_id: number
   account_name?: string
   is_adjustment?: boolean
 }
@@ -111,6 +111,7 @@ export interface RecurringTransaction {
   type: TransactionType
   amount_cents: number
   currency_code: string
+  account_id: number
   category_id: number
   category_name: string
   category_icon: string

@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Wechselkurs vorübergehend nicht verfügbar.",
     "too_many_currencies": "Maximal 3 Anzeigewährungen erlaubt.",
     "invalid_currency": "Ungültiger Währungscode.",
-    "invalid_amount": "Ungültiger Betrag eingegeben."
+    "invalid_amount": "Ungültiger Betrag eingegeben.",
+    "cannot_delete_last_account": "Das einzige Konto kann nicht gelöscht werden.",
+    "must_set_new_default": "Lege zuerst ein anderes Konto als Standard fest, bevor du dieses löschst.",
+    "currency_immutable": "Die Kontowährung kann nach der Erstellung nicht geändert werden."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

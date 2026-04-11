@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "سعر الصرف غير متاح مؤقتاً.",
     "too_many_currencies": "الحد الأقصى 3 عملات للعرض.",
     "invalid_currency": "رمز العملة غير صالح.",
-    "invalid_amount": "تم إدخال مبلغ غير صالح."
+    "invalid_amount": "تم إدخال مبلغ غير صالح.",
+    "cannot_delete_last_account": "لا يمكن حذف الحساب الوحيد.",
+    "must_set_new_default": "عيّن حساباً آخر كافتراضي قبل حذف هذا الحساب.",
+    "currency_immutable": "لا يمكن تغيير عملة الحساب بعد الإنشاء."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

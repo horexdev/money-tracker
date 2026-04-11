@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Курс валют часова недаступны.",
     "too_many_currencies": "Максімум 3 адлюстроўваемыя валюты.",
     "invalid_currency": "Няправільны код валюты.",
-    "invalid_amount": "Уведзена некарэктная сума."
+    "invalid_amount": "Уведзена некарэктная сума.",
+    "cannot_delete_last_account": "Немагчыма выдаліць адзіны рахунак.",
+    "must_set_new_default": "Спачатку прызначце іншы рахунак асноўным, перш чым выдаляць гэты.",
+    "currency_immutable": "Валюту рахунку нельга змяніць пасля стварэння."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

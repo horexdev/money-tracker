@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Döviz kuru geçici olarak mevcut değil.",
     "too_many_currencies": "En fazla 3 görüntüleme para birimi izin verilir.",
     "invalid_currency": "Geçersiz para birimi kodu.",
-    "invalid_amount": "Geçersiz tutar girildi."
+    "invalid_amount": "Geçersiz tutar girildi.",
+    "cannot_delete_last_account": "Tek hesap silinemez.",
+    "must_set_new_default": "Bu hesabı silmeden önce başka bir hesabı varsayılan olarak ayarlayın.",
+    "currency_immutable": "Hesap para birimi oluşturulduktan sonra değiştirilemez."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

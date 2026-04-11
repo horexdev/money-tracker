@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "El tipo de cambio no está disponible temporalmente.",
     "too_many_currencies": "Máximo 3 monedas para mostrar.",
     "invalid_currency": "Código de moneda inválido.",
-    "invalid_amount": "Importe inválido introducido."
+    "invalid_amount": "Importe inválido introducido.",
+    "cannot_delete_last_account": "No se puede eliminar la única cuenta.",
+    "must_set_new_default": "Establece otra cuenta como predeterminada antes de eliminar esta.",
+    "currency_immutable": "La moneda de la cuenta no se puede cambiar después de la creación."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",
