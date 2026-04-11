@@ -91,14 +91,6 @@ func (r *TransactionRepository) CreateAdjustment(ctx context.Context, t *domain.
 	return rowToTransaction(row), nil
 }
 
-// nonZeroInt64 returns a pointer to v if non-zero, otherwise nil (maps to SQL NULL).
-func nonZeroInt64(v int64) *int64 {
-	if v == 0 {
-		return nil
-	}
-	return &v
-}
-
 // Delete removes a transaction by ID, scoped to the owning user.
 func (r *TransactionRepository) Delete(ctx context.Context, id, userID int64) error {
 	return r.q.DeleteTransaction(ctx, sqlcgen.DeleteTransactionParams{ID: id, UserID: userID})
