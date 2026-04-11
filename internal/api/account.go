@@ -189,9 +189,6 @@ func updateAccount(w http.ResponseWriter, r *http.Request, userID, id int64, svc
 	if req.Type != "" {
 		existing.Type = domain.AccountType(req.Type)
 	}
-	if req.CurrencyCode != "" {
-		existing.CurrencyCode = req.CurrencyCode
-	}
 	if req.IncludeInTotal != nil {
 		existing.IncludeInTotal = *req.IncludeInTotal
 	}

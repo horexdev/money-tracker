@@ -17,19 +17,27 @@ type BudgetChecker interface {
 	CheckAndNotify(ctx context.Context, userID int64) error
 }
 
+// SnapshotSaver persists daily exchange rate snapshots.
+type SnapshotSaver interface {
+	SaveDaily(ctx context.Context) error
+}
+
 // Scheduler runs periodic background jobs.
 type Scheduler struct {
-	recurring RecurringProcessor
-	budgets   BudgetChecker
-	log       *slog.Logger
-	interval  time.Duration
+	recurring    RecurringProcessor
+	budgets      BudgetChecker
+	snapshots    SnapshotSaver
+	log          *slog.Logger
+	interval     time.Duration
+	lastSnapshot time.Time // date of last successful snapshot save
 }
 
 // New creates a Scheduler that ticks every interval.
-func New(recurring RecurringProcessor, budgets BudgetChecker, log *slog.Logger, interval time.Duration) *Scheduler {
+func New(recurring RecurringProcessor, budgets BudgetChecker, snapshots SnapshotSaver, log *slog.Logger, interval time.Duration) *Scheduler {
 	return &Scheduler{
 		recurring: recurring,
 		budgets:   budgets,
+		snapshots: snapshots,
 		log:       log,
 		interval:  interval,
 	}
@@ -64,6 +72,25 @@ func (s *Scheduler) tick(ctx context.Context) {
 	if s.budgets != nil {
 		s.checkBudgets(ctx)
 	}
+
+	s.saveSnapshots(ctx)
+}
+
+func (s *Scheduler) saveSnapshots(ctx context.Context) {
+	if s.snapshots == nil {
+		return
+	}
+
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+	if s.lastSnapshot.Equal(today) {
+		return // already saved today
+	}
+
+	if err := s.snapshots.SaveDaily(ctx); err != nil {
+		s.log.Error("scheduler: snapshot save failed", slog.String("error", err.Error()))
+		return
+	}
+	s.lastSnapshot = today
 }
 
 func (s *Scheduler) checkBudgets(ctx context.Context) {

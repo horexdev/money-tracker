@@ -18,7 +18,7 @@ import (
 )
 
 func buildRecurringHandler(recurringRepo *mocks.MockRecurringStorer, txRepo *mocks.MockTransactionStorer) http.HandlerFunc {
-	svc := service.NewRecurringService(recurringRepo, txRepo, testutil.TestLogger())
+	svc := service.NewRecurringService(recurringRepo, txRepo, &mocks.MockAccountStorer{}, testutil.TestLogger())
 	return api.RecurringHandlerForTest(svc, testutil.TestLogger())
 }
 

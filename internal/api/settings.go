@@ -28,14 +28,13 @@ type notificationPrefsRequest struct {
 }
 
 type patchSettingsRequest struct {
-	BaseCurrency         *string                   `json:"base_currency"`
-	DisplayCurrencies    []string                  `json:"display_currencies"`
-	Language             *string                   `json:"language"`
-	NotificationPrefs    *notificationPrefsRequest `json:"notification_preferences"`
+	DisplayCurrencies []string                  `json:"display_currencies"`
+	Language          *string                   `json:"language"`
+	NotificationPrefs *notificationPrefsRequest `json:"notification_preferences"`
 }
 
 // settingsHandler handles GET and PATCH /api/v1/settings
-func settingsHandler(userSvc *service.UserService, adminUserID int64, devMode bool, log *slog.Logger) http.HandlerFunc {
+func settingsHandler(userSvc *service.UserService, accountSvc *service.AccountService, adminUserID int64, devMode bool, log *slog.Logger) http.HandlerFunc {
 	isAdmin := func(userID int64) bool {
 		if devMode {
 			return true
@@ -54,7 +53,12 @@ func settingsHandler(userSvc *service.UserService, adminUserID int64, devMode bo
 				writeError(w, log, err)
 				return
 			}
-			writeJSON(w, http.StatusOK, userToSettingsResponse(user, isAdmin(userID)))
+			// base_currency is derived from the default account.
+			baseCurrency := "USD"
+			if defaultAcc, accErr := accountSvc.GetDefault(ctx, userID); accErr == nil {
+				baseCurrency = defaultAcc.CurrencyCode
+			}
+			writeJSON(w, http.StatusOK, settingsToResponse(user, baseCurrency, isAdmin(userID)))
 
 		case http.MethodPatch:
 			var req patchSettingsRequest
@@ -67,14 +71,6 @@ func settingsHandler(userSvc *service.UserService, adminUserID int64, devMode bo
 			if err != nil {
 				writeError(w, log, err)
 				return
-			}
-
-			if req.BaseCurrency != nil {
-				user, err = userSvc.UpdateCurrency(ctx, userID, *req.BaseCurrency)
-				if err != nil {
-					writeError(w, log, err)
-					return
-				}
 			}
 
 			if req.DisplayCurrencies != nil {
@@ -107,7 +103,11 @@ func settingsHandler(userSvc *service.UserService, adminUserID int64, devMode bo
 				}
 			}
 
-			writeJSON(w, http.StatusOK, userToSettingsResponse(user, isAdmin(userID)))
+			baseCurrency := "USD"
+			if defaultAcc, accErr := accountSvc.GetDefault(ctx, userID); accErr == nil {
+				baseCurrency = defaultAcc.CurrencyCode
+			}
+			writeJSON(w, http.StatusOK, settingsToResponse(user, baseCurrency, isAdmin(userID)))
 
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -115,9 +115,9 @@ func settingsHandler(userSvc *service.UserService, adminUserID int64, devMode bo
 	}
 }
 
-func userToSettingsResponse(user *domain.User, isAdmin bool) settingsResponse {
+func settingsToResponse(user *domain.User, baseCurrency string, isAdmin bool) settingsResponse {
 	return settingsResponse{
-		BaseCurrency:             user.CurrencyCode,
+		BaseCurrency:             baseCurrency,
 		DisplayCurrencies:        user.DisplayCurrencies,
 		Language:                 string(user.Language),
 		IsAdmin:                  isAdmin,

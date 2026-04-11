@@ -12,13 +12,16 @@ import (
 
 type Querier interface {
 	ClearDefaultAccounts(ctx context.Context, userID int64) error
+	CountAccountRecurring(ctx context.Context, arg CountAccountRecurringParams) (int64, error)
 	CountAccountTransactions(ctx context.Context, arg CountAccountTransactionsParams) (int64, error)
+	CountAccountTransfers(ctx context.Context, arg CountAccountTransfersParams) (int64, error)
 	CountActiveUsersInPeriod(ctx context.Context, arg CountActiveUsersInPeriodParams) (int64, error)
 	CountAllUsers(ctx context.Context) (int64, error)
 	CountNewUsers(ctx context.Context, arg CountNewUsersParams) (int64, error)
 	CountRetainedUsers(ctx context.Context, arg CountRetainedUsersParams) (int64, error)
 	CountTransactionsByCategory(ctx context.Context, categoryID int64) (int64, error)
 	CountTransfersByUser(ctx context.Context, userID int64) (int64, error)
+	CountUserAccounts(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactions(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactionsByAccount(ctx context.Context, arg CountUserTransactionsByAccountParams) (int64, error)
 	CountUserTransactionsByAccountWithDateRange(ctx context.Context, arg CountUserTransactionsByAccountWithDateRangeParams) (int64, error)
@@ -50,13 +53,6 @@ type Querier interface {
 	DeleteUser(ctx context.Context, id int64) error
 	DepositToGoal(ctx context.Context, arg DepositToGoalParams) (SavingsGoal, error)
 	GetAccountBalance(ctx context.Context, arg GetAccountBalanceParams) (int64, error)
-	// Returns net balance converted to the user's base currency using per-transaction
-	// exchange_rate_snapshot (rate: transaction.currency_code → transaction.base_currency_at_creation).
-	// Result is in base currency cents; divide by the rate base→target to get target currency cents.
-	GetAccountBalanceInBase(ctx context.Context, arg GetAccountBalanceInBaseParams) (int64, error)
-	// Returns the base_currency_at_creation of the most recent transaction on this account.
-	// Used to determine which currency the balance_in_base_cents is expressed in.
-	GetAccountBaseCurrency(ctx context.Context, arg GetAccountBaseCurrencyParams) (string, error)
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetBalance(ctx context.Context, userID int64) (GetBalanceRow, error)
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]GetBalanceByCurrencyRow, error)
@@ -66,18 +62,26 @@ type Querier interface {
 	GetCategoryByID(ctx context.Context, id int64) (Category, error)
 	GetCategoryByName(ctx context.Context, arg GetCategoryByNameParams) (Category, error)
 	GetCategoryByTypeForUser(ctx context.Context, arg GetCategoryByTypeForUserParams) (Category, error)
-	// Returns the system (user_id IS NULL) category of the given type.
-	GetSystemCategoryByType(ctx context.Context, catType string) (Category, error)
 	GetDefaultAccount(ctx context.Context, userID int64) (Account, error)
 	GetDueRecurring(ctx context.Context, nextRunAt pgtype.Timestamptz) ([]RecurringTransaction, error)
+	GetExchangeRate(ctx context.Context, arg GetExchangeRateParams) (pgtype.Numeric, error)
+	// Returns the rate for the exact date, or the most recent rate before that date.
+	GetExchangeRateOrLatest(ctx context.Context, arg GetExchangeRateOrLatestParams) (pgtype.Numeric, error)
+	GetLatestSnapshotDate(ctx context.Context) (pgtype.Date, error)
 	GetRecurringByID(ctx context.Context, arg GetRecurringByIDParams) (RecurringTransaction, error)
 	GetSavingsGoalByID(ctx context.Context, arg GetSavingsGoalByIDParams) (SavingsGoal, error)
+	// Cross-currency aggregation: converts each transaction's amount to the
+	// budget's target currency using exchange_rate_snapshots. Same-currency
+	// transactions pass through at rate 1.0 (no snapshot row needed).
 	GetSpentInPeriod(ctx context.Context, arg GetSpentInPeriodParams) (int64, error)
 	GetStatsByCategory(ctx context.Context, arg GetStatsByCategoryParams) ([]GetStatsByCategoryRow, error)
 	GetStatsByCategoryAndAccount(ctx context.Context, arg GetStatsByCategoryAndAccountParams) ([]GetStatsByCategoryAndAccountRow, error)
-	// Returns net balance (income - expense) summed across all transactions converted to the user's
-	// base currency using the exchange_rate_snapshot stored at the time each transaction was created.
-	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
+	// Returns the system (user_id IS NULL) category of the given type.
+	// Used for infrastructure categories like 'transfer' and 'adjustment'.
+	GetSystemCategoryByType(ctx context.Context, type_ string) (Category, error)
+	// Returns net balance (income - expense) summed across all transactions, converted to the
+	// target currency using exchange_rate_snapshots. Same-currency transactions use rate 1.0.
+	GetTotalInBaseCurrency(ctx context.Context, arg GetTotalInBaseCurrencyParams) (int64, error)
 	GetTransferByID(ctx context.Context, arg GetTransferByIDParams) (GetTransferByIDRow, error)
 	GetTransferTxIDs(ctx context.Context, arg GetTransferTxIDsParams) (GetTransferTxIDsRow, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
@@ -87,6 +91,8 @@ type Querier interface {
 	ListAllUserIDs(ctx context.Context) ([]int64, error)
 	ListAllUsers(ctx context.Context, arg ListAllUsersParams) ([]User, error)
 	ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBudgetsByUserRow, error)
+	// Returns all distinct base currencies used across accounts (for daily cron).
+	ListDistinctBaseCurrencies(ctx context.Context) ([]string, error)
 	ListDistinctUsersWithBudgets(ctx context.Context) ([]int64, error)
 	ListGoalTransactions(ctx context.Context, arg ListGoalTransactionsParams) ([]GoalTransaction, error)
 	ListRecurringByUser(ctx context.Context, userID int64) ([]ListRecurringByUserRow, error)
@@ -117,8 +123,8 @@ type Querier interface {
 	UpdateRecurringNextRun(ctx context.Context, arg UpdateRecurringNextRunParams) error
 	UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalParams) (SavingsGoal, error)
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
-	UpdateUserCurrency(ctx context.Context, arg UpdateUserCurrencyParams) (User, error)
 	UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguageParams) (User, error)
+	UpsertExchangeRate(ctx context.Context, arg UpsertExchangeRateParams) error
 	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)
 	WithdrawFromGoal(ctx context.Context, arg WithdrawFromGoalParams) (SavingsGoal, error)
 }

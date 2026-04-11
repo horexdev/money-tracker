@@ -18,7 +18,6 @@ import (
 )
 
 func buildAccountHandler(repo *mocks.MockAccountStorer) http.HandlerFunc {
-	// nil ExchangeService — tests avoid balance conversion paths.
 	accountSvc := service.NewAccountService(repo, nil, testutil.TestLogger())
 	// nil repositories for AdjustmentService — adjust endpoint not exercised in these tests.
 	adjustSvc := service.NewAdjustmentService(&mocks.MockTransactionStorer{}, repo, &mocks.MockCategoryStorer{}, testutil.TestLogger())
@@ -30,8 +29,8 @@ func TestAccountsHandler_GET_List(t *testing.T) {
 	repo.On("ListByUser", mock.Anything, int64(1)).Return([]*domain.Account{
 		{ID: 1, Name: "Main", IsDefault: true, CurrencyCode: "USD"},
 	}, nil)
-	// balanceInCurrency path: GetBalanceInBase returns 0 → no further calls.
-	repo.On("GetBalanceInBase", mock.Anything, int64(1), int64(1)).Return(int64(0), nil)
+	// balanceInCurrency path: GetBalance returns 0 → no further calls.
+	repo.On("GetBalance", mock.Anything, int64(1), int64(1)).Return(int64(0), nil)
 
 	h := buildAccountHandler(repo)
 	w := httptest.NewRecorder()
@@ -92,6 +91,9 @@ func TestAccountsHandler_POST_Create(t *testing.T) {
 
 func TestAccountsHandler_DELETE_HasTransactions(t *testing.T) {
 	repo := &mocks.MockAccountStorer{}
+	acc := &domain.Account{ID: 5, UserID: 1, IsDefault: false}
+	repo.On("GetByID", mock.Anything, int64(5), int64(1)).Return(acc, nil)
+	repo.On("CountAccounts", mock.Anything, int64(1)).Return(int64(2), nil)
 	repo.On("CountTransactions", mock.Anything, int64(5), int64(1)).Return(int64(3), nil)
 
 	h := buildAccountHandler(repo)

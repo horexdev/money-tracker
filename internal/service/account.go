@@ -11,14 +11,14 @@ import (
 
 // AccountService handles business logic for user accounts.
 type AccountService struct {
-	repo    AccountStorer
-	exchSvc *ExchangeService
-	log     *slog.Logger
+	repo     AccountStorer
+	goalRepo SavingsGoalStorer
+	log      *slog.Logger
 }
 
 // NewAccountService constructs an AccountService.
-func NewAccountService(repo AccountStorer, exchSvc *ExchangeService, log *slog.Logger) *AccountService {
-	return &AccountService{repo: repo, exchSvc: exchSvc, log: log}
+func NewAccountService(repo AccountStorer, goalRepo SavingsGoalStorer, log *slog.Logger) *AccountService {
+	return &AccountService{repo: repo, goalRepo: goalRepo, log: log}
 }
 
 // Create creates a new account. If it is the first account for the user, it is
@@ -94,53 +94,35 @@ func (s *AccountService) GetByID(ctx context.Context, id, userID int64) (*domain
 }
 
 // balanceInCurrency returns the account balance converted to targetCurrency.
-// Each transaction is first converted to base currency using its exchange_rate_snapshot,
-// then the sum is converted from base to targetCurrency via ExchangeService.
-// Falls back to raw balance if there are no transactions or exchange rates are unavailable.
+// All transactions on one account are in the same currency (the account's currency).
+// Conversion to targetCurrency is done via ExchangeService using the current rate.
 func (s *AccountService) balanceInCurrency(ctx context.Context, accountID, userID int64, targetCurrency string) (int64, error) {
-	balInBase, err := s.repo.GetBalanceInBase(ctx, accountID, userID)
+	bal, err := s.repo.GetBalance(ctx, accountID, userID)
 	if err != nil {
 		return 0, err
 	}
-	if balInBase == 0 {
+	if bal == 0 {
 		return 0, nil
 	}
-
-	baseCurrency, err := s.repo.GetBaseCurrency(ctx, accountID, userID)
-	if err != nil {
-		// No transactions yet — balance is zero.
-		return 0, nil
-	}
-
-	if baseCurrency == targetCurrency {
-		return balInBase, nil
-	}
-
-	converted, err := s.exchSvc.Convert(ctx, balInBase, baseCurrency, targetCurrency)
-	if err != nil {
-		// Exchange rate unavailable — fall back to raw balance to avoid showing 0.
-		s.log.WarnContext(ctx, "exchange rate unavailable, falling back to raw balance",
-			slog.Int64("account_id", accountID),
-			slog.String("base", baseCurrency),
-			slog.String("target", targetCurrency),
-			slog.String("err", err.Error()),
-		)
-		return s.repo.GetBalance(ctx, accountID, userID)
-	}
-	return converted, nil
+	// targetCurrency is always the account's own currency, so no conversion needed.
+	return bal, nil
 }
 
-// Update modifies a non-default account. is_default cannot be changed via Update — use SetDefault.
+// Update modifies a non-default account. is_default and currency_code cannot be changed via Update.
 func (s *AccountService) Update(ctx context.Context, id, userID int64, name, icon, color string, accType domain.AccountType, currencyCode string, includeInTotal bool) (*domain.Account, error) {
 	existing, err := s.repo.GetByID(ctx, id, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get account: %w", err)
 	}
+
+	if currencyCode != "" && currencyCode != existing.CurrencyCode {
+		return nil, domain.ErrCurrencyImmutable
+	}
+
 	existing.Name = name
 	existing.Icon = icon
 	existing.Color = color
 	existing.Type = accType
-	existing.CurrencyCode = currencyCode
 	existing.IncludeInTotal = includeInTotal
 
 	updated, err := s.repo.Update(ctx, existing)
@@ -163,15 +145,91 @@ func (s *AccountService) SetDefault(ctx context.Context, id, userID int64) (*dom
 	return a, nil
 }
 
-// Delete removes an account if it has no transactions.
+// Delete removes an account after validating deletion rules:
+//   - Cannot delete the only account
+//   - Cannot delete an account with transactions
+//   - Cannot delete an account with transfers
+//   - If deleting the default account with exactly 2 accounts, the remaining one becomes default
+//   - If deleting the default account with >2 accounts, returns ErrMustSetNewDefault
 func (s *AccountService) Delete(ctx context.Context, id, userID int64) error {
-	count, err := s.repo.CountTransactions(ctx, id, userID)
+	acc, err := s.repo.GetByID(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+
+	totalAccounts, err := s.repo.CountAccounts(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("count accounts: %w", err)
+	}
+	if totalAccounts <= 1 {
+		return domain.ErrCannotDeleteLastAccount
+	}
+
+	txCount, err := s.repo.CountTransactions(ctx, id, userID)
 	if err != nil {
 		return fmt.Errorf("count transactions: %w", err)
 	}
-	if count > 0 {
+	if txCount > 0 {
 		return domain.ErrAccountHasTransactions
 	}
+
+	trCount, err := s.repo.CountTransfers(ctx, id, userID)
+	if err != nil {
+		return fmt.Errorf("count transfers: %w", err)
+	}
+	if trCount > 0 {
+		return domain.ErrAccountHasTransfers
+	}
+
+	recCount, err := s.repo.CountRecurring(ctx, id, userID)
+	if err != nil {
+		return fmt.Errorf("count recurring: %w", err)
+	}
+	if recCount > 0 {
+		return domain.ErrAccountHasRecurring
+	}
+
+	if acc.IsDefault {
+		if totalAccounts == 2 {
+			// Auto-promote the remaining account to default.
+			accounts, err := s.repo.ListByUser(ctx, userID)
+			if err != nil {
+				return fmt.Errorf("list accounts: %w", err)
+			}
+			for _, a := range accounts {
+				if a.ID != id {
+					if _, err := s.repo.SetDefault(ctx, a.ID, userID); err != nil {
+						return fmt.Errorf("auto-promote default: %w", err)
+					}
+					break
+				}
+			}
+		} else {
+			return domain.ErrMustSetNewDefault
+		}
+	}
+
+	// Preserve currency on linked savings goals before ON DELETE SET NULL fires.
+	if s.goalRepo != nil {
+		goals, err := s.goalRepo.GetByAccountID(ctx, id)
+		if err != nil {
+			s.log.WarnContext(ctx, "failed to get goals for account",
+				slog.Int64("account_id", id),
+				slog.String("err", err.Error()),
+			)
+		}
+		for _, g := range goals {
+			g.CurrencyCode = acc.CurrencyCode
+			g.AccountID = nil // unlink explicitly
+			if _, err := s.goalRepo.Update(ctx, g); err != nil {
+				s.log.WarnContext(ctx, "failed to preserve currency on goal",
+					slog.Int64("goal_id", g.ID),
+					slog.String("err", err.Error()),
+				)
+			}
+		}
+	}
+
 	if err := s.repo.Delete(ctx, id, userID); err != nil {
 		if errors.Is(err, domain.ErrAccountNotFound) {
 			return err

@@ -1,6 +1,6 @@
 -- name: CreateRecurring :one
-INSERT INTO recurring_transactions (user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO recurring_transactions (user_id, account_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING *;
 
 -- name: GetRecurringByID :one
@@ -10,7 +10,7 @@ SELECT * FROM recurring_transactions WHERE id = $1 AND user_id = $2;
 SELECT
     r.*,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM recurring_transactions r
 JOIN categories c ON c.id = r.category_id
@@ -19,13 +19,14 @@ ORDER BY r.created_at DESC;
 
 -- name: UpdateRecurring :one
 UPDATE recurring_transactions
-SET category_id   = $3,
-    type          = $4,
-    amount_cents  = $5,
-    currency_code = $6,
-    note          = $7,
-    frequency     = $8,
-    next_run_at   = $9,
+SET account_id    = $3,
+    category_id   = $4,
+    type          = $5,
+    amount_cents  = $6,
+    currency_code = $7,
+    note          = $8,
+    frequency     = $9,
+    next_run_at   = $10,
     updated_at    = now()
 WHERE id = $1 AND user_id = $2
 RETURNING *;

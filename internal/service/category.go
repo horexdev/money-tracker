@@ -87,7 +87,8 @@ func (s *CategoryService) InitDefaultForUser(ctx context.Context, userID int64, 
 }
 
 // Create adds a new custom category for a user.
-func (s *CategoryService) Create(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error) {
+func (s *CategoryService) Create(ctx context.Context, userID int64, name, icon, catType, color string) (*domain.Category, error) {
+
 	if name == "" {
 		return nil, domain.ErrCategoryNameEmpty
 	}
@@ -98,7 +99,7 @@ func (s *CategoryService) Create(ctx context.Context, userID int64, name, emoji,
 		color = "#6366f1"
 	}
 
-	cat, err := s.repo.CreateForUser(ctx, userID, name, emoji, catType, color)
+	cat, err := s.repo.CreateForUser(ctx, userID, name, icon, catType, color)
 	if err != nil {
 		return nil, fmt.Errorf("create category: %w", err)
 	}
@@ -112,7 +113,8 @@ func (s *CategoryService) Create(ctx context.Context, userID int64, name, emoji,
 }
 
 // Update modifies a user-owned category.
-func (s *CategoryService) Update(ctx context.Context, userID, categoryID int64, name, emoji, catType, color string) (*domain.Category, error) {
+func (s *CategoryService) Update(ctx context.Context, userID, categoryID int64, name, icon, catType, color string) (*domain.Category, error) {
+
 	existing, err := s.repo.GetByID(ctx, categoryID)
 	if err != nil {
 		return nil, fmt.Errorf("get category %d: %w", categoryID, err)
@@ -127,7 +129,7 @@ func (s *CategoryService) Update(ctx context.Context, userID, categoryID int64, 
 		color = existing.Color
 	}
 
-	cat, err := s.repo.Update(ctx, userID, categoryID, name, emoji, catType, color)
+	cat, err := s.repo.Update(ctx, userID, categoryID, name, icon, catType, color)
 	if err != nil {
 		return nil, fmt.Errorf("update category %d: %w", categoryID, err)
 	}

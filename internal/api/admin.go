@@ -12,13 +12,12 @@ import (
 )
 
 type adminUserJSON struct {
-	ID           int64  `json:"id"`
-	Username     string `json:"username"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	CurrencyCode string `json:"currency_code"`
-	Language     string `json:"language"`
-	CreatedAt    string `json:"created_at"`
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Language  string `json:"language"`
+	CreatedAt string `json:"created_at"`
 }
 
 type adminUsersResponse struct {
@@ -54,13 +53,12 @@ func adminUsersHandler(svc *service.AdminService, log *slog.Logger) http.Handler
 		items := make([]adminUserJSON, 0, len(users))
 		for _, u := range users {
 			items = append(items, adminUserJSON{
-				ID:           u.ID,
-				Username:     u.Username,
-				FirstName:    u.FirstName,
-				LastName:     u.LastName,
-				CurrencyCode: u.CurrencyCode,
-				Language:     string(u.Language),
-				CreatedAt:    u.CreatedAt.Format(time.RFC3339),
+				ID:        u.ID,
+				Username:  u.Username,
+				FirstName: u.FirstName,
+				LastName:  u.LastName,
+				Language:  string(u.Language),
+				CreatedAt: u.CreatedAt.Format(time.RFC3339),
 			})
 		}
 

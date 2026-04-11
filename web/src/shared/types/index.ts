@@ -3,7 +3,7 @@ export type TransactionType = 'expense' | 'income'
 export interface Category {
   id: number
   name: string
-  emoji: string
+  icon: string
   type: string
   color: string
   is_system: boolean
@@ -17,7 +17,7 @@ export interface Transaction {
   currency_code: string
   category_id: number
   category_name: string
-  category_emoji: string
+  category_icon: string
   category_color: string
   note: string
   created_at: string
@@ -54,7 +54,7 @@ export interface BalanceResponse {
 // GET /api/v1/stats
 export interface CategoryStat {
   category_name: string
-  category_emoji: string
+  category_icon: string
   category_color: string
   type: TransactionType
   total_cents: number
@@ -89,7 +89,7 @@ export interface Budget {
   id: number
   category_id: number
   category_name: string
-  category_emoji: string
+  category_icon: string
   category_color: string
   limit_cents: number
   spent_cents: number
@@ -113,7 +113,7 @@ export interface RecurringTransaction {
   currency_code: string
   category_id: number
   category_name: string
-  category_emoji: string
+  category_icon: string
   category_color: string
   note: string
   frequency: string

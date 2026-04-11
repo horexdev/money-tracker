@@ -12,7 +12,7 @@ import (
 
 type categoryStatResponse struct {
 	CategoryName  string `json:"category_name"`
-	CategoryEmoji string `json:"category_emoji"`
+	CategoryIcon string `json:"category_icon"`
 	CategoryColor string `json:"category_color"`
 	Type          string `json:"type"`
 	TotalCents    int64  `json:"total_cents"`
@@ -103,7 +103,7 @@ func buildItems(stats []domain.CategoryStat) []categoryStatResponse {
 	for _, s := range stats {
 		items = append(items, categoryStatResponse{
 			CategoryName:  s.CategoryName,
-			CategoryEmoji: s.CategoryEmoji,
+			CategoryIcon: s.CategoryIcon,
 			CategoryColor: s.CategoryColor,
 			Type:          string(s.Type),
 			TotalCents:    s.TotalCents,

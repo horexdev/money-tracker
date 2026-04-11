@@ -31,10 +31,10 @@ type balanceResponse struct {
 type balanceFetcher interface {
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error)
 	GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error)
-	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
+	GetTotalInBaseCurrency(ctx context.Context, userID int64, targetCurrency string) (int64, error)
 }
 
-func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, exchangeSvc *service.ExchangeService, log *slog.Logger) http.HandlerFunc {
+func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, accountSvc *service.AccountService, exchangeSvc *service.ExchangeService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -65,6 +65,12 @@ func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, exchange
 			return
 		}
 
+		// Base currency is derived from the default account.
+		baseCurrency := "USD"
+		if defaultAcc, accErr := accountSvc.GetDefault(ctx, userID); accErr == nil {
+			baseCurrency = defaultAcc.CurrencyCode
+		}
+
 		byCurrency := make([]balanceCurrencyResponse, 0, len(balances))
 		var baseNetCents int64
 		for _, b := range balances {
@@ -75,14 +81,14 @@ func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, exchange
 				ExpenseCents: b.ExpenseCents,
 				NetCents:     net,
 			})
-			if b.CurrencyCode == user.CurrencyCode {
+			if b.CurrencyCode == baseCurrency {
 				baseNetCents = net
 			}
 		}
 
 		var displayConversions []displayConversion
 		if len(user.DisplayCurrencies) > 0 {
-			converted, err := exchangeSvc.ConvertMulti(ctx, baseNetCents, user.CurrencyCode, user.DisplayCurrencies)
+			converted, err := exchangeSvc.ConvertMulti(ctx, baseNetCents, baseCurrency, user.DisplayCurrencies)
 			if err != nil {
 				log.WarnContext(ctx, "balance: exchange conversion failed", slog.String("error", err.Error()))
 			} else {
@@ -97,7 +103,7 @@ func balanceHandler(txSvc balanceFetcher, userSvc *service.UserService, exchange
 			}
 		}
 
-		totalInBase, err := txSvc.GetTotalInBaseCurrency(ctx, userID)
+		totalInBase, err := txSvc.GetTotalInBaseCurrency(ctx, userID, baseCurrency)
 		if err != nil {
 			log.WarnContext(ctx, "balance: get total in base currency failed", slog.String("error", err.Error()))
 		}

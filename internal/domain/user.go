@@ -49,15 +49,14 @@ type NotificationPrefs struct {
 
 // User represents a registered Telegram user.
 type User struct {
-	ID                int64
-	Username          string
-	FirstName         string
-	LastName          string
-	CurrencyCode      string
-	Language          Language
-	DisplayCurrencies []string
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	ID                       int64
+	Username                 string
+	FirstName                string
+	LastName                 string
+	Language                 Language
+	DisplayCurrencies        []string
+	CreatedAt                time.Time
+	UpdatedAt                time.Time
 	NotifyBudgetAlerts       bool
 	NotifyRecurringReminders bool
 	NotifyWeeklySummary      bool

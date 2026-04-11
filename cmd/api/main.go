@@ -72,6 +72,7 @@ func main() {
 	accountRepo := repository.NewAccountRepository(pool)
 	transferRepo := repository.NewTransferRepository(pool)
 	adminRepo := repository.NewAdminRepository(pool)
+	snapshotRepo := repository.NewExchangeSnapshotRepository(pool)
 
 	// Services.
 	userSvc := service.NewUserService(userRepo, log)
@@ -80,13 +81,14 @@ func main() {
 	exchangeSvc := service.NewExchangeService(service.NewRateAPIProvider(), rdb, cfg.ExchangeRateTTL, log)
 	categorySvc := service.NewCategoryService(catRepo, log)
 	budgetSvc := service.NewBudgetService(budgetRepo, txRepo, userRepo, log)
-	recurringSvc := service.NewRecurringService(recurringRepo, txRepo, log)
+	recurringSvc := service.NewRecurringService(recurringRepo, txRepo, accountRepo, log)
 	goalSvc := service.NewSavingsGoalService(goalRepo, txRepo, catRepo, accountRepo, log)
 	exportSvc := service.NewExportService(txRepo, log)
-	accountSvc := service.NewAccountService(accountRepo, exchangeSvc, log)
+	accountSvc := service.NewAccountService(accountRepo, goalRepo, log)
 	transferSvc := service.NewTransferService(transferRepo, accountRepo, goalRepo, txRepo, catRepo, log)
 	adjustSvc := service.NewAdjustmentService(txRepo, accountRepo, catRepo, log)
 	adminSvc := service.NewAdminService(adminRepo, log)
+	snapshotSvc := service.NewSnapshotService(snapshotRepo, service.NewRateAPIProvider(), log)
 
 	// Wire budget notifier if a bot token is configured.
 	if cfg.BotToken != "" {
@@ -95,7 +97,7 @@ func main() {
 	}
 
 	// Background scheduler for recurring transactions and budget alerts.
-	sched := scheduler.New(recurringSvc, budgetSvc, log, 1*time.Minute)
+	sched := scheduler.New(recurringSvc, budgetSvc, snapshotSvc, log, 1*time.Minute)
 	go sched.Run(ctx)
 
 	handler := api.NewServer(api.Deps{
@@ -112,6 +114,7 @@ func main() {
 		TransferSvc:    transferSvc,
 		AdjustSvc:      adjustSvc,
 		AdminSvc:       adminSvc,
+		SnapshotSvc:    snapshotSvc,
 		BotToken:       cfg.BotToken,
 		AllowedOrigins: cfg.AllowedOrigins,
 		AdminUserID:    cfg.AdminUserID,

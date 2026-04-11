@@ -13,13 +13,14 @@ import (
 )
 
 const createRecurring = `-- name: CreateRecurring :one
-INSERT INTO recurring_transactions (user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at
+INSERT INTO recurring_transactions (user_id, account_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at, account_id
 `
 
 type CreateRecurringParams struct {
 	UserID       int64                  `json:"user_id"`
+	AccountID    int64                  `json:"account_id"`
 	CategoryID   int64                  `json:"category_id"`
 	Type         domain.TransactionType `json:"type"`
 	AmountCents  int64                  `json:"amount_cents"`
@@ -32,6 +33,7 @@ type CreateRecurringParams struct {
 func (q *Queries) CreateRecurring(ctx context.Context, arg CreateRecurringParams) (RecurringTransaction, error) {
 	row := q.db.QueryRow(ctx, createRecurring,
 		arg.UserID,
+		arg.AccountID,
 		arg.CategoryID,
 		arg.Type,
 		arg.AmountCents,
@@ -54,6 +56,7 @@ func (q *Queries) CreateRecurring(ctx context.Context, arg CreateRecurringParams
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
@@ -73,7 +76,7 @@ func (q *Queries) DeleteRecurring(ctx context.Context, arg DeleteRecurringParams
 }
 
 const getDueRecurring = `-- name: GetDueRecurring :many
-SELECT id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at FROM recurring_transactions
+SELECT id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at, account_id FROM recurring_transactions
 WHERE is_active = true AND next_run_at <= $1
 ORDER BY next_run_at ASC
 LIMIT 100
@@ -101,6 +104,7 @@ func (q *Queries) GetDueRecurring(ctx context.Context, nextRunAt pgtype.Timestam
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AccountID,
 		); err != nil {
 			return nil, err
 		}
@@ -113,7 +117,7 @@ func (q *Queries) GetDueRecurring(ctx context.Context, nextRunAt pgtype.Timestam
 }
 
 const getRecurringByID = `-- name: GetRecurringByID :one
-SELECT id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at FROM recurring_transactions WHERE id = $1 AND user_id = $2
+SELECT id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at, account_id FROM recurring_transactions WHERE id = $1 AND user_id = $2
 `
 
 type GetRecurringByIDParams struct {
@@ -137,15 +141,16 @@ func (q *Queries) GetRecurringByID(ctx context.Context, arg GetRecurringByIDPara
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
 
 const listRecurringByUser = `-- name: ListRecurringByUser :many
 SELECT
-    r.id, r.user_id, r.category_id, r.type, r.amount_cents, r.currency_code, r.note, r.frequency, r.next_run_at, r.is_active, r.created_at, r.updated_at,
+    r.id, r.user_id, r.category_id, r.type, r.amount_cents, r.currency_code, r.note, r.frequency, r.next_run_at, r.is_active, r.created_at, r.updated_at, r.account_id,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM recurring_transactions r
 JOIN categories c ON c.id = r.category_id
@@ -166,8 +171,9 @@ type ListRecurringByUserRow struct {
 	IsActive      bool                   `json:"is_active"`
 	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz     `json:"updated_at"`
+	AccountID     int64                  `json:"account_id"`
 	CategoryName  string                 `json:"category_name"`
-	CategoryEmoji string                 `json:"category_emoji"`
+	CategoryIcon  string                 `json:"category_icon"`
 	CategoryColor string                 `json:"category_color"`
 }
 
@@ -193,8 +199,9 @@ func (q *Queries) ListRecurringByUser(ctx context.Context, userID int64) ([]List
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AccountID,
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 		); err != nil {
 			return nil, err
@@ -212,7 +219,7 @@ UPDATE recurring_transactions
 SET is_active  = NOT is_active,
     updated_at = now()
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at
+RETURNING id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at, account_id
 `
 
 type ToggleRecurringActiveParams struct {
@@ -236,27 +243,30 @@ func (q *Queries) ToggleRecurringActive(ctx context.Context, arg ToggleRecurring
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }
 
 const updateRecurring = `-- name: UpdateRecurring :one
 UPDATE recurring_transactions
-SET category_id   = $3,
-    type          = $4,
-    amount_cents  = $5,
-    currency_code = $6,
-    note          = $7,
-    frequency     = $8,
-    next_run_at   = $9,
+SET account_id    = $3,
+    category_id   = $4,
+    type          = $5,
+    amount_cents  = $6,
+    currency_code = $7,
+    note          = $8,
+    frequency     = $9,
+    next_run_at   = $10,
     updated_at    = now()
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at
+RETURNING id, user_id, category_id, type, amount_cents, currency_code, note, frequency, next_run_at, is_active, created_at, updated_at, account_id
 `
 
 type UpdateRecurringParams struct {
 	ID           int64                  `json:"id"`
 	UserID       int64                  `json:"user_id"`
+	AccountID    int64                  `json:"account_id"`
 	CategoryID   int64                  `json:"category_id"`
 	Type         domain.TransactionType `json:"type"`
 	AmountCents  int64                  `json:"amount_cents"`
@@ -270,6 +280,7 @@ func (q *Queries) UpdateRecurring(ctx context.Context, arg UpdateRecurringParams
 	row := q.db.QueryRow(ctx, updateRecurring,
 		arg.ID,
 		arg.UserID,
+		arg.AccountID,
 		arg.CategoryID,
 		arg.Type,
 		arg.AmountCents,
@@ -292,6 +303,7 @@ func (q *Queries) UpdateRecurring(ctx context.Context, arg UpdateRecurringParams
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AccountID,
 	)
 	return i, err
 }

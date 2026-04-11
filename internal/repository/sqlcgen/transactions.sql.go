@@ -28,8 +28,8 @@ SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2
 `
 
 type CountUserTransactionsByAccountParams struct {
-	UserID    int64       `json:"user_id"`
-	AccountID pgtype.Int8 `json:"account_id"`
+	UserID    int64 `json:"user_id"`
+	AccountID int64 `json:"account_id"`
 }
 
 func (q *Queries) CountUserTransactionsByAccount(ctx context.Context, arg CountUserTransactionsByAccountParams) (int64, error) {
@@ -48,7 +48,7 @@ WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
 
 type CountUserTransactionsByAccountWithDateRangeParams struct {
 	UserID    int64              `json:"user_id"`
-	AccountID pgtype.Int8        `json:"account_id"`
+	AccountID int64              `json:"account_id"`
 	Column3   pgtype.Timestamptz `json:"column_3"`
 	Column4   pgtype.Timestamptz `json:"column_4"`
 }
@@ -87,21 +87,20 @@ func (q *Queries) CountUserTransactionsWithDateRange(ctx context.Context, arg Co
 
 const createAdjustmentTransaction = `-- name: CreateAdjustmentTransaction :one
 INSERT INTO transactions (user_id, type, amount_cents, category_id, note,
-    currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
+    currency_code, account_id, snapshot_date, is_adjustment)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, account_id, is_adjustment, snapshot_date
 `
 
 type CreateAdjustmentTransactionParams struct {
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	AccountID              pgtype.Int8            `json:"account_id"`
+	UserID       int64                  `json:"user_id"`
+	Type         domain.TransactionType `json:"type"`
+	AmountCents  int64                  `json:"amount_cents"`
+	CategoryID   int64                  `json:"category_id"`
+	Note         string                 `json:"note"`
+	CurrencyCode string                 `json:"currency_code"`
+	AccountID    int64                  `json:"account_id"`
+	SnapshotDate pgtype.Date            `json:"snapshot_date"`
 }
 
 // Creates a balance-adjustment transaction that is hidden from history and statistics
@@ -114,9 +113,8 @@ func (q *Queries) CreateAdjustmentTransaction(ctx context.Context, arg CreateAdj
 		arg.CategoryID,
 		arg.Note,
 		arg.CurrencyCode,
-		arg.ExchangeRateSnapshot,
-		arg.BaseCurrencyAtCreation,
 		arg.AccountID,
+		arg.SnapshotDate,
 	)
 	var i Transaction
 	err := row.Scan(
@@ -128,30 +126,28 @@ func (q *Queries) CreateAdjustmentTransaction(ctx context.Context, arg CreateAdj
 		&i.Note,
 		&i.CreatedAt,
 		&i.CurrencyCode,
-		&i.ExchangeRateSnapshot,
-		&i.BaseCurrencyAtCreation,
 		&i.AccountID,
 		&i.IsAdjustment,
+		&i.SnapshotDate,
 	)
 	return i, err
 }
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, account_id, snapshot_date)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, account_id, is_adjustment, snapshot_date
 `
 
 type CreateTransactionParams struct {
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	AccountID              pgtype.Int8            `json:"account_id"`
+	UserID       int64                  `json:"user_id"`
+	Type         domain.TransactionType `json:"type"`
+	AmountCents  int64                  `json:"amount_cents"`
+	CategoryID   int64                  `json:"category_id"`
+	Note         string                 `json:"note"`
+	CurrencyCode string                 `json:"currency_code"`
+	AccountID    int64                  `json:"account_id"`
+	SnapshotDate pgtype.Date            `json:"snapshot_date"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
@@ -162,9 +158,8 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		arg.CategoryID,
 		arg.Note,
 		arg.CurrencyCode,
-		arg.ExchangeRateSnapshot,
-		arg.BaseCurrencyAtCreation,
 		arg.AccountID,
+		arg.SnapshotDate,
 	)
 	var i Transaction
 	err := row.Scan(
@@ -176,31 +171,29 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		&i.Note,
 		&i.CreatedAt,
 		&i.CurrencyCode,
-		&i.ExchangeRateSnapshot,
-		&i.BaseCurrencyAtCreation,
 		&i.AccountID,
 		&i.IsAdjustment,
+		&i.SnapshotDate,
 	)
 	return i, err
 }
 
 const createTransactionWithDate = `-- name: CreateTransactionWithDate :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, created_at, account_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, created_at, account_id, snapshot_date)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, account_id, is_adjustment, snapshot_date
 `
 
 type CreateTransactionWithDateParams struct {
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
-	AccountID              pgtype.Int8            `json:"account_id"`
+	UserID       int64                  `json:"user_id"`
+	Type         domain.TransactionType `json:"type"`
+	AmountCents  int64                  `json:"amount_cents"`
+	CategoryID   int64                  `json:"category_id"`
+	Note         string                 `json:"note"`
+	CurrencyCode string                 `json:"currency_code"`
+	CreatedAt    pgtype.Timestamptz     `json:"created_at"`
+	AccountID    int64                  `json:"account_id"`
+	SnapshotDate pgtype.Date            `json:"snapshot_date"`
 }
 
 func (q *Queries) CreateTransactionWithDate(ctx context.Context, arg CreateTransactionWithDateParams) (Transaction, error) {
@@ -211,10 +204,9 @@ func (q *Queries) CreateTransactionWithDate(ctx context.Context, arg CreateTrans
 		arg.CategoryID,
 		arg.Note,
 		arg.CurrencyCode,
-		arg.ExchangeRateSnapshot,
-		arg.BaseCurrencyAtCreation,
 		arg.CreatedAt,
 		arg.AccountID,
+		arg.SnapshotDate,
 	)
 	var i Transaction
 	err := row.Scan(
@@ -226,10 +218,9 @@ func (q *Queries) CreateTransactionWithDate(ctx context.Context, arg CreateTrans
 		&i.Note,
 		&i.CreatedAt,
 		&i.CurrencyCode,
-		&i.ExchangeRateSnapshot,
-		&i.BaseCurrencyAtCreation,
 		&i.AccountID,
 		&i.IsAdjustment,
+		&i.SnapshotDate,
 	)
 	return i, err
 }
@@ -315,8 +306,8 @@ GROUP BY currency_code
 `
 
 type GetBalanceByCurrencyAndAccountParams struct {
-	UserID    int64       `json:"user_id"`
-	AccountID pgtype.Int8 `json:"account_id"`
+	UserID    int64 `json:"user_id"`
+	AccountID int64 `json:"account_id"`
 }
 
 type GetBalanceByCurrencyAndAccountRow struct {
@@ -348,7 +339,7 @@ func (q *Queries) GetBalanceByCurrencyAndAccount(ctx context.Context, arg GetBal
 const getStatsByCategory = `-- name: GetStatsByCategory :many
 SELECT
     c.name              AS category_name,
-    c.emoji             AS category_emoji,
+    c.icon             AS category_icon,
     c.color             AS category_color,
     t.type,
     t.currency_code,
@@ -360,7 +351,7 @@ WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
   AND t.is_adjustment = false
-GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
+GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC
 `
 
@@ -372,7 +363,7 @@ type GetStatsByCategoryParams struct {
 
 type GetStatsByCategoryRow struct {
 	CategoryName  string                 `json:"category_name"`
-	CategoryEmoji string                 `json:"category_emoji"`
+	CategoryIcon  string                 `json:"category_icon"`
 	CategoryColor string                 `json:"category_color"`
 	Type          domain.TransactionType `json:"type"`
 	CurrencyCode  string                 `json:"currency_code"`
@@ -391,7 +382,7 @@ func (q *Queries) GetStatsByCategory(ctx context.Context, arg GetStatsByCategory
 		var i GetStatsByCategoryRow
 		if err := rows.Scan(
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 			&i.Type,
 			&i.CurrencyCode,
@@ -411,7 +402,7 @@ func (q *Queries) GetStatsByCategory(ctx context.Context, arg GetStatsByCategory
 const getStatsByCategoryAndAccount = `-- name: GetStatsByCategoryAndAccount :many
 SELECT
     c.name              AS category_name,
-    c.emoji             AS category_emoji,
+    c.icon             AS category_icon,
     c.color             AS category_color,
     t.type,
     t.currency_code,
@@ -424,20 +415,20 @@ WHERE t.user_id    = $1
   AND t.created_at >= $3
   AND t.created_at <  $4
   AND t.is_adjustment = false
-GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
+GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC
 `
 
 type GetStatsByCategoryAndAccountParams struct {
 	UserID      int64              `json:"user_id"`
-	AccountID   pgtype.Int8        `json:"account_id"`
+	AccountID   int64              `json:"account_id"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	CreatedAt_2 pgtype.Timestamptz `json:"created_at_2"`
 }
 
 type GetStatsByCategoryAndAccountRow struct {
 	CategoryName  string                 `json:"category_name"`
-	CategoryEmoji string                 `json:"category_emoji"`
+	CategoryIcon  string                 `json:"category_icon"`
 	CategoryColor string                 `json:"category_color"`
 	Type          domain.TransactionType `json:"type"`
 	CurrencyCode  string                 `json:"currency_code"`
@@ -461,7 +452,7 @@ func (q *Queries) GetStatsByCategoryAndAccount(ctx context.Context, arg GetStats
 		var i GetStatsByCategoryAndAccountRow
 		if err := rows.Scan(
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 			&i.Type,
 			&i.CurrencyCode,
@@ -479,20 +470,29 @@ func (q *Queries) GetStatsByCategoryAndAccount(ctx context.Context, arg GetStats
 }
 
 const getTotalInBaseCurrency = `-- name: GetTotalInBaseCurrency :one
-SELECT COALESCE(
-    SUM(
-        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
-        * exchange_rate_snapshot
-    ), 0
-)::BIGINT AS total_net_base_cents
-FROM transactions
-WHERE user_id = $1 AND is_adjustment = false
+SELECT COALESCE(SUM(
+    ROUND(
+        CASE WHEN t.type = 'income' THEN t.amount_cents ELSE -t.amount_cents END
+        * COALESCE(ers.rate, 1.0)
+    )
+), 0)::BIGINT AS total_net_base_cents
+FROM transactions t
+LEFT JOIN exchange_rate_snapshots ers
+    ON ers.snapshot_date   = t.snapshot_date
+   AND ers.base_currency   = t.currency_code
+   AND ers.target_currency = $2
+WHERE t.user_id = $1 AND t.is_adjustment = false
 `
 
-// Returns net balance (income - expense) summed across all transactions converted to the user's
-// base currency using the exchange_rate_snapshot stored at the time each transaction was created.
-func (q *Queries) GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error) {
-	row := q.db.QueryRow(ctx, getTotalInBaseCurrency, userID)
+type GetTotalInBaseCurrencyParams struct {
+	UserID         int64  `json:"user_id"`
+	TargetCurrency string `json:"target_currency"`
+}
+
+// Returns net balance (income - expense) summed across all transactions, converted to the
+// target currency using exchange_rate_snapshots. Same-currency transactions use rate 1.0.
+func (q *Queries) GetTotalInBaseCurrency(ctx context.Context, arg GetTotalInBaseCurrencyParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getTotalInBaseCurrency, arg.UserID, arg.TargetCurrency)
 	var total_net_base_cents int64
 	err := row.Scan(&total_net_base_cents)
 	return total_net_base_cents, err
@@ -508,10 +508,8 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
@@ -528,19 +526,17 @@ type ListTransactionsParams struct {
 }
 
 type ListTransactionsRow struct {
-	ID                     int64                  `json:"id"`
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	CategoryName           string                 `json:"category_name"`
-	CategoryEmoji          string                 `json:"category_emoji"`
-	CategoryColor          string                 `json:"category_color"`
+	ID            int64                  `json:"id"`
+	UserID        int64                  `json:"user_id"`
+	Type          domain.TransactionType `json:"type"`
+	AmountCents   int64                  `json:"amount_cents"`
+	CategoryID    int64                  `json:"category_id"`
+	Note          string                 `json:"note"`
+	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
+	CategoryName  string                 `json:"category_name"`
+	CategoryIcon  string                 `json:"category_icon"`
+	CategoryColor string                 `json:"category_color"`
 }
 
 func (q *Queries) ListTransactions(ctx context.Context, arg ListTransactionsParams) ([]ListTransactionsRow, error) {
@@ -561,10 +557,8 @@ func (q *Queries) ListTransactions(ctx context.Context, arg ListTransactionsPara
 			&i.Note,
 			&i.CreatedAt,
 			&i.CurrencyCode,
-			&i.ExchangeRateSnapshot,
-			&i.BaseCurrencyAtCreation,
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 		); err != nil {
 			return nil, err
@@ -587,10 +581,8 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
@@ -601,26 +593,24 @@ LIMIT $3 OFFSET $4
 `
 
 type ListTransactionsByAccountParams struct {
-	UserID    int64       `json:"user_id"`
-	AccountID pgtype.Int8 `json:"account_id"`
-	Limit     int32       `json:"limit"`
-	Offset    int32       `json:"offset"`
+	UserID    int64 `json:"user_id"`
+	AccountID int64 `json:"account_id"`
+	Limit     int32 `json:"limit"`
+	Offset    int32 `json:"offset"`
 }
 
 type ListTransactionsByAccountRow struct {
-	ID                     int64                  `json:"id"`
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	CategoryName           string                 `json:"category_name"`
-	CategoryEmoji          string                 `json:"category_emoji"`
-	CategoryColor          string                 `json:"category_color"`
+	ID            int64                  `json:"id"`
+	UserID        int64                  `json:"user_id"`
+	Type          domain.TransactionType `json:"type"`
+	AmountCents   int64                  `json:"amount_cents"`
+	CategoryID    int64                  `json:"category_id"`
+	Note          string                 `json:"note"`
+	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
+	CategoryName  string                 `json:"category_name"`
+	CategoryIcon  string                 `json:"category_icon"`
+	CategoryColor string                 `json:"category_color"`
 }
 
 func (q *Queries) ListTransactionsByAccount(ctx context.Context, arg ListTransactionsByAccountParams) ([]ListTransactionsByAccountRow, error) {
@@ -646,10 +636,8 @@ func (q *Queries) ListTransactionsByAccount(ctx context.Context, arg ListTransac
 			&i.Note,
 			&i.CreatedAt,
 			&i.CurrencyCode,
-			&i.ExchangeRateSnapshot,
-			&i.BaseCurrencyAtCreation,
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 		); err != nil {
 			return nil, err
@@ -672,11 +660,9 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     t.account_id,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color,
     a.name  AS account_name
 FROM transactions t
@@ -692,7 +678,7 @@ LIMIT $3 OFFSET $4
 
 type ListTransactionsByAccountWithDateRangeParams struct {
 	UserID    int64              `json:"user_id"`
-	AccountID pgtype.Int8        `json:"account_id"`
+	AccountID int64              `json:"account_id"`
 	Limit     int32              `json:"limit"`
 	Offset    int32              `json:"offset"`
 	Column5   pgtype.Timestamptz `json:"column_5"`
@@ -700,21 +686,19 @@ type ListTransactionsByAccountWithDateRangeParams struct {
 }
 
 type ListTransactionsByAccountWithDateRangeRow struct {
-	ID                     int64                  `json:"id"`
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	AccountID              pgtype.Int8            `json:"account_id"`
-	CategoryName           string                 `json:"category_name"`
-	CategoryEmoji          string                 `json:"category_emoji"`
-	CategoryColor          string                 `json:"category_color"`
-	AccountName            pgtype.Text            `json:"account_name"`
+	ID            int64                  `json:"id"`
+	UserID        int64                  `json:"user_id"`
+	Type          domain.TransactionType `json:"type"`
+	AmountCents   int64                  `json:"amount_cents"`
+	CategoryID    int64                  `json:"category_id"`
+	Note          string                 `json:"note"`
+	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
+	AccountID     int64                  `json:"account_id"`
+	CategoryName  string                 `json:"category_name"`
+	CategoryIcon  string                 `json:"category_icon"`
+	CategoryColor string                 `json:"category_color"`
+	AccountName   pgtype.Text            `json:"account_name"`
 }
 
 func (q *Queries) ListTransactionsByAccountWithDateRange(ctx context.Context, arg ListTransactionsByAccountWithDateRangeParams) ([]ListTransactionsByAccountWithDateRangeRow, error) {
@@ -742,11 +726,9 @@ func (q *Queries) ListTransactionsByAccountWithDateRange(ctx context.Context, ar
 			&i.Note,
 			&i.CreatedAt,
 			&i.CurrencyCode,
-			&i.ExchangeRateSnapshot,
-			&i.BaseCurrencyAtCreation,
 			&i.AccountID,
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 			&i.AccountName,
 		); err != nil {
@@ -770,10 +752,8 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
@@ -794,19 +774,17 @@ type ListTransactionsByCategoryPeriodParams struct {
 }
 
 type ListTransactionsByCategoryPeriodRow struct {
-	ID                     int64                  `json:"id"`
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	CategoryName           string                 `json:"category_name"`
-	CategoryEmoji          string                 `json:"category_emoji"`
-	CategoryColor          string                 `json:"category_color"`
+	ID            int64                  `json:"id"`
+	UserID        int64                  `json:"user_id"`
+	Type          domain.TransactionType `json:"type"`
+	AmountCents   int64                  `json:"amount_cents"`
+	CategoryID    int64                  `json:"category_id"`
+	Note          string                 `json:"note"`
+	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
+	CategoryName  string                 `json:"category_name"`
+	CategoryIcon  string                 `json:"category_icon"`
+	CategoryColor string                 `json:"category_color"`
 }
 
 func (q *Queries) ListTransactionsByCategoryPeriod(ctx context.Context, arg ListTransactionsByCategoryPeriodParams) ([]ListTransactionsByCategoryPeriodRow, error) {
@@ -832,10 +810,8 @@ func (q *Queries) ListTransactionsByCategoryPeriod(ctx context.Context, arg List
 			&i.Note,
 			&i.CreatedAt,
 			&i.CurrencyCode,
-			&i.ExchangeRateSnapshot,
-			&i.BaseCurrencyAtCreation,
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 		); err != nil {
 			return nil, err
@@ -858,11 +834,9 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     t.account_id,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color,
     a.name  AS account_name
 FROM transactions t
@@ -885,21 +859,19 @@ type ListTransactionsWithDateRangeParams struct {
 }
 
 type ListTransactionsWithDateRangeRow struct {
-	ID                     int64                  `json:"id"`
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	AccountID              pgtype.Int8            `json:"account_id"`
-	CategoryName           string                 `json:"category_name"`
-	CategoryEmoji          string                 `json:"category_emoji"`
-	CategoryColor          string                 `json:"category_color"`
-	AccountName            pgtype.Text            `json:"account_name"`
+	ID            int64                  `json:"id"`
+	UserID        int64                  `json:"user_id"`
+	Type          domain.TransactionType `json:"type"`
+	AmountCents   int64                  `json:"amount_cents"`
+	CategoryID    int64                  `json:"category_id"`
+	Note          string                 `json:"note"`
+	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
+	AccountID     int64                  `json:"account_id"`
+	CategoryName  string                 `json:"category_name"`
+	CategoryIcon  string                 `json:"category_icon"`
+	CategoryColor string                 `json:"category_color"`
+	AccountName   pgtype.Text            `json:"account_name"`
 }
 
 func (q *Queries) ListTransactionsWithDateRange(ctx context.Context, arg ListTransactionsWithDateRangeParams) ([]ListTransactionsWithDateRangeRow, error) {
@@ -926,11 +898,9 @@ func (q *Queries) ListTransactionsWithDateRange(ctx context.Context, arg ListTra
 			&i.Note,
 			&i.CreatedAt,
 			&i.CurrencyCode,
-			&i.ExchangeRateSnapshot,
-			&i.BaseCurrencyAtCreation,
 			&i.AccountID,
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 			&i.AccountName,
 		); err != nil {
@@ -951,7 +921,7 @@ SET amount_cents = $3,
     note         = $5,
     created_at   = $6
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment
+RETURNING id, user_id, type, amount_cents, category_id, note, created_at, currency_code, account_id, is_adjustment, snapshot_date
 `
 
 type UpdateTransactionParams struct {
@@ -982,10 +952,9 @@ func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionPa
 		&i.Note,
 		&i.CreatedAt,
 		&i.CurrencyCode,
-		&i.ExchangeRateSnapshot,
-		&i.BaseCurrencyAtCreation,
 		&i.AccountID,
 		&i.IsAdjustment,
+		&i.SnapshotDate,
 	)
 	return i, err
 }

@@ -108,7 +108,7 @@ func (q *Queries) ListAllUserIDs(ctx context.Context) ([]int64, error) {
 }
 
 const listAllUsers = `-- name: ListAllUsers :many
-SELECT id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2
+SELECT id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2
 `
 
 type ListAllUsersParams struct {
@@ -130,7 +130,6 @@ func (q *Queries) ListAllUsers(ctx context.Context, arg ListAllUsersParams) ([]U
 			&i.Username,
 			&i.FirstName,
 			&i.LastName,
-			&i.CurrencyCode,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DisplayCurrencies,

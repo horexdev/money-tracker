@@ -16,13 +16,13 @@ import (
 )
 
 func newRecurringService(repo *mocks.MockRecurringStorer, txRepo *mocks.MockTransactionStorer) *service.RecurringService {
-	return service.NewRecurringService(repo, txRepo, testutil.TestLogger())
+	return service.NewRecurringService(repo, txRepo, &mocks.MockAccountStorer{}, testutil.TestLogger())
 }
 
 func TestRecurringService_Create_ZeroAmount(t *testing.T) {
 	svc := newRecurringService(&mocks.MockRecurringStorer{}, &mocks.MockTransactionStorer{})
 	_, err := svc.Create(context.Background(), &domain.RecurringTransaction{
-		AmountCents: 0, Frequency: domain.FrequencyMonthly,
+		AccountID: 1, AmountCents: 0, Frequency: domain.FrequencyMonthly,
 	})
 	assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 }
@@ -30,19 +30,27 @@ func TestRecurringService_Create_ZeroAmount(t *testing.T) {
 func TestRecurringService_Create_InvalidFrequency(t *testing.T) {
 	svc := newRecurringService(&mocks.MockRecurringStorer{}, &mocks.MockTransactionStorer{})
 	_, err := svc.Create(context.Background(), &domain.RecurringTransaction{
-		AmountCents: 1000, Frequency: "biweekly",
+		AccountID: 1, AmountCents: 1000, Frequency: "biweekly",
 	})
 	assert.ErrorIs(t, err, domain.ErrInvalidFrequency)
+}
+
+func TestRecurringService_Create_MissingAccountID(t *testing.T) {
+	svc := newRecurringService(&mocks.MockRecurringStorer{}, &mocks.MockTransactionStorer{})
+	_, err := svc.Create(context.Background(), &domain.RecurringTransaction{
+		AmountCents: 1000, Frequency: domain.FrequencyMonthly,
+	})
+	assert.ErrorIs(t, err, domain.ErrAccountNotFound)
 }
 
 func TestRecurringService_Create_SetsNextRunIfZero(t *testing.T) {
 	repo := &mocks.MockRecurringStorer{}
 	svc := newRecurringService(repo, &mocks.MockTransactionStorer{})
 
-	rt := &domain.RecurringTransaction{AmountCents: 1000, Frequency: domain.FrequencyMonthly}
+	rt := &domain.RecurringTransaction{AccountID: 1, AmountCents: 1000, Frequency: domain.FrequencyMonthly}
 	before := time.Now()
 
-	result := &domain.RecurringTransaction{ID: 1, AmountCents: 1000, Frequency: domain.FrequencyMonthly}
+	result := &domain.RecurringTransaction{ID: 1, AccountID: 1, AmountCents: 1000, Frequency: domain.FrequencyMonthly}
 	repo.On("Create", mock.Anything, mock.AnythingOfType("*domain.RecurringTransaction")).Return(result, nil)
 
 	_, err := svc.Create(context.Background(), rt)
@@ -56,6 +64,10 @@ func TestRecurringService_Update_InvalidFrequency(t *testing.T) {
 		AmountCents: 1000, Frequency: "unknown",
 	})
 	assert.ErrorIs(t, err, domain.ErrInvalidFrequency)
+}
+
+func newRecurringServiceWithAccounts(repo *mocks.MockRecurringStorer, txRepo *mocks.MockTransactionStorer, accRepo *mocks.MockAccountStorer) *service.RecurringService {
+	return service.NewRecurringService(repo, txRepo, accRepo, testutil.TestLogger())
 }
 
 func TestRecurringService_ProcessDue_EmptyList(t *testing.T) {
@@ -73,17 +85,22 @@ func TestRecurringService_ProcessDue_EmptyList(t *testing.T) {
 func TestRecurringService_ProcessDue_CreatesTransactionAndAdvancesRun(t *testing.T) {
 	repo := &mocks.MockRecurringStorer{}
 	txRepo := &mocks.MockTransactionStorer{}
-	svc := newRecurringService(repo, txRepo)
+	accRepo := &mocks.MockAccountStorer{}
+	svc := newRecurringServiceWithAccounts(repo, txRepo, accRepo)
 
+	acc := &domain.Account{ID: 10, UserID: 42, CurrencyCode: "USD", IsDefault: true}
 	rt := &domain.RecurringTransaction{
 		ID:           1,
 		UserID:       42,
+		AccountID:    10,
 		AmountCents:  5000,
 		Frequency:    domain.FrequencyMonthly,
 		Type:         domain.TransactionTypeExpense,
 		CurrencyCode: "USD",
 	}
 	repo.On("GetDue", mock.Anything, mock.AnythingOfType("time.Time")).Return([]*domain.RecurringTransaction{rt}, nil)
+	accRepo.On("GetByID", mock.Anything, int64(10), int64(42)).Return(acc, nil)
+	accRepo.On("GetDefault", mock.Anything, int64(42)).Return(acc, nil)
 	txRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(&domain.Transaction{ID: 10}, nil)
 	repo.On("UpdateNextRun", mock.Anything, int64(1), mock.AnythingOfType("time.Time")).Return(nil)
 
@@ -97,17 +114,22 @@ func TestRecurringService_ProcessDue_CreatesTransactionAndAdvancesRun(t *testing
 func TestRecurringService_ProcessDue_SkipsOnTxError(t *testing.T) {
 	repo := &mocks.MockRecurringStorer{}
 	txRepo := &mocks.MockTransactionStorer{}
-	svc := newRecurringService(repo, txRepo)
+	accRepo := &mocks.MockAccountStorer{}
+	svc := newRecurringServiceWithAccounts(repo, txRepo, accRepo)
 
+	acc := &domain.Account{ID: 10, UserID: 42, CurrencyCode: "USD", IsDefault: true}
 	rt := &domain.RecurringTransaction{
 		ID:           1,
 		UserID:       42,
+		AccountID:    10,
 		AmountCents:  5000,
 		Frequency:    domain.FrequencyMonthly,
 		Type:         domain.TransactionTypeExpense,
 		CurrencyCode: "USD",
 	}
 	repo.On("GetDue", mock.Anything, mock.AnythingOfType("time.Time")).Return([]*domain.RecurringTransaction{rt}, nil)
+	accRepo.On("GetByID", mock.Anything, int64(10), int64(42)).Return(acc, nil)
+	accRepo.On("GetDefault", mock.Anything, int64(42)).Return(acc, nil)
 	txRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(nil, errors.New("db error"))
 
 	n, err := svc.ProcessDue(context.Background())

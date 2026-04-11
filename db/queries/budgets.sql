@@ -10,7 +10,7 @@ SELECT * FROM budgets WHERE id = $1 AND user_id = $2;
 SELECT
     b.*,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM budgets b
 JOIN categories c ON c.id = b.category_id
@@ -45,11 +45,19 @@ SELECT * FROM budgets
 WHERE user_id = $1 AND category_id = $2 AND period = $3;
 
 -- name: GetSpentInPeriod :one
-SELECT COALESCE(SUM(amount_cents), 0)::BIGINT AS total_spent
-FROM transactions
-WHERE user_id     = $1
-  AND category_id = $2
-  AND type         = 'expense'
-  AND currency_code = $3
-  AND created_at  >= $4
-  AND created_at  <  $5;
+-- Cross-currency aggregation: converts each transaction's amount to the
+-- budget's target currency using exchange_rate_snapshots. Same-currency
+-- transactions pass through at rate 1.0 (no snapshot row needed).
+SELECT COALESCE(SUM(
+    ROUND(t.amount_cents * COALESCE(ers.rate, 1.0))
+), 0)::BIGINT AS total_spent
+FROM transactions t
+LEFT JOIN exchange_rate_snapshots ers
+    ON ers.snapshot_date   = t.snapshot_date
+   AND ers.base_currency   = t.currency_code
+   AND ers.target_currency = $3
+WHERE t.user_id     = $1
+  AND t.category_id = $2
+  AND t.type         = 'expense'
+  AND t.created_at  >= $4
+  AND t.created_at  <  $5;

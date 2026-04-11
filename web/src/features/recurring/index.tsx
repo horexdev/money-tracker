@@ -52,7 +52,7 @@ function RecurringCard({
           className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-opacity active:scale-95 ${!item.is_active ? 'opacity-40' : ''}`}
           style={{ background: item.category_color || 'var(--color-accent)' }}
         >
-          <CategoryIcon emoji={item.category_emoji} size={20} weight="fill" className="text-white" />
+          <CategoryIcon icon={item.category_icon} size={20} weight="fill" className="text-white" />
         </button>
         <button
           onClick={() => onEdit(item)}
@@ -240,7 +240,7 @@ function RecurringForm({
                     className="w-9 h-9 rounded-2xl flex items-center justify-center"
                     style={{ background: isActive ? 'var(--color-accent)' : (cat.color || 'var(--color-accent)') }}
                   >
-                    <CategoryIcon emoji={cat.emoji} size={18} weight="fill" className="text-white" />
+                    <CategoryIcon icon={cat.icon} size={18} weight="fill" className="text-white" />
                   </div>
                   <span className="truncate w-full text-center px-1 font-medium text-[10px] text-text">
                     {tCategory(cat.name)}

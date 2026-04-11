@@ -1,11 +1,11 @@
 -- name: CreateTransaction :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, account_id, snapshot_date)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: CreateTransactionWithDate :one
-INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, exchange_rate_snapshot, base_currency_at_creation, created_at, account_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+INSERT INTO transactions (user_id, type, amount_cents, category_id, note, currency_code, created_at, account_id, snapshot_date)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING *;
 
 -- name: GetBalance :one
@@ -25,10 +25,8 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
@@ -43,7 +41,7 @@ SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND is_adjustment =
 -- name: GetStatsByCategory :many
 SELECT
     c.name              AS category_name,
-    c.emoji             AS category_emoji,
+    c.icon             AS category_icon,
     c.color             AS category_color,
     t.type,
     t.currency_code,
@@ -55,7 +53,7 @@ WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
   AND t.is_adjustment = false
-GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
+GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
 -- name: ListTransactionsByCategoryPeriod :many
@@ -68,10 +66,8 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
@@ -96,16 +92,20 @@ WHERE user_id = $1 AND is_adjustment = false
 GROUP BY currency_code;
 
 -- name: GetTotalInBaseCurrency :one
--- Returns net balance (income - expense) summed across all transactions converted to the user's
--- base currency using the exchange_rate_snapshot stored at the time each transaction was created.
-SELECT COALESCE(
-    SUM(
-        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
-        * exchange_rate_snapshot
-    ), 0
-)::BIGINT AS total_net_base_cents
-FROM transactions
-WHERE user_id = $1 AND is_adjustment = false;
+-- Returns net balance (income - expense) summed across all transactions, converted to the
+-- target currency using exchange_rate_snapshots. Same-currency transactions use rate 1.0.
+SELECT COALESCE(SUM(
+    ROUND(
+        CASE WHEN t.type = 'income' THEN t.amount_cents ELSE -t.amount_cents END
+        * COALESCE(ers.rate, 1.0)
+    )
+), 0)::BIGINT AS total_net_base_cents
+FROM transactions t
+LEFT JOIN exchange_rate_snapshots ers
+    ON ers.snapshot_date   = t.snapshot_date
+   AND ers.base_currency   = t.currency_code
+   AND ers.target_currency = $2
+WHERE t.user_id = $1 AND t.is_adjustment = false;
 
 -- name: ListTransactionsByAccount :many
 SELECT
@@ -117,10 +117,8 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
@@ -135,7 +133,7 @@ SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2
 -- name: GetStatsByCategoryAndAccount :many
 SELECT
     c.name              AS category_name,
-    c.emoji             AS category_emoji,
+    c.icon             AS category_icon,
     c.color             AS category_color,
     t.type,
     t.currency_code,
@@ -148,7 +146,7 @@ WHERE t.user_id    = $1
   AND t.created_at >= $3
   AND t.created_at <  $4
   AND t.is_adjustment = false
-GROUP BY c.name, c.emoji, c.color, t.type, t.currency_code
+GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
 -- name: GetBalanceByCurrencyAndAccount :many
@@ -179,11 +177,9 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     t.account_id,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color,
     a.name  AS account_name
 FROM transactions t
@@ -212,11 +208,9 @@ SELECT
     t.note,
     t.created_at,
     t.currency_code,
-    t.exchange_rate_snapshot,
-    t.base_currency_at_creation,
     t.account_id,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color,
     a.name  AS account_name
 FROM transactions t
@@ -239,6 +233,6 @@ WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
 -- Creates a balance-adjustment transaction that is hidden from history and statistics
 -- but is included in balance calculations. is_adjustment is always set to true.
 INSERT INTO transactions (user_id, type, amount_cents, category_id, note,
-    currency_code, exchange_rate_snapshot, base_currency_at_creation, account_id, is_adjustment)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+    currency_code, account_id, snapshot_date, is_adjustment)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
 RETURNING *;

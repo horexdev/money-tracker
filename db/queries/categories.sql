@@ -65,14 +65,14 @@ SELECT EXISTS(
 ) AS has_categories;
 
 -- name: CreateUserCategory :one
-INSERT INTO categories (user_id, name, emoji, type, color)
+INSERT INTO categories (user_id, name, icon, type, color)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateCategory :one
 UPDATE categories
 SET name       = $3,
-    emoji      = $4,
+    icon       = $4,
     type       = $5,
     color      = $6,
     updated_at = now()

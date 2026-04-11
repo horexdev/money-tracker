@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/horexdev/money-tracker/internal/domain"
 )
@@ -124,27 +125,27 @@ func (s *SavingsGoalService) Withdraw(ctx context.Context, id, userID, amountCen
 }
 
 // createLinkedTransaction creates a real expense/income transaction on the linked account.
+// Currency is read from the account itself, not from transactions.
 func (s *SavingsGoalService) createLinkedTransaction(ctx context.Context, userID, accountID, amountCents int64, txType domain.TransactionType, note string) error {
 	cat, err := s.catRepo.GetBySavingsType(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("get savings category: %w", err)
 	}
 
-	currency, err := s.accountRepo.GetBaseCurrency(ctx, accountID, userID)
+	acc, err := s.accountRepo.GetByID(ctx, accountID, userID)
 	if err != nil {
-		currency = "USD"
+		return fmt.Errorf("get linked account: %w", err)
 	}
 
 	tx := &domain.Transaction{
-		UserID:               userID,
-		AmountCents:          amountCents,
-		CategoryID:           cat.ID,
-		Type:                 txType,
-		Note:                 note,
-		CurrencyCode:           currency,
-		BaseCurrencyAtCreation: currency,
-		ExchangeRateSnapshot: 1.0,
-		AccountID:            accountID,
+		UserID:       userID,
+		AmountCents:  amountCents,
+		CategoryID:   cat.ID,
+		Type:         txType,
+		Note:         note,
+		CurrencyCode: acc.CurrencyCode,
+		AccountID:    accountID,
+		SnapshotDate: time.Now().UTC().Truncate(24 * time.Hour),
 	}
 	if _, err := s.txRepo.Create(ctx, tx); err != nil {
 		return fmt.Errorf("create linked transaction for goal: %w", err)

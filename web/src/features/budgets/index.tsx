@@ -50,7 +50,7 @@ function BudgetTransactionsSheet({ budget, onClose }: { budget: Budget; onClose:
             className="w-8 h-8 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: budget.category_color || 'var(--color-accent)' }}
           >
-            <CategoryIcon emoji={budget.category_emoji} size={16} weight="fill" className="text-white" />
+            <CategoryIcon icon={budget.category_icon} size={16} weight="fill" className="text-white" />
           </div>
           <h2 className="text-[15px] font-bold text-text">{tCategory(budget.category_name)}</h2>
         </div>
@@ -120,7 +120,7 @@ function BudgetCard({
             className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: budget.category_color || 'var(--color-accent)' }}
           >
-            <CategoryIcon emoji={budget.category_emoji} size={20} weight="fill" className="text-white" />
+            <CategoryIcon icon={budget.category_icon} size={20} weight="fill" className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -247,7 +247,7 @@ function BudgetForm({
                     className="w-9 h-9 rounded-2xl flex items-center justify-center"
                     style={{ background: categoryID === cat.id ? 'var(--color-accent)' : (cat.color || 'var(--color-accent)') }}
                   >
-                    <CategoryIcon emoji={cat.emoji} size={18} weight="fill" className="text-white" />
+                    <CategoryIcon icon={cat.icon} size={18} weight="fill" className="text-white" />
                   </div>
                   <span className="truncate w-full text-center px-1 font-medium text-[10px] text-text">
                     {tCategory(cat.name)}

@@ -25,31 +25,23 @@ func NewTransactionService(
 }
 
 // AddExpense records a new expense transaction.
-// exchangeRate is the rate from currencyCode to baseCurrency at creation time (1.0 if same currency).
 // createdAt is optional; when nil the DB defaults to NOW().
-func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, accountID, createdAt)
+func (s *TransactionService) AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeExpense, amountCents, categoryID, note, currencyCode, accountID, createdAt)
 }
 
 // AddIncome records a new income transaction.
-// exchangeRate is the rate from currencyCode to baseCurrency at creation time (1.0 if same currency).
 // createdAt is optional; when nil the DB defaults to NOW().
-func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error) {
-	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note, currencyCode, baseCurrency, exchangeRate, accountID, createdAt)
+func (s *TransactionService) AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error) {
+	return s.add(ctx, userID, domain.TransactionTypeIncome, amountCents, categoryID, note, currencyCode, accountID, createdAt)
 }
 
-func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error) {
+func (s *TransactionService) add(ctx context.Context, userID int64, txType domain.TransactionType, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error) {
 	if amountCents <= 0 {
 		return nil, domain.ErrInvalidAmount
 	}
 	if currencyCode == "" {
 		currencyCode = "USD"
-	}
-	if baseCurrency == "" {
-		baseCurrency = currencyCode
-	}
-	if exchangeRate <= 0 {
-		exchangeRate = 1.0
 	}
 
 	// Verify category exists and belongs to this user or is a system category.
@@ -61,20 +53,20 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		return nil, domain.ErrCategoryNotFound
 	}
 
-	var aid int64
-	if accountID != nil {
-		aid = *accountID
+	snapshotDate := time.Now().UTC().Truncate(24 * time.Hour)
+	if createdAt != nil {
+		snapshotDate = createdAt.UTC().Truncate(24 * time.Hour)
 	}
+
 	t := &domain.Transaction{
-		UserID:                 userID,
-		Type:                   txType,
-		AmountCents:            amountCents,
-		CategoryID:             categoryID,
-		Note:                   note,
-		CurrencyCode:           currencyCode,
-		ExchangeRateSnapshot:   exchangeRate,
-		BaseCurrencyAtCreation: baseCurrency,
-		AccountID:              aid,
+		UserID:       userID,
+		Type:         txType,
+		AmountCents:  amountCents,
+		CategoryID:   categoryID,
+		Note:         note,
+		CurrencyCode: currencyCode,
+		AccountID:    accountID,
+		SnapshotDate: snapshotDate,
 	}
 
 	var tx *domain.Transaction
@@ -89,7 +81,7 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 	}
 
 	tx.CategoryName = cat.Name
-	tx.CategoryEmoji = cat.Emoji
+	tx.CategoryIcon = cat.Icon
 	tx.CategoryColor = cat.Color
 
 	s.log.InfoContext(ctx, "transaction recorded",
@@ -98,8 +90,6 @@ func (s *TransactionService) add(ctx context.Context, userID int64, txType domai
 		slog.Int64("amount_cents", amountCents),
 		slog.Int64("category_id", categoryID),
 		slog.String("currency", currencyCode),
-		slog.String("base_currency", baseCurrency),
-		slog.Float64("exchange_rate_snapshot", exchangeRate),
 	)
 	return tx, nil
 }
@@ -128,7 +118,7 @@ func (s *TransactionService) UpdateTransaction(ctx context.Context, userID, id, 
 		return nil, fmt.Errorf("update transaction %d: %w", id, err)
 	}
 	tx.CategoryName = cat.Name
-	tx.CategoryEmoji = cat.Emoji
+	tx.CategoryIcon = cat.Icon
 	tx.CategoryColor = cat.Color
 	s.log.InfoContext(ctx, "transaction updated",
 		slog.Int64("user_id", userID),
@@ -149,9 +139,9 @@ func (s *TransactionService) Delete(ctx context.Context, id, userID int64) error
 	return nil
 }
 
-// GetTotalInBaseCurrency returns net balance in base currency using historical exchange rate snapshots.
-func (s *TransactionService) GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error) {
-	total, err := s.txRepo.GetTotalInBaseCurrency(ctx, userID)
+// GetTotalInBaseCurrency returns net balance converted to targetCurrency using exchange_rate_snapshots.
+func (s *TransactionService) GetTotalInBaseCurrency(ctx context.Context, userID int64, targetCurrency string) (int64, error) {
+	total, err := s.txRepo.GetTotalInBaseCurrency(ctx, userID, targetCurrency)
 	if err != nil {
 		return 0, fmt.Errorf("get total in base currency for user %d: %w", userID, err)
 	}

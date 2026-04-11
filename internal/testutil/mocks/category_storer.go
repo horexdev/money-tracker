@@ -73,8 +73,8 @@ func (m *MockCategoryStorer) HasCategories(ctx context.Context, userID int64) (b
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *MockCategoryStorer) CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error) {
-	args := m.Called(ctx, userID, name, emoji, catType, color)
+func (m *MockCategoryStorer) CreateForUser(ctx context.Context, userID int64, name, icon, catType, color string) (*domain.Category, error) {
+	args := m.Called(ctx, userID, name, icon, catType, color)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -86,8 +86,8 @@ func (m *MockCategoryStorer) BulkCreateForUser(ctx context.Context, userID int64
 	return args.Error(0)
 }
 
-func (m *MockCategoryStorer) Update(ctx context.Context, userID, id int64, name, emoji, catType, color string) (*domain.Category, error) {
-	args := m.Called(ctx, userID, id, name, emoji, catType, color)
+func (m *MockCategoryStorer) Update(ctx context.Context, userID, id int64, name, icon, catType, color string) (*domain.Category, error) {
+	args := m.Called(ctx, userID, id, name, icon, catType, color)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

@@ -34,7 +34,7 @@ export interface BudgetTransaction {
   id: number
   amount_cents: number
   category_name: string
-  category_emoji: string
+  category_icon: string
   category_color: string
   note: string
   currency_code: string

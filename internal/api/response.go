@@ -51,9 +51,13 @@ func httpStatus(err error) int {
 		errors.Is(err, domain.ErrTransferSameAccount):
 		return http.StatusBadRequest
 	case errors.Is(err, domain.ErrBudgetAlreadyExists),
-		errors.Is(err, domain.ErrCategoryInUse):
-		return http.StatusConflict
-	case errors.Is(err, domain.ErrAccountHasTransactions):
+		errors.Is(err, domain.ErrCategoryInUse),
+		errors.Is(err, domain.ErrAccountHasTransactions),
+		errors.Is(err, domain.ErrAccountHasTransfers),
+		errors.Is(err, domain.ErrAccountHasRecurring),
+		errors.Is(err, domain.ErrCannotDeleteLastAccount),
+		errors.Is(err, domain.ErrMustSetNewDefault),
+		errors.Is(err, domain.ErrCurrencyImmutable):
 		return http.StatusConflict
 	case errors.Is(err, domain.ErrCategorySystemReadOnly),
 		errors.Is(err, domain.ErrCategoryProtected):
@@ -111,6 +115,16 @@ func userMessage(err error) string {
 		return "exchange rate temporarily unavailable"
 	case errors.Is(err, domain.ErrAccountHasTransactions):
 		return "account has transactions and cannot be deleted"
+	case errors.Is(err, domain.ErrAccountHasTransfers):
+		return "account has transfers and cannot be deleted"
+	case errors.Is(err, domain.ErrAccountHasRecurring):
+		return "account has recurring transactions and cannot be deleted"
+	case errors.Is(err, domain.ErrCannotDeleteLastAccount):
+		return "cannot delete the only account"
+	case errors.Is(err, domain.ErrMustSetNewDefault):
+		return "set a new default account before deleting the current default"
+	case errors.Is(err, domain.ErrCurrencyImmutable):
+		return "account currency cannot be changed after creation"
 	case errors.Is(err, domain.ErrTransferSameAccount):
 		return "transfer source and destination must be different"
 	default:

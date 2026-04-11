@@ -54,15 +54,13 @@ func CorsMiddlewareForTest(allowedOrigins string) func(http.Handler) http.Handle
 }
 
 // TransactionHandlerForTest exposes transactionHandler for testing.
-// The exchangeSvc is nil since handler tests use type="expense"/"income" without currency conversion
-// (userSvc.GetByID returns same currency as request so no exchange rate lookup is needed).
-func TransactionHandlerForTest(txSvc *service.TransactionService, userSvc *service.UserService, log *slog.Logger) http.HandlerFunc {
-	return transactionHandler(txSvc, userSvc, nil, log)
+func TransactionHandlerForTest(txSvc *service.TransactionService, accountSvc *service.AccountService, log *slog.Logger) http.HandlerFunc {
+	return transactionHandler(txSvc, accountSvc, log)
 }
 
 // SettingsHandlerForTest exposes settingsHandler for testing.
-func SettingsHandlerForTest(userSvc *service.UserService, adminUserID int64, log *slog.Logger) http.HandlerFunc {
-	return settingsHandler(userSvc, adminUserID, false, log)
+func SettingsHandlerForTest(userSvc *service.UserService, accountSvc *service.AccountService, adminUserID int64, log *slog.Logger) http.HandlerFunc {
+	return settingsHandler(userSvc, accountSvc, adminUserID, false, log)
 }
 
 // CategoriesHandlerForTest exposes categoriesHandler for testing.

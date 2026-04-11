@@ -12,24 +12,24 @@ const (
 
 // Transaction is a single financial event recorded by the user.
 // AmountCents stores the value in integer cents to avoid float precision issues.
-// ExchangeRateSnapshot is the rate from CurrencyCode to BaseCurrencyAtCreation at creation time.
+// CurrencyCode is the account's currency. SnapshotDate identifies which exchange rate to use
+// when converting to another currency (looked up from exchange_rate_snapshots table).
 type Transaction struct {
-	ID                     int64
-	UserID                 int64
-	Type                   TransactionType
-	AmountCents            int64
-	CategoryID             int64
-	CategoryName           string
-	CategoryEmoji          string
-	CategoryColor          string
-	Note                   string
-	CurrencyCode           string
-	ExchangeRateSnapshot   float64
-	BaseCurrencyAtCreation string
-	AccountID              int64  // 0 means no account assigned (legacy)
-	AccountName            string // joined for display
-	CreatedAt              time.Time
-	IsAdjustment           bool   // true = hidden from history/stats; affects balance only
+	ID            int64
+	UserID        int64
+	Type          TransactionType
+	AmountCents   int64
+	CategoryID    int64
+	CategoryName  string
+	CategoryIcon  string
+	CategoryColor string
+	Note          string
+	CurrencyCode  string
+	AccountID     int64
+	AccountName   string // joined for display
+	SnapshotDate  time.Time
+	CreatedAt     time.Time
+	IsAdjustment  bool // true = hidden from history/stats; affects balance only
 }
 
 // BalanceByCurrency holds income and expense totals for a single currency.
@@ -42,7 +42,7 @@ type BalanceByCurrency struct {
 // CategoryStat aggregates spending or income by category for a given period.
 type CategoryStat struct {
 	CategoryName  string
-	CategoryEmoji string
+	CategoryIcon string
 	CategoryColor string
 	Type          TransactionType
 	TotalCents    int64

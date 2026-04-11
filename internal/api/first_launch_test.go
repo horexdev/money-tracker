@@ -91,7 +91,7 @@ func TestFirstLaunch_EnsureUser_CreatesDefaultAccount(t *testing.T) {
 			userRepo := &mocks.MockUserStorer{}
 			accountRepo := &mocks.MockAccountStorer{}
 
-			user := &domain.User{ID: 1, CurrencyCode: "USD"}
+			user := &domain.User{ID: 1}
 			userRepo.On("Upsert", mock.Anything, mock.AnythingOfType("*domain.User")).
 				Return(user, nil)
 			// No existing accounts → triggers account creation.
@@ -121,12 +121,12 @@ func TestFirstLaunch_EnsureUser_SkipsAccountIfExists(t *testing.T) {
 	userRepo := &mocks.MockUserStorer{}
 	accountRepo := &mocks.MockAccountStorer{}
 
-	user := &domain.User{ID: 1, CurrencyCode: "USD"}
+	user := &domain.User{ID: 1}
 	userRepo.On("Upsert", mock.Anything, mock.AnythingOfType("*domain.User")).
 		Return(user, nil)
 	accountRepo.On("ListByUser", mock.Anything, int64(1)).
 		Return([]*domain.Account{{ID: 99, Name: "Existing", CurrencyCode: "USD"}}, nil)
-	accountRepo.On("GetBalanceInBase", mock.Anything, int64(99), int64(1)).Return(int64(0), nil)
+	accountRepo.On("GetBalance", mock.Anything, int64(99), int64(1)).Return(int64(0), nil)
 
 	userSvc := service.NewUserService(userRepo, testutil.TestLogger())
 	accountSvc := service.NewAccountService(accountRepo, nil, testutil.TestLogger())
@@ -171,16 +171,20 @@ func TestFirstLaunch_SettingsLanguage(t *testing.T) {
 		tt := tt
 		t.Run(tt.lang, func(t *testing.T) {
 			userRepo := &mocks.MockUserStorer{}
-			user := &domain.User{ID: 1, CurrencyCode: "USD", Language: "en"}
+			user := &domain.User{ID: 1, Language: "en"}
 			userRepo.On("GetByID", mock.Anything, int64(1)).Return(user, nil)
 
 			if tt.wantOK {
-				updated := &domain.User{ID: 1, CurrencyCode: "USD", Language: domain.Language(tt.wantLang)}
+				updated := &domain.User{ID: 1, Language: domain.Language(tt.wantLang)}
 				userRepo.On("UpdateLanguage", mock.Anything, int64(1), tt.lang).Return(updated, nil)
 			}
 
+			accountRepo := &mocks.MockAccountStorer{}
+			accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
 			svc := service.NewUserService(userRepo, testutil.TestLogger())
-			h := api.SettingsHandlerForTest(svc, 0, testutil.TestLogger())
+			accountSvc := service.NewAccountService(accountRepo, nil, testutil.TestLogger())
+			h := api.SettingsHandlerForTest(svc, accountSvc, 0, testutil.TestLogger())
 
 			body := `{"language":"` + tt.lang + `"}`
 			w := httptest.NewRecorder()

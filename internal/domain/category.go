@@ -21,7 +21,7 @@ type Category struct {
 	ID          int64
 	UserID      int64
 	Name        string
-	Emoji       string
+	Icon        string
 	Type        CategoryType
 	Color       string
 	IsProtected bool
@@ -32,7 +32,7 @@ type Category struct {
 // CategorySeed holds the data needed to create a default category for a user.
 type CategorySeed struct {
 	Name  string
-	Emoji string
+	Icon  string
 	Type  CategoryType
 	Color string
 }

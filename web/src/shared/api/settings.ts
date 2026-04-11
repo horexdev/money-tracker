@@ -6,7 +6,6 @@ export const settingsApi = {
     return api.get('/v1/settings')
   },
   update(patch: {
-    base_currency?: string
     display_currencies?: string[]
     language?: string
     notification_preferences?: {

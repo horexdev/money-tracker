@@ -166,8 +166,8 @@ func TestCategoryService_InitDefaultForUser(t *testing.T) {
 	svc := newCatService(repo)
 
 	seeds := []domain.CategorySeed{
-		{Name: "Food", Emoji: "🍔", Type: domain.CategoryTypeExpense, Color: "#f97316"},
-		{Name: "Salary", Emoji: "💼", Type: domain.CategoryTypeIncome, Color: "#10b981"},
+		{Name: "Food", Icon: "fork-knife", Type: domain.CategoryTypeExpense, Color: "#f97316"},
+		{Name: "Salary", Icon: "briefcase", Type: domain.CategoryTypeIncome, Color: "#10b981"},
 	}
 	repo.On("BulkCreateForUser", mock.Anything, int64(42), seeds).Return(nil)
 

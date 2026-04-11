@@ -47,8 +47,8 @@ func (m *MockTransactionStorer) GetBalanceByCurrency(ctx context.Context, userID
 	return args.Get(0).([]domain.BalanceByCurrency), args.Error(1)
 }
 
-func (m *MockTransactionStorer) GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error) {
-	args := m.Called(ctx, userID)
+func (m *MockTransactionStorer) GetTotalInBaseCurrency(ctx context.Context, userID int64, targetCurrency string) (int64, error) {
+	args := m.Called(ctx, userID, targetCurrency)
 	return args.Get(0).(int64), args.Error(1)
 }
 

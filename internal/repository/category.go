@@ -150,11 +150,11 @@ func (r *CategoryRepository) GetBySavingsType(ctx context.Context, userID int64)
 }
 
 // CreateForUser adds a custom category for a specific user.
-func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error) {
+func (r *CategoryRepository) CreateForUser(ctx context.Context, userID int64, name, icon, catType, color string) (*domain.Category, error) {
 	row, err := r.q.CreateUserCategory(ctx, sqlcgen.CreateUserCategoryParams{
 		UserID: pgInt8(userID),
 		Name:   name,
-		Emoji:  emoji,
+		Icon:   icon,
 		Type:   catType,
 		Color:  color,
 	})
@@ -170,7 +170,7 @@ func (r *CategoryRepository) BulkCreateForUser(ctx context.Context, userID int64
 		_, err := r.q.CreateUserCategory(ctx, sqlcgen.CreateUserCategoryParams{
 			UserID: pgInt8(userID),
 			Name:   s.Name,
-			Emoji:  s.Emoji,
+			Icon:   s.Icon,
 			Type:   string(s.Type),
 			Color:  s.Color,
 		})
@@ -187,12 +187,12 @@ func (r *CategoryRepository) BulkCreateForUser(ctx context.Context, userID int64
 }
 
 // Update modifies an existing category (must be user-owned).
-func (r *CategoryRepository) Update(ctx context.Context, userID, id int64, name, emoji, catType, color string) (*domain.Category, error) {
+func (r *CategoryRepository) Update(ctx context.Context, userID, id int64, name, icon, catType, color string) (*domain.Category, error) {
 	row, err := r.q.UpdateCategory(ctx, sqlcgen.UpdateCategoryParams{
 		ID:     id,
 		UserID: pgInt8(userID),
 		Name:   name,
-		Emoji:  emoji,
+		Icon:   icon,
 		Type:   catType,
 		Color:  color,
 	})
@@ -223,7 +223,7 @@ func rowToCategory(row sqlcgen.Category) *domain.Category {
 		ID:          row.ID,
 		UserID:      goInt64(row.UserID),
 		Name:        row.Name,
-		Emoji:       row.Emoji,
+		Icon:        row.Icon,
 		Type:        domain.CategoryType(row.Type),
 		Color:       row.Color,
 		IsProtected: row.IsProtected,
