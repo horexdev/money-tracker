@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Курс валют тимчасово недоступний.",
     "too_many_currencies": "Максимум 3 відображувані валюти.",
     "invalid_currency": "Невірний код валюти.",
-    "invalid_amount": "Введена некоректна сума."
+    "invalid_amount": "Введена некоректна сума.",
+    "cannot_delete_last_account": "Неможливо видалити єдиний рахунок.",
+    "must_set_new_default": "Спочатку призначте інший рахунок основним, перш ніж видаляти цей.",
+    "currency_immutable": "Валюту рахунку не можна змінити після створення."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

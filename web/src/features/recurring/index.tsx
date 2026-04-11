@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion'
 import { Plus, Pause, Play, ArrowsClockwise } from '@phosphor-icons/react'
 import { fetchRecurring, createRecurring, updateRecurring, toggleRecurring, deleteRecurring } from '../../shared/api/recurring'
 import { categoriesApi } from '../../shared/api/categories'
+import { accountsApi } from '../../shared/api/accounts'
 import { formatCents, parseCents, formatDate, sanitizeAmount } from '../../shared/lib/money'
 import { friendlyError } from '../../shared/lib/errors'
 import { CategoryIcon } from '../../shared/lib/categoryIcons'
@@ -15,6 +16,7 @@ import { PageTransition } from '../../shared/ui/PageTransition'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
 import { Badge, EmptyState, ActionRow, FAB, BottomSheet } from '../../shared/ui'
+import { AccountDropdown } from '../../shared/ui/AccountDropdown'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
 import { CurrencyBadge } from '../../shared/lib/currencyIcons'
@@ -101,7 +103,7 @@ function RecurringForm({
   const qc = useQueryClient()
   const { notification } = useHaptic()
   const tCategory = useCategoryName()
-  const { code: currencyCode } = useBaseCurrency()
+  const { code: baseCurrency } = useBaseCurrency()
 
   const isEdit = editItem !== null
 
@@ -110,13 +112,25 @@ function RecurringForm({
   const [categoryID, setCategoryID] = useState<number | null>(editItem?.category_id ?? null)
   const [note, setNote] = useState(editItem?.note ?? '')
   const [frequency, setFrequency] = useState(editItem?.frequency ?? 'monthly')
+  const [accountID, setAccountID] = useState<number | null>(editItem?.account_id ?? null)
 
+  const { data: accounts = [] } = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list })
   const catsQ = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list() })
   const categories = catsQ.data?.categories ?? []
   const filtered = categories.filter(c => c.type === type || c.type === 'both')
 
+  useEffect(() => {
+    if (accounts.length === 0) return
+    const def = accounts.find(a => a.is_default) ?? accounts[0]
+    if (accountID === null) setAccountID(def.id)
+  }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const selectedAccount = accounts.find(a => a.id === accountID)
+  const currencyCode = selectedAccount?.currency_code ?? baseCurrency
+
   const createMut = useMutation({
     mutationFn: () => createRecurring({
+      account_id: accountID!,
       type,
       amount_cents: parseCents(amount),
       currency_code: currencyCode,
@@ -133,6 +147,7 @@ function RecurringForm({
 
   const updateMut = useMutation({
     mutationFn: () => updateRecurring(editItem!.id, {
+      account_id: accountID!,
       type,
       amount_cents: parseCents(amount),
       currency_code: currencyCode,
@@ -148,7 +163,7 @@ function RecurringForm({
   })
 
   const mut = isEdit ? updateMut : createMut
-  const canSubmit = parseCents(amount) > 0 && categoryID !== null && !mut.isPending
+  const canSubmit = parseCents(amount) > 0 && categoryID !== null && accountID !== null && !mut.isPending
 
   return (
     <BottomSheet onClose={onClose}>
@@ -174,6 +189,17 @@ function RecurringForm({
             </button>
           ))}
         </div>
+
+        {/* Account */}
+        {accounts.length > 0 && accountID !== null && (
+          <AccountDropdown
+            accounts={accounts}
+            selectedId={accountID}
+            onChange={id => id !== null && setAccountID(id)}
+            showBalance
+            variant="surface"
+          />
+        )}
 
         {/* Amount */}
         <div>

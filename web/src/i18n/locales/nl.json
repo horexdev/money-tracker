@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Wisselkoers tijdelijk niet beschikbaar.",
     "too_many_currencies": "Maximaal 3 weergavevaluta's toegestaan.",
     "invalid_currency": "Ongeldige valutacode.",
-    "invalid_amount": "Ongeldig bedrag ingevoerd."
+    "invalid_amount": "Ongeldig bedrag ingevoerd.",
+    "cannot_delete_last_account": "De enige rekening kan niet worden verwijderd.",
+    "must_set_new_default": "Stel eerst een andere rekening in als standaard voordat je deze verwijdert.",
+    "currency_immutable": "De valuta van de rekening kan niet worden gewijzigd na aanmaak."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Valyuta kursi vaqtincha mavjud emas.",
     "too_many_currencies": "Maksimal 3 ta valyuta ko'rsatilishi mumkin.",
     "invalid_currency": "Noto'g'ri valyuta kodi.",
-    "invalid_amount": "Noto'g'ri summa kiritildi."
+    "invalid_amount": "Noto'g'ri summa kiritildi.",
+    "cannot_delete_last_account": "Yagona hisobni o'chirib bo'lmaydi.",
+    "must_set_new_default": "Bu hisobni o'chirishdan oldin boshqa hisobni asosiy qilib belgilang.",
+    "currency_immutable": "Hisob valyutasini yaratilgandan keyin o'zgartirib bo'lmaydi."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

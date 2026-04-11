@@ -295,7 +295,10 @@
     "exchange_rate_unavailable": "Курс валют временно недоступен.",
     "too_many_currencies": "Максимум 3 отображаемые валюты.",
     "invalid_currency": "Неверный код валюты.",
-    "invalid_amount": "Введена некорректная сумма."
+    "invalid_amount": "Введена некорректная сумма.",
+    "cannot_delete_last_account": "Невозможно удалить единственный счёт.",
+    "must_set_new_default": "Сначала назначьте другой счёт основным, прежде чем удалять этот.",
+    "currency_immutable": "Валюту счёта нельзя изменить после создания."
   },
   "accountForm": {
     "currency_change_title": "Сменить валюту счёта?",

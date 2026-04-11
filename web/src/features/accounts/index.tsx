@@ -262,17 +262,12 @@ function AccountFormSheet({
   const errorMsg = friendlyError(createMut.error || updateMut.error, t)
   const canSubmit = name.trim().length > 0 && !isPending
 
-  const [showCurrencyWarning, setShowCurrencyWarning] = useState(false)
-  const currencyChanged = isEdit && editAccount!.currency_code !== currency
-
   function handleSubmit() {
-    if (!isEdit) { createMut.mutate(); return }
-    if (currencyChanged) { setShowCurrencyWarning(true); return }
-    updateMut.mutate()
+    if (isEdit) updateMut.mutate()
+    else createMut.mutate()
   }
 
   return (
-    <>
     <BottomSheet onClose={onClose}>
       <div
         className="px-5 space-y-4 overflow-y-auto no-scrollbar"
@@ -337,7 +332,13 @@ function AccountFormSheet({
           <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
             {t('add.select_currency')}
           </label>
-          <CurrencyPicker selected={currency} onSelect={setCurrency} />
+          {isEdit ? (
+            <div className="px-3 py-1.5 rounded-full bg-accent-subtle text-accent text-[12px] font-bold inline-block">
+              {currency}
+            </div>
+          ) : (
+            <CurrencyPicker selected={currency} onSelect={setCurrency} />
+          )}
         </div>
 
         {/* Color picker */}
@@ -393,42 +394,6 @@ function AccountFormSheet({
         )}
       </div>
     </BottomSheet>
-
-    <AnimatePresence>
-      {showCurrencyWarning && (
-        <BottomSheet onClose={() => setShowCurrencyWarning(false)}>
-          <div className="px-5 pt-2 pb-8 flex flex-col gap-4 items-center text-center">
-            <div className="w-12 h-12 rounded-2xl bg-accent-subtle flex items-center justify-center text-2xl">
-              💱
-            </div>
-            <p className="text-base font-bold text-text">
-              {t('accountForm.currency_change_title')}
-            </p>
-            <p className="text-sm text-muted leading-relaxed">
-              {t('accountForm.currency_change_desc', {
-                oldCurrency: editAccount!.currency_code,
-                newCurrency: currency,
-              })}
-            </p>
-            <div className="w-full flex flex-col gap-2">
-              <button
-                onClick={() => { setShowCurrencyWarning(false); updateMut.mutate() }}
-                className="w-full py-4 rounded-2xl bg-accent text-accent-text font-bold text-[15px] active:scale-[0.98] transition-transform"
-              >
-                {t('accountForm.currency_change_confirm', { newCurrency: currency })}
-              </button>
-              <button
-                onClick={() => setShowCurrencyWarning(false)}
-                className="w-full py-4 rounded-2xl bg-surface text-muted font-semibold text-sm active:scale-[0.98] transition-transform"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        </BottomSheet>
-      )}
-    </AnimatePresence>
-    </>
   )
 }
 
@@ -442,16 +407,14 @@ function AccountRow({
 }: {
   account: Account
   onEdit: (a: Account) => void
-  onDelete: (id: number) => void
+  onDelete?: (id: number) => void
   onSetDefault: (id: number) => void
   isDeleting: boolean
 }) {
   const { t } = useTranslation()
   const TypeIcon = ACCOUNT_TYPE_ICONS[account.type]
 
-  return (
-    <div className={`transition-opacity ${isDeleting ? 'opacity-30 pointer-events-none' : ''}`}>
-      <ActionRow onDelete={() => onDelete(account.id)}>
+  const content = (
         <div className="flex items-center gap-3 px-4 py-3">
           {/* Icon */}
           <div
@@ -494,7 +457,11 @@ function AccountRow({
             </button>
           )}
         </div>
-      </ActionRow>
+  )
+
+  return (
+    <div className={`transition-opacity ${isDeleting ? 'opacity-30 pointer-events-none' : ''}`}>
+      {onDelete ? <ActionRow onDelete={() => onDelete(account.id)}>{content}</ActionRow> : content}
     </div>
   )
 }
@@ -568,7 +535,7 @@ export function AccountsPage() {
                   key={account.id}
                   account={account}
                   onEdit={setEditingAccount}
-                  onDelete={id => deleteMut.mutate(id)}
+                  onDelete={accounts.length > 1 ? id => deleteMut.mutate(id) : undefined}
                   onSetDefault={id => setDefaultMut.mutate(id)}
                   isDeleting={deletingId === account.id}
                 />

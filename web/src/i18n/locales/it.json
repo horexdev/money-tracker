@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Tasso di cambio temporaneamente non disponibile.",
     "too_many_currencies": "Massimo 3 valute da visualizzare.",
     "invalid_currency": "Codice valuta non valido.",
-    "invalid_amount": "Importo non valido inserito."
+    "invalid_amount": "Importo non valido inserito.",
+    "cannot_delete_last_account": "Impossibile eliminare l'unico conto.",
+    "must_set_new_default": "Imposta un altro conto come predefinito prima di eliminare questo.",
+    "currency_immutable": "La valuta del conto non può essere modificata dopo la creazione."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

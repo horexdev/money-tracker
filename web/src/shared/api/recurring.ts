@@ -6,6 +6,7 @@ export function fetchRecurring(): Promise<RecurringListResponse> {
 }
 
 export function createRecurring(body: {
+  account_id: number
   type: string
   amount_cents: number
   currency_code: string
@@ -17,6 +18,7 @@ export function createRecurring(body: {
 }
 
 export function updateRecurring(id: number, body: {
+  account_id?: number
   type?: string
   amount_cents?: number
   currency_code?: string

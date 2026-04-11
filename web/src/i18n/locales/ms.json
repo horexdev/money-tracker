@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Kadar pertukaran tidak tersedia buat sementara waktu.",
     "too_many_currencies": "Maksimum 3 mata wang paparan dibenarkan.",
     "invalid_currency": "Kod mata wang tidak sah.",
-    "invalid_amount": "Jumlah tidak sah dimasukkan."
+    "invalid_amount": "Jumlah tidak sah dimasukkan.",
+    "cannot_delete_last_account": "Tidak boleh memadamkan akaun satu-satunya.",
+    "must_set_new_default": "Tetapkan akaun lain sebagai lalai sebelum memadamkan yang ini.",
+    "currency_immutable": "Mata wang akaun tidak boleh ditukar selepas dicipta."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",

@@ -272,7 +272,10 @@
     "exchange_rate_unavailable": "Kurs pertukaran sementara tidak tersedia.",
     "too_many_currencies": "Maksimal 3 mata uang tampilan diizinkan.",
     "invalid_currency": "Kode mata uang tidak valid.",
-    "invalid_amount": "Jumlah tidak valid dimasukkan."
+    "invalid_amount": "Jumlah tidak valid dimasukkan.",
+    "cannot_delete_last_account": "Tidak dapat menghapus satu-satunya akun.",
+    "must_set_new_default": "Tetapkan akun lain sebagai default sebelum menghapus yang ini.",
+    "currency_immutable": "Mata uang akun tidak dapat diubah setelah dibuat."
   },
   "accountForm": {
     "currency_change_title": "Change account currency?",
