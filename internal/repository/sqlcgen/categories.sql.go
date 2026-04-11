@@ -23,15 +23,15 @@ func (q *Queries) CountTransactionsByCategory(ctx context.Context, categoryID in
 }
 
 const createUserCategory = `-- name: CreateUserCategory :one
-INSERT INTO categories (user_id, name, emoji, type, color)
+INSERT INTO categories (user_id, name, icon, type, color)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected
+RETURNING id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected
 `
 
 type CreateUserCategoryParams struct {
 	UserID pgtype.Int8 `json:"user_id"`
 	Name   string      `json:"name"`
-	Emoji  string      `json:"emoji"`
+	Icon   string      `json:"icon"`
 	Type   string      `json:"type"`
 	Color  string      `json:"color"`
 }
@@ -40,7 +40,7 @@ func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategory
 	row := q.db.QueryRow(ctx, createUserCategory,
 		arg.UserID,
 		arg.Name,
-		arg.Emoji,
+		arg.Icon,
 		arg.Type,
 		arg.Color,
 	)
@@ -49,7 +49,7 @@ func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategory
 		&i.ID,
 		&i.UserID,
 		&i.Name,
-		&i.Emoji,
+		&i.Icon,
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -60,7 +60,7 @@ func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategory
 }
 
 const getCategoryByID = `-- name: GetCategoryByID :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories WHERE id = $1
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories WHERE id = $1
 `
 
 func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, error) {
@@ -70,7 +70,7 @@ func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, erro
 		&i.ID,
 		&i.UserID,
 		&i.Name,
-		&i.Emoji,
+		&i.Icon,
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -81,7 +81,7 @@ func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, erro
 }
 
 const getCategoryByName = `-- name: GetCategoryByName :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE (user_id IS NULL OR user_id = $1)
   AND LOWER(name) = LOWER($2)
   AND deleted_at IS NULL
@@ -101,7 +101,7 @@ func (q *Queries) GetCategoryByName(ctx context.Context, arg GetCategoryByNamePa
 		&i.ID,
 		&i.UserID,
 		&i.Name,
-		&i.Emoji,
+		&i.Icon,
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -112,7 +112,7 @@ func (q *Queries) GetCategoryByName(ctx context.Context, arg GetCategoryByNamePa
 }
 
 const getCategoryByTypeForUser = `-- name: GetCategoryByTypeForUser :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1 AND type = $2 AND deleted_at IS NULL
 LIMIT 1
 `
@@ -129,7 +129,32 @@ func (q *Queries) GetCategoryByTypeForUser(ctx context.Context, arg GetCategoryB
 		&i.ID,
 		&i.UserID,
 		&i.Name,
-		&i.Emoji,
+		&i.Icon,
+		&i.Type,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Color,
+		&i.IsProtected,
+	)
+	return i, err
+}
+
+const getSystemCategoryByType = `-- name: GetSystemCategoryByType :one
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
+WHERE user_id IS NULL AND type = $1 AND deleted_at IS NULL
+LIMIT 1
+`
+
+// Returns the system (user_id IS NULL) category of the given type.
+// Used for infrastructure categories like 'transfer' and 'adjustment'.
+func (q *Queries) GetSystemCategoryByType(ctx context.Context, type_ string) (Category, error) {
+	row := q.db.QueryRow(ctx, getSystemCategoryByType, type_)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Icon,
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -154,7 +179,7 @@ func (q *Queries) HasUserCategories(ctx context.Context, userID pgtype.Int8) (bo
 }
 
 const listUserCategories = `-- name: ListUserCategories :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1 AND deleted_at IS NULL AND type NOT IN ('transfer', 'adjustment')
 ORDER BY name
 `
@@ -172,7 +197,7 @@ func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Emoji,
+			&i.Icon,
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -190,7 +215,7 @@ func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([
 }
 
 const listUserCategoriesByNameAsc = `-- name: ListUserCategoriesByNameAsc :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1 AND deleted_at IS NULL AND type NOT IN ('transfer', 'adjustment')
 ORDER BY name
 `
@@ -208,7 +233,7 @@ func (q *Queries) ListUserCategoriesByNameAsc(ctx context.Context, userID pgtype
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Emoji,
+			&i.Icon,
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -226,7 +251,7 @@ func (q *Queries) ListUserCategoriesByNameAsc(ctx context.Context, userID pgtype
 }
 
 const listUserCategoriesByNameDesc = `-- name: ListUserCategoriesByNameDesc :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1 AND deleted_at IS NULL AND type NOT IN ('transfer', 'adjustment')
 ORDER BY name DESC
 `
@@ -244,7 +269,7 @@ func (q *Queries) ListUserCategoriesByNameDesc(ctx context.Context, userID pgtyp
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Emoji,
+			&i.Icon,
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -262,7 +287,7 @@ func (q *Queries) ListUserCategoriesByNameDesc(ctx context.Context, userID pgtyp
 }
 
 const listUserCategoriesByType = `-- name: ListUserCategoriesByType :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1
   AND deleted_at IS NULL
   AND type NOT IN ('transfer', 'adjustment')
@@ -288,7 +313,7 @@ func (q *Queries) ListUserCategoriesByType(ctx context.Context, arg ListUserCate
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Emoji,
+			&i.Icon,
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -306,7 +331,7 @@ func (q *Queries) ListUserCategoriesByType(ctx context.Context, arg ListUserCate
 }
 
 const listUserCategoriesByTypeFilterAsc = `-- name: ListUserCategoriesByTypeFilterAsc :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1
   AND deleted_at IS NULL
   AND (type = $2 OR type = 'both')
@@ -331,7 +356,7 @@ func (q *Queries) ListUserCategoriesByTypeFilterAsc(ctx context.Context, arg Lis
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Emoji,
+			&i.Icon,
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -349,7 +374,7 @@ func (q *Queries) ListUserCategoriesByTypeFilterAsc(ctx context.Context, arg Lis
 }
 
 const listUserCategoriesByTypeFilterDesc = `-- name: ListUserCategoriesByTypeFilterDesc :many
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
+SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1
   AND deleted_at IS NULL
   AND (type = $2 OR type = 'both')
@@ -374,7 +399,7 @@ func (q *Queries) ListUserCategoriesByTypeFilterDesc(ctx context.Context, arg Li
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Emoji,
+			&i.Icon,
 			&i.Type,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -408,45 +433,22 @@ func (q *Queries) SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategory
 	return err
 }
 
-const getSystemCategoryByType = `-- name: GetSystemCategoryByType :one
-SELECT id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected FROM categories
-WHERE user_id IS NULL AND type = $1 AND deleted_at IS NULL
-LIMIT 1
-`
-
-func (q *Queries) GetSystemCategoryByType(ctx context.Context, catType string) (Category, error) {
-	row := q.db.QueryRow(ctx, getSystemCategoryByType, catType)
-	var i Category
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Name,
-		&i.Emoji,
-		&i.Type,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-		&i.Color,
-		&i.IsProtected,
-	)
-	return i, err
-}
-
 const updateCategory = `-- name: UpdateCategory :one
 UPDATE categories
 SET name       = $3,
-    emoji      = $4,
+    icon       = $4,
     type       = $5,
     color      = $6,
     updated_at = now()
 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
-RETURNING id, user_id, name, emoji, type, updated_at, deleted_at, color, is_protected
+RETURNING id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected
 `
 
 type UpdateCategoryParams struct {
 	ID     int64       `json:"id"`
 	UserID pgtype.Int8 `json:"user_id"`
 	Name   string      `json:"name"`
-	Emoji  string      `json:"emoji"`
+	Icon   string      `json:"icon"`
 	Type   string      `json:"type"`
 	Color  string      `json:"color"`
 }
@@ -456,7 +458,7 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 		arg.ID,
 		arg.UserID,
 		arg.Name,
-		arg.Emoji,
+		arg.Icon,
 		arg.Type,
 		arg.Color,
 	)
@@ -465,7 +467,7 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 		&i.ID,
 		&i.UserID,
 		&i.Name,
-		&i.Emoji,
+		&i.Icon,
 		&i.Type,
 		&i.UpdatedAt,
 		&i.DeletedAt,

@@ -162,7 +162,7 @@ function CategoryRow({
         className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
         style={{ background: entry.category_color || color }}
       >
-        <CategoryIcon emoji={entry.category_emoji} size={18} weight="fill" className="text-white" />
+        <CategoryIcon icon={entry.category_icon} size={18} weight="fill" className="text-white" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center">
@@ -375,7 +375,7 @@ export function StatsPage() {
                                 className="w-10 h-10 rounded-2xl flex items-center justify-center mb-1.5"
                                 style={{ background: topCategory.category_color || CHART_COLORS[0] }}
 >
-                                <CategoryIcon emoji={topCategory.category_emoji} size={20} weight="fill" className="text-white" />
+                                <CategoryIcon icon={topCategory.category_icon} size={20} weight="fill" className="text-white" />
                               </div>
                               <p className="text-xs font-bold text-text truncate">{tCategory(topCategory.category_name)}</p>
                               <p className="text-lg font-extrabold tabular-nums" style={{ color: topCategory.category_color || CHART_COLORS[0] }}>

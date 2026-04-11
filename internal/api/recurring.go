@@ -13,12 +13,13 @@ import (
 
 type recurringResponse struct {
 	ID            int64  `json:"id"`
+	AccountID     int64  `json:"account_id"`
 	Type          string `json:"type"`
 	AmountCents   int64  `json:"amount_cents"`
 	CurrencyCode  string `json:"currency_code"`
 	CategoryID    int64  `json:"category_id"`
 	CategoryName  string `json:"category_name"`
-	CategoryEmoji string `json:"category_emoji"`
+	CategoryIcon string `json:"category_icon"`
 	CategoryColor string `json:"category_color"`
 	Note          string `json:"note"`
 	Frequency     string `json:"frequency"`
@@ -28,6 +29,7 @@ type recurringResponse struct {
 }
 
 type createRecurringRequest struct {
+	AccountID    int64  `json:"account_id"`
 	Type         string `json:"type"`
 	AmountCents  int64  `json:"amount_cents"`
 	CurrencyCode string `json:"currency_code"`
@@ -37,6 +39,7 @@ type createRecurringRequest struct {
 }
 
 type updateRecurringRequest struct {
+	AccountID    *int64 `json:"account_id"`
 	Type         string `json:"type"`
 	AmountCents  *int64 `json:"amount_cents"`
 	CurrencyCode string `json:"currency_code"`
@@ -126,6 +129,7 @@ func createRecurring(w http.ResponseWriter, r *http.Request, userID int64, svc *
 
 	rt, err := svc.Create(r.Context(), &domain.RecurringTransaction{
 		UserID:       userID,
+		AccountID:    req.AccountID,
 		Type:         domain.TransactionType(req.Type),
 		AmountCents:  req.AmountCents,
 		CurrencyCode: req.CurrencyCode,
@@ -154,6 +158,9 @@ func updateRecurring(w http.ResponseWriter, r *http.Request, userID, id int64, s
 		return
 	}
 
+	if req.AccountID != nil {
+		existing.AccountID = *req.AccountID
+	}
 	if req.Type != "" {
 		existing.Type = domain.TransactionType(req.Type)
 	}
@@ -184,12 +191,13 @@ func updateRecurring(w http.ResponseWriter, r *http.Request, userID, id int64, s
 func recurringToResponse(rt *domain.RecurringTransaction) recurringResponse {
 	return recurringResponse{
 		ID:            rt.ID,
+		AccountID:     rt.AccountID,
 		Type:          string(rt.Type),
 		AmountCents:   rt.AmountCents,
 		CurrencyCode:  rt.CurrencyCode,
 		CategoryID:    rt.CategoryID,
 		CategoryName:  rt.CategoryName,
-		CategoryEmoji: rt.CategoryEmoji,
+		CategoryIcon: rt.CategoryIcon,
 		CategoryColor: rt.CategoryColor,
 		Note:          rt.Note,
 		Frequency:     string(rt.Frequency),

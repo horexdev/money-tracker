@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/horexdev/money-tracker/internal/domain"
 )
@@ -62,18 +63,18 @@ func (s *TransferService) Execute(ctx context.Context, userID, fromAccountID, to
 	}
 
 	toAmountCents := int64(float64(amountCents) * exchangeRate)
+	snapshotDate := time.Now().UTC().Truncate(24 * time.Hour)
 
 	// Debit (expense) on the from-account.
 	fromTx, err := s.txRepo.Create(ctx, &domain.Transaction{
-		UserID:                 userID,
-		Type:                   domain.TransactionTypeExpense,
-		AmountCents:            amountCents,
-		CategoryID:             transferCat.ID,
-		Note:                   note,
-		CurrencyCode:           fromAcc.CurrencyCode,
-		BaseCurrencyAtCreation: fromAcc.CurrencyCode,
-		ExchangeRateSnapshot:   1.0,
-		AccountID:              fromAccountID,
+		UserID:       userID,
+		Type:         domain.TransactionTypeExpense,
+		AmountCents:  amountCents,
+		CategoryID:   transferCat.ID,
+		Note:         note,
+		CurrencyCode: fromAcc.CurrencyCode,
+		AccountID:    fromAccountID,
+		SnapshotDate: snapshotDate,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create debit transaction: %w", err)
@@ -81,15 +82,14 @@ func (s *TransferService) Execute(ctx context.Context, userID, fromAccountID, to
 
 	// Credit (income) on the to-account.
 	toTx, err := s.txRepo.Create(ctx, &domain.Transaction{
-		UserID:                 userID,
-		Type:                   domain.TransactionTypeIncome,
-		AmountCents:            toAmountCents,
-		CategoryID:             transferCat.ID,
-		Note:                   note,
-		CurrencyCode:           toAcc.CurrencyCode,
-		BaseCurrencyAtCreation: toAcc.CurrencyCode,
-		ExchangeRateSnapshot:   1.0,
-		AccountID:              toAccountID,
+		UserID:       userID,
+		Type:         domain.TransactionTypeIncome,
+		AmountCents:  toAmountCents,
+		CategoryID:   transferCat.ID,
+		Note:         note,
+		CurrencyCode: toAcc.CurrencyCode,
+		AccountID:    toAccountID,
+		SnapshotDate: snapshotDate,
 	})
 	if err != nil {
 		// Best-effort cleanup of the debit transaction.

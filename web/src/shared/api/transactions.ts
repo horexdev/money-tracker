@@ -6,9 +6,8 @@ export interface CreateTransactionPayload {
   type: TransactionType
   amount_cents: number
   note?: string
-  currency_code?: string
   created_at?: string
-  account_id?: number
+  account_id: number
 }
 
 export interface UpdateTransactionPayload {

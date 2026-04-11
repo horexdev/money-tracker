@@ -71,12 +71,11 @@ func (u *userEnsurer) ensureUser(ctx context.Context, tgUser TelegramUser) error
 		slog.String("first_name", tgUser.FirstName),
 	)
 	user, err := u.svc.Upsert(ctx, &domain.User{
-		ID:           tgUser.ID,
-		Username:     tgUser.Username,
-		FirstName:    tgUser.FirstName,
-		LastName:     tgUser.LastName,
-		Language:     domain.Language(tgUser.LanguageCode),
-		CurrencyCode: localizedAccountCurrency(tgUser.LanguageCode),
+		ID:        tgUser.ID,
+		Username:  tgUser.Username,
+		FirstName: tgUser.FirstName,
+		LastName:  tgUser.LastName,
+		Language:  domain.Language(tgUser.LanguageCode),
 	})
 	if err != nil {
 		return err
@@ -153,6 +152,7 @@ type Deps struct {
 	TransferSvc   *service.TransferService
 	AdjustSvc     *service.AdjustmentService
 	AdminSvc      *service.AdminService
+	SnapshotSvc   *service.SnapshotService
 	BotToken       string
 	AllowedOrigins string
 	AdminUserID    int64
@@ -184,21 +184,12 @@ func NewServer(d Deps) http.Handler {
 		return chain(h, logging, cors, auth, admin)
 	}
 
-	// public wraps a handler with logging + CORS only.
-	public := func(h http.HandlerFunc) http.Handler {
-		return chain(h, logging, cors)
-	}
-
-	// Public endpoints (no Telegram auth required).
-	mux.Handle("/api/v1/devblog", public(devblogListHandler(d.Log)))
-	mux.Handle("/api/v1/devblog/", public(devblogEntryHandler(d.Log)))
-
 	// Authenticated endpoints.
-	mux.Handle("/api/v1/balance", protected(balanceHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
-	mux.Handle("/api/v1/transactions", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
-	mux.Handle("/api/v1/transactions/", protected(transactionHandler(d.TxSvc, d.UserSvc, d.ExchangeSvc, d.Log)))
+	mux.Handle("/api/v1/balance", protected(balanceHandler(d.TxSvc, d.UserSvc, d.AccountSvc, d.ExchangeSvc, d.Log)))
+	mux.Handle("/api/v1/transactions", protected(transactionHandler(d.TxSvc, d.AccountSvc, d.Log)))
+	mux.Handle("/api/v1/transactions/", protected(transactionHandler(d.TxSvc, d.AccountSvc, d.Log)))
 	mux.Handle("/api/v1/stats", protected(statsHandler(d.StatsSvc, d.Log)))
-	mux.Handle("/api/v1/settings", protected(settingsHandler(d.UserSvc, d.AdminUserID, d.DevMode, d.Log)))
+	mux.Handle("/api/v1/settings", protected(settingsHandler(d.UserSvc, d.AccountSvc, d.AdminUserID, d.DevMode, d.Log)))
 
 	// Categories CRUD.
 	mux.Handle("/api/v1/categories", protected(categoriesHandler(d.CategorySvc, d.Log)))

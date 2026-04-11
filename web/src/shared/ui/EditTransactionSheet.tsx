@@ -148,7 +148,7 @@ export function EditTransactionSheet({
                     className="w-9 h-9 rounded-2xl flex items-center justify-center"
                     style={{ background: isActive ? 'var(--color-accent)' : (cat.color || 'var(--color-accent)') }}
                   >
-                    <CategoryIcon emoji={cat.emoji} size={18} weight="fill" className="text-white" />
+                    <CategoryIcon icon={cat.icon} size={18} weight="fill" className="text-white" />
                   </div>
                   <span className="truncate w-full text-center px-1 font-medium text-[10px] text-text">
                     {tCategory(cat.name)}

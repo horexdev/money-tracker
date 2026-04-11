@@ -22,15 +22,14 @@ func NewTransactionRepository(pool *pgxpool.Pool) *TransactionRepository {
 // Create inserts a new transaction and returns the persisted record.
 func (r *TransactionRepository) Create(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error) {
 	row, err := r.q.CreateTransaction(ctx, sqlcgen.CreateTransactionParams{
-		UserID:                 t.UserID,
-		Type:                   t.Type,
-		AmountCents:            t.AmountCents,
-		CategoryID:             t.CategoryID,
-		Note:                   t.Note,
-		CurrencyCode:           t.CurrencyCode,
-		ExchangeRateSnapshot:   pgNumeric(t.ExchangeRateSnapshot),
-		BaseCurrencyAtCreation: t.BaseCurrencyAtCreation,
-		AccountID:              pgOptionalInt8(nonZeroInt64(t.AccountID)),
+		UserID:       t.UserID,
+		Type:         t.Type,
+		AmountCents:  t.AmountCents,
+		CategoryID:   t.CategoryID,
+		Note:         t.Note,
+		CurrencyCode: t.CurrencyCode,
+		AccountID:    t.AccountID,
+		SnapshotDate: pgDate(&t.SnapshotDate),
 	})
 	if err != nil {
 		return nil, err
@@ -41,16 +40,15 @@ func (r *TransactionRepository) Create(ctx context.Context, t *domain.Transactio
 // CreateWithDate inserts a new transaction with an explicit created_at timestamp.
 func (r *TransactionRepository) CreateWithDate(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error) {
 	row, err := r.q.CreateTransactionWithDate(ctx, sqlcgen.CreateTransactionWithDateParams{
-		UserID:                 t.UserID,
-		Type:                   t.Type,
-		AmountCents:            t.AmountCents,
-		CategoryID:             t.CategoryID,
-		Note:                   t.Note,
-		CurrencyCode:           t.CurrencyCode,
-		ExchangeRateSnapshot:   pgNumeric(t.ExchangeRateSnapshot),
-		BaseCurrencyAtCreation: t.BaseCurrencyAtCreation,
-		CreatedAt:              pgTimestamptz(t.CreatedAt),
-		AccountID:              pgOptionalInt8(nonZeroInt64(t.AccountID)),
+		UserID:       t.UserID,
+		Type:         t.Type,
+		AmountCents:  t.AmountCents,
+		CategoryID:   t.CategoryID,
+		Note:         t.Note,
+		CurrencyCode: t.CurrencyCode,
+		CreatedAt:    pgTimestamptz(t.CreatedAt),
+		AccountID:    t.AccountID,
+		SnapshotDate: pgDate(&t.SnapshotDate),
 	})
 	if err != nil {
 		return nil, err
@@ -60,18 +58,17 @@ func (r *TransactionRepository) CreateWithDate(ctx context.Context, t *domain.Tr
 
 func rowToTransaction(row sqlcgen.Transaction) *domain.Transaction {
 	return &domain.Transaction{
-		ID:                     row.ID,
-		UserID:                 row.UserID,
-		Type:                   row.Type,
-		AmountCents:            row.AmountCents,
-		CategoryID:             row.CategoryID,
-		Note:                   row.Note,
-		CurrencyCode:           row.CurrencyCode,
-		ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-		BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-		CreatedAt:              goTime(row.CreatedAt),
-		AccountID:              goInt64(row.AccountID),
-		IsAdjustment:           row.IsAdjustment,
+		ID:           row.ID,
+		UserID:       row.UserID,
+		Type:         row.Type,
+		AmountCents:  row.AmountCents,
+		CategoryID:   row.CategoryID,
+		Note:         row.Note,
+		CurrencyCode: row.CurrencyCode,
+		CreatedAt:    goTime(row.CreatedAt),
+		AccountID:    row.AccountID,
+		SnapshotDate: goDateValue(row.SnapshotDate),
+		IsAdjustment: row.IsAdjustment,
 	}
 }
 
@@ -79,15 +76,14 @@ func rowToTransaction(row sqlcgen.Transaction) *domain.Transaction {
 // The transaction affects account balance but is excluded from history and statistics.
 func (r *TransactionRepository) CreateAdjustment(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error) {
 	row, err := r.q.CreateAdjustmentTransaction(ctx, sqlcgen.CreateAdjustmentTransactionParams{
-		UserID:                 t.UserID,
-		Type:                   t.Type,
-		AmountCents:            t.AmountCents,
-		CategoryID:             t.CategoryID,
-		Note:                   t.Note,
-		CurrencyCode:           t.CurrencyCode,
-		ExchangeRateSnapshot:   pgNumeric(t.ExchangeRateSnapshot),
-		BaseCurrencyAtCreation: t.BaseCurrencyAtCreation,
-		AccountID:              pgOptionalInt8(nonZeroInt64(t.AccountID)),
+		UserID:       t.UserID,
+		Type:         t.Type,
+		AmountCents:  t.AmountCents,
+		CategoryID:   t.CategoryID,
+		Note:         t.Note,
+		CurrencyCode: t.CurrencyCode,
+		AccountID:    t.AccountID,
+		SnapshotDate: pgDate(&t.SnapshotDate),
 	})
 	if err != nil {
 		return nil, err
@@ -131,19 +127,17 @@ func (r *TransactionRepository) List(ctx context.Context, userID int64, limit, o
 	txs := make([]*domain.Transaction, 0, len(rows))
 	for _, row := range rows {
 		txs = append(txs, &domain.Transaction{
-			ID:                     row.ID,
-			UserID:                 row.UserID,
-			Type:                   row.Type,
-			AmountCents:            row.AmountCents,
-			CategoryID:             row.CategoryID,
-			CategoryName:           row.CategoryName,
-			CategoryEmoji:          row.CategoryEmoji,
-			CategoryColor:          row.CategoryColor,
-			Note:                   row.Note,
-			CurrencyCode:           row.CurrencyCode,
-			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-			CreatedAt:              goTime(row.CreatedAt),
+			ID:            row.ID,
+			UserID:        row.UserID,
+			Type:          row.Type,
+			AmountCents:   row.AmountCents,
+			CategoryID:    row.CategoryID,
+			CategoryName:  row.CategoryName,
+			CategoryIcon:  row.CategoryIcon,
+			CategoryColor: row.CategoryColor,
+			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
+			CreatedAt:     goTime(row.CreatedAt),
 		})
 	}
 	return txs, nil
@@ -154,9 +148,12 @@ func (r *TransactionRepository) Count(ctx context.Context, userID int64) (int64,
 	return r.q.CountUserTransactions(ctx, userID)
 }
 
-// GetTotalInBaseCurrency returns the net balance in base currency using exchange_rate_snapshot.
-func (r *TransactionRepository) GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error) {
-	return r.q.GetTotalInBaseCurrency(ctx, userID)
+// GetTotalInBaseCurrency returns the net balance converted to targetCurrency using exchange_rate_snapshots.
+func (r *TransactionRepository) GetTotalInBaseCurrency(ctx context.Context, userID int64, targetCurrency string) (int64, error) {
+	return r.q.GetTotalInBaseCurrency(ctx, sqlcgen.GetTotalInBaseCurrencyParams{
+		UserID:         userID,
+		TargetCurrency: targetCurrency,
+	})
 }
 
 // GetBalanceByCurrency returns per-currency income/expense totals for a user.
@@ -191,19 +188,17 @@ func (r *TransactionRepository) ListByCategoryPeriod(ctx context.Context, userID
 	txs := make([]*domain.Transaction, 0, len(rows))
 	for _, row := range rows {
 		txs = append(txs, &domain.Transaction{
-			ID:                     row.ID,
-			UserID:                 row.UserID,
-			Type:                   row.Type,
-			AmountCents:            row.AmountCents,
-			CategoryID:             row.CategoryID,
-			CategoryName:           row.CategoryName,
-			CategoryEmoji:          row.CategoryEmoji,
-			CategoryColor:          row.CategoryColor,
-			Note:                   row.Note,
-			CurrencyCode:           row.CurrencyCode,
-			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-			CreatedAt:              goTime(row.CreatedAt),
+			ID:            row.ID,
+			UserID:        row.UserID,
+			Type:          row.Type,
+			AmountCents:   row.AmountCents,
+			CategoryID:    row.CategoryID,
+			CategoryName:  row.CategoryName,
+			CategoryIcon:  row.CategoryIcon,
+			CategoryColor: row.CategoryColor,
+			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
+			CreatedAt:     goTime(row.CreatedAt),
 		})
 	}
 	return txs, nil
@@ -223,16 +218,14 @@ func (r *TransactionRepository) Update(ctx context.Context, t *domain.Transactio
 		return nil, err
 	}
 	return &domain.Transaction{
-		ID:                     row.ID,
-		UserID:                 row.UserID,
-		Type:                   row.Type,
-		AmountCents:            row.AmountCents,
-		CategoryID:             row.CategoryID,
-		Note:                   row.Note,
-		CurrencyCode:           row.CurrencyCode,
-		ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-		BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-		CreatedAt:              goTime(row.CreatedAt),
+		ID:           row.ID,
+		UserID:       row.UserID,
+		Type:         row.Type,
+		AmountCents:  row.AmountCents,
+		CategoryID:   row.CategoryID,
+		Note:         row.Note,
+		CurrencyCode: row.CurrencyCode,
+		CreatedAt:    goTime(row.CreatedAt),
 	}, nil
 }
 
@@ -251,7 +244,7 @@ func (r *TransactionRepository) StatsByCategory(ctx context.Context, userID int6
 	for _, row := range rows {
 		stats = append(stats, domain.CategoryStat{
 			CategoryName:  row.CategoryName,
-			CategoryEmoji: row.CategoryEmoji,
+			CategoryIcon:  row.CategoryIcon,
 			CategoryColor: row.CategoryColor,
 			Type:          row.Type,
 			CurrencyCode:  row.CurrencyCode,
@@ -266,7 +259,7 @@ func (r *TransactionRepository) StatsByCategory(ctx context.Context, userID int6
 func (r *TransactionRepository) ListByAccount(ctx context.Context, userID, accountID int64, limit, offset int) ([]*domain.Transaction, error) {
 	rows, err := r.q.ListTransactionsByAccount(ctx, sqlcgen.ListTransactionsByAccountParams{
 		UserID:    userID,
-		AccountID: pgOptionalInt8(&accountID),
+		AccountID: accountID,
 		Limit:     int32(limit),
 		Offset:    int32(offset),
 	})
@@ -276,19 +269,17 @@ func (r *TransactionRepository) ListByAccount(ctx context.Context, userID, accou
 	txs := make([]*domain.Transaction, 0, len(rows))
 	for _, row := range rows {
 		txs = append(txs, &domain.Transaction{
-			ID:                     row.ID,
-			UserID:                 row.UserID,
-			Type:                   row.Type,
-			AmountCents:            row.AmountCents,
-			CategoryID:             row.CategoryID,
-			CategoryName:           row.CategoryName,
-			CategoryEmoji:          row.CategoryEmoji,
-			CategoryColor:          row.CategoryColor,
-			Note:                   row.Note,
-			CurrencyCode:           row.CurrencyCode,
-			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-			CreatedAt:              goTime(row.CreatedAt),
+			ID:            row.ID,
+			UserID:        row.UserID,
+			Type:          row.Type,
+			AmountCents:   row.AmountCents,
+			CategoryID:    row.CategoryID,
+			CategoryName:  row.CategoryName,
+			CategoryIcon:  row.CategoryIcon,
+			CategoryColor: row.CategoryColor,
+			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
+			CreatedAt:     goTime(row.CreatedAt),
 		})
 	}
 	return txs, nil
@@ -298,7 +289,7 @@ func (r *TransactionRepository) ListByAccount(ctx context.Context, userID, accou
 func (r *TransactionRepository) CountByAccount(ctx context.Context, userID, accountID int64) (int64, error) {
 	return r.q.CountUserTransactionsByAccount(ctx, sqlcgen.CountUserTransactionsByAccountParams{
 		UserID:    userID,
-		AccountID: pgOptionalInt8(&accountID),
+		AccountID: accountID,
 	})
 }
 
@@ -306,7 +297,7 @@ func (r *TransactionRepository) CountByAccount(ctx context.Context, userID, acco
 func (r *TransactionRepository) StatsByCategoryAndAccount(ctx context.Context, userID, accountID int64, from, to time.Time) ([]domain.CategoryStat, error) {
 	rows, err := r.q.GetStatsByCategoryAndAccount(ctx, sqlcgen.GetStatsByCategoryAndAccountParams{
 		UserID:      userID,
-		AccountID:   pgOptionalInt8(&accountID),
+		AccountID:   accountID,
 		CreatedAt:   pgTimestamptz(from),
 		CreatedAt_2: pgTimestamptz(to),
 	})
@@ -317,7 +308,7 @@ func (r *TransactionRepository) StatsByCategoryAndAccount(ctx context.Context, u
 	for _, row := range rows {
 		stats = append(stats, domain.CategoryStat{
 			CategoryName:  row.CategoryName,
-			CategoryEmoji: row.CategoryEmoji,
+			CategoryIcon:  row.CategoryIcon,
 			CategoryColor: row.CategoryColor,
 			Type:          row.Type,
 			CurrencyCode:  row.CurrencyCode,
@@ -347,21 +338,19 @@ func (r *TransactionRepository) ListWithDateRange(ctx context.Context, userID in
 			accountName = row.AccountName.String
 		}
 		txs = append(txs, &domain.Transaction{
-			ID:                     row.ID,
-			UserID:                 row.UserID,
-			Type:                   row.Type,
-			AmountCents:            row.AmountCents,
-			CategoryID:             row.CategoryID,
-			CategoryName:           row.CategoryName,
-			CategoryEmoji:          row.CategoryEmoji,
-			CategoryColor:          row.CategoryColor,
-			Note:                   row.Note,
-			CurrencyCode:           row.CurrencyCode,
-			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-			CreatedAt:              goTime(row.CreatedAt),
-			AccountID:              goInt64(row.AccountID),
-			AccountName:            accountName,
+			ID:            row.ID,
+			UserID:        row.UserID,
+			Type:          row.Type,
+			AmountCents:   row.AmountCents,
+			CategoryID:    row.CategoryID,
+			CategoryName:  row.CategoryName,
+			CategoryIcon:  row.CategoryIcon,
+			CategoryColor: row.CategoryColor,
+			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
+			CreatedAt:     goTime(row.CreatedAt),
+			AccountID:     row.AccountID,
+			AccountName:   accountName,
 		})
 	}
 	return txs, nil
@@ -371,7 +360,7 @@ func (r *TransactionRepository) ListWithDateRange(ctx context.Context, userID in
 func (r *TransactionRepository) ListByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
 	rows, err := r.q.ListTransactionsByAccountWithDateRange(ctx, sqlcgen.ListTransactionsByAccountWithDateRangeParams{
 		UserID:    userID,
-		AccountID: pgOptionalInt8(&accountID),
+		AccountID: accountID,
 		Limit:     int32(limit),
 		Offset:    int32(offset),
 		Column5:   pgOptionalTimestamptz(from),
@@ -387,21 +376,19 @@ func (r *TransactionRepository) ListByAccountWithDateRange(ctx context.Context, 
 			accountName = row.AccountName.String
 		}
 		txs = append(txs, &domain.Transaction{
-			ID:                     row.ID,
-			UserID:                 row.UserID,
-			Type:                   row.Type,
-			AmountCents:            row.AmountCents,
-			CategoryID:             row.CategoryID,
-			CategoryName:           row.CategoryName,
-			CategoryEmoji:          row.CategoryEmoji,
-			CategoryColor:          row.CategoryColor,
-			Note:                   row.Note,
-			CurrencyCode:           row.CurrencyCode,
-			ExchangeRateSnapshot:   goFloat64(row.ExchangeRateSnapshot),
-			BaseCurrencyAtCreation: row.BaseCurrencyAtCreation,
-			CreatedAt:              goTime(row.CreatedAt),
-			AccountID:              goInt64(row.AccountID),
-			AccountName:            accountName,
+			ID:            row.ID,
+			UserID:        row.UserID,
+			Type:          row.Type,
+			AmountCents:   row.AmountCents,
+			CategoryID:    row.CategoryID,
+			CategoryName:  row.CategoryName,
+			CategoryIcon:  row.CategoryIcon,
+			CategoryColor: row.CategoryColor,
+			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
+			CreatedAt:     goTime(row.CreatedAt),
+			AccountID:     row.AccountID,
+			AccountName:   accountName,
 		})
 	}
 	return txs, nil
@@ -420,7 +407,7 @@ func (r *TransactionRepository) CountWithDateRange(ctx context.Context, userID i
 func (r *TransactionRepository) CountByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time) (int64, error) {
 	return r.q.CountUserTransactionsByAccountWithDateRange(ctx, sqlcgen.CountUserTransactionsByAccountWithDateRangeParams{
 		UserID:    userID,
-		AccountID: pgOptionalInt8(&accountID),
+		AccountID: accountID,
 		Column3:   pgOptionalTimestamptz(from),
 		Column4:   pgOptionalTimestamptz(to),
 	})
@@ -430,7 +417,7 @@ func (r *TransactionRepository) CountByAccountWithDateRange(ctx context.Context,
 func (r *TransactionRepository) GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error) {
 	rows, err := r.q.GetBalanceByCurrencyAndAccount(ctx, sqlcgen.GetBalanceByCurrencyAndAccountParams{
 		UserID:    userID,
-		AccountID: pgOptionalInt8(&accountID),
+		AccountID: accountID,
 	})
 	if err != nil {
 		return nil, err

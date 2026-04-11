@@ -28,14 +28,6 @@ func (m *MockUserStorer) GetByID(ctx context.Context, id int64) (*domain.User, e
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *MockUserStorer) UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error) {
-	args := m.Called(ctx, id, code)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*domain.User), args.Error(1)
-}
-
 func (m *MockUserStorer) UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error) {
 	args := m.Called(ctx, id, codes)
 	if args.Get(0) == nil {

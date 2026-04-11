@@ -12,53 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUserService_Upsert_PassesThroughAsIs(t *testing.T) {
+func TestUserService_Upsert_Success(t *testing.T) {
 	repo := &mocks.MockUserStorer{}
 	svc := service.NewUserService(repo, testutil.TestLogger())
 
-	// Currency is now set by the caller (ensureUser derives it from language);
-	// the service no longer injects a default.
-	input := &domain.User{ID: 1, FirstName: "Alice", CurrencyCode: "UAH", Language: "uk"}
+	input := &domain.User{ID: 1, FirstName: "Alice", Language: "uk"}
 	repo.On("Upsert", context.Background(), input).Return(input, nil)
 
 	got, err := svc.Upsert(context.Background(), input)
 	require.NoError(t, err)
-	assert.Equal(t, "UAH", got.CurrencyCode)
-	repo.AssertExpectations(t)
-}
-
-func TestUserService_Upsert_PreservesExistingCurrency(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	svc := service.NewUserService(repo, testutil.TestLogger())
-
-	input := &domain.User{ID: 1, CurrencyCode: "EUR"}
-	repo.On("Upsert", context.Background(), input).Return(input, nil)
-
-	got, err := svc.Upsert(context.Background(), input)
-	require.NoError(t, err)
-	assert.Equal(t, "EUR", got.CurrencyCode)
-	repo.AssertExpectations(t)
-}
-
-func TestUserService_UpdateCurrency_Invalid(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	svc := service.NewUserService(repo, testutil.TestLogger())
-
-	_, err := svc.UpdateCurrency(context.Background(), 1, "INVALID")
-	assert.ErrorIs(t, err, domain.ErrInvalidCurrency)
-	repo.AssertNotCalled(t, "UpdateCurrency")
-}
-
-func TestUserService_UpdateCurrency_Valid(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	svc := service.NewUserService(repo, testutil.TestLogger())
-
-	expected := &domain.User{ID: 1, CurrencyCode: "EUR"}
-	repo.On("UpdateCurrency", context.Background(), int64(1), "EUR").Return(expected, nil)
-
-	got, err := svc.UpdateCurrency(context.Background(), 1, "EUR")
-	require.NoError(t, err)
-	assert.Equal(t, "EUR", got.CurrencyCode)
+	assert.Equal(t, int64(1), got.ID)
 	repo.AssertExpectations(t)
 }
 

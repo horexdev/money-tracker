@@ -7,8 +7,6 @@ package sqlcgen
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const clearDefaultAccounts = `-- name: ClearDefaultAccounts :exec
@@ -21,18 +19,65 @@ func (q *Queries) ClearDefaultAccounts(ctx context.Context, userID int64) error 
 	return err
 }
 
+const countAccountRecurring = `-- name: CountAccountRecurring :one
+SELECT COUNT(*)::BIGINT FROM recurring_transactions
+WHERE account_id = $1 AND user_id = $2
+`
+
+type CountAccountRecurringParams struct {
+	AccountID int64 `json:"account_id"`
+	UserID    int64 `json:"user_id"`
+}
+
+func (q *Queries) CountAccountRecurring(ctx context.Context, arg CountAccountRecurringParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countAccountRecurring, arg.AccountID, arg.UserID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const countAccountTransactions = `-- name: CountAccountTransactions :one
 SELECT COUNT(*)::BIGINT FROM transactions
 WHERE account_id = $1 AND user_id = $2
 `
 
 type CountAccountTransactionsParams struct {
-	AccountID pgtype.Int8 `json:"account_id"`
-	UserID    int64       `json:"user_id"`
+	AccountID int64 `json:"account_id"`
+	UserID    int64 `json:"user_id"`
 }
 
 func (q *Queries) CountAccountTransactions(ctx context.Context, arg CountAccountTransactionsParams) (int64, error) {
 	row := q.db.QueryRow(ctx, countAccountTransactions, arg.AccountID, arg.UserID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const countAccountTransfers = `-- name: CountAccountTransfers :one
+SELECT COUNT(*)::BIGINT FROM transfers
+WHERE (from_account_id = $1 OR to_account_id = $1)
+  AND user_id = $2
+`
+
+type CountAccountTransfersParams struct {
+	FromAccountID int64 `json:"from_account_id"`
+	UserID        int64 `json:"user_id"`
+}
+
+func (q *Queries) CountAccountTransfers(ctx context.Context, arg CountAccountTransfersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countAccountTransfers, arg.FromAccountID, arg.UserID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const countUserAccounts = `-- name: CountUserAccounts :one
+SELECT COUNT(*)::BIGINT FROM accounts
+WHERE user_id = $1
+`
+
+func (q *Queries) CountUserAccounts(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserAccounts, userID)
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err
@@ -108,8 +153,8 @@ WHERE account_id = $1
 `
 
 type GetAccountBalanceParams struct {
-	AccountID pgtype.Int8 `json:"account_id"`
-	UserID    int64       `json:"user_id"`
+	AccountID int64 `json:"account_id"`
+	UserID    int64 `json:"user_id"`
 }
 
 func (q *Queries) GetAccountBalance(ctx context.Context, arg GetAccountBalanceParams) (int64, error) {
@@ -117,58 +162,6 @@ func (q *Queries) GetAccountBalance(ctx context.Context, arg GetAccountBalancePa
 	var balance_cents int64
 	err := row.Scan(&balance_cents)
 	return balance_cents, err
-}
-
-const getAccountBalanceInBase = `-- name: GetAccountBalanceInBase :one
-SELECT COALESCE(
-    SUM(
-        CASE WHEN type = 'income' THEN amount_cents ELSE -amount_cents END
-        * exchange_rate_snapshot
-    ), 0
-)::BIGINT AS balance_in_base_cents
-FROM transactions
-WHERE account_id = $1
-  AND user_id    = $2
-  AND type IN ('income', 'expense')
-`
-
-type GetAccountBalanceInBaseParams struct {
-	AccountID pgtype.Int8 `json:"account_id"`
-	UserID    int64       `json:"user_id"`
-}
-
-// Returns net balance converted to the user's base currency using per-transaction
-// exchange_rate_snapshot (rate: transaction.currency_code → transaction.base_currency_at_creation).
-// Result is in base currency cents; divide by the rate base→target to get target currency cents.
-func (q *Queries) GetAccountBalanceInBase(ctx context.Context, arg GetAccountBalanceInBaseParams) (int64, error) {
-	row := q.db.QueryRow(ctx, getAccountBalanceInBase, arg.AccountID, arg.UserID)
-	var balance_in_base_cents int64
-	err := row.Scan(&balance_in_base_cents)
-	return balance_in_base_cents, err
-}
-
-const getAccountBaseCurrency = `-- name: GetAccountBaseCurrency :one
-SELECT base_currency_at_creation
-FROM transactions
-WHERE account_id = $1
-  AND user_id    = $2
-  AND type IN ('income', 'expense')
-ORDER BY created_at DESC
-LIMIT 1
-`
-
-type GetAccountBaseCurrencyParams struct {
-	AccountID pgtype.Int8 `json:"account_id"`
-	UserID    int64       `json:"user_id"`
-}
-
-// Returns the base_currency_at_creation of the most recent transaction on this account.
-// Used to determine which currency the balance_in_base_cents is expressed in.
-func (q *Queries) GetAccountBaseCurrency(ctx context.Context, arg GetAccountBaseCurrencyParams) (string, error) {
-	row := q.db.QueryRow(ctx, getAccountBaseCurrency, arg.AccountID, arg.UserID)
-	var base_currency_at_creation string
-	err := row.Scan(&base_currency_at_creation)
-	return base_currency_at_creation, err
 }
 
 const getAccountByID = `-- name: GetAccountByID :one
@@ -299,8 +292,7 @@ SET name             = $3,
     icon             = $4,
     color            = $5,
     type             = $6,
-    currency_code    = $7,
-    include_in_total = $8,
+    include_in_total = $7,
     updated_at       = now()
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, icon, color, type, currency_code, is_default, include_in_total, created_at, updated_at
@@ -313,7 +305,6 @@ type UpdateAccountParams struct {
 	Icon           string      `json:"icon"`
 	Color          string      `json:"color"`
 	Type           AccountType `json:"type"`
-	CurrencyCode   string      `json:"currency_code"`
 	IncludeInTotal bool        `json:"include_in_total"`
 }
 
@@ -325,7 +316,6 @@ func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (A
 		arg.Icon,
 		arg.Color,
 		arg.Type,
-		arg.CurrencyCode,
 		arg.IncludeInTotal,
 	)
 	var i Account

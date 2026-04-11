@@ -25,6 +25,7 @@ func NewRecurringRepository(pool *pgxpool.Pool) *RecurringRepository {
 func (r *RecurringRepository) Create(ctx context.Context, rt *domain.RecurringTransaction) (*domain.RecurringTransaction, error) {
 	row, err := r.q.CreateRecurring(ctx, sqlcgen.CreateRecurringParams{
 		UserID:       rt.UserID,
+		AccountID:    rt.AccountID,
 		CategoryID:   rt.CategoryID,
 		Type:         rt.Type,
 		AmountCents:  rt.AmountCents,
@@ -65,6 +66,7 @@ func (r *RecurringRepository) ListByUser(ctx context.Context, userID int64) ([]*
 		result = append(result, &domain.RecurringTransaction{
 			ID:            row.ID,
 			UserID:        row.UserID,
+			AccountID:     row.AccountID,
 			CategoryID:    row.CategoryID,
 			Type:          row.Type,
 			AmountCents:   row.AmountCents,
@@ -76,7 +78,7 @@ func (r *RecurringRepository) ListByUser(ctx context.Context, userID int64) ([]*
 			CreatedAt:     goTime(row.CreatedAt),
 			UpdatedAt:     goTime(row.UpdatedAt),
 			CategoryName:  row.CategoryName,
-			CategoryEmoji: row.CategoryEmoji,
+			CategoryIcon:  row.CategoryIcon,
 			CategoryColor: row.CategoryColor,
 		})
 	}
@@ -88,6 +90,7 @@ func (r *RecurringRepository) Update(ctx context.Context, rt *domain.RecurringTr
 	row, err := r.q.UpdateRecurring(ctx, sqlcgen.UpdateRecurringParams{
 		ID:           rt.ID,
 		UserID:       rt.UserID,
+		AccountID:    rt.AccountID,
 		CategoryID:   rt.CategoryID,
 		Type:         rt.Type,
 		AmountCents:  rt.AmountCents,
@@ -150,6 +153,7 @@ func rowToRecurring(row sqlcgen.RecurringTransaction) *domain.RecurringTransacti
 	return &domain.RecurringTransaction{
 		ID:           row.ID,
 		UserID:       row.UserID,
+		AccountID:    row.AccountID,
 		CategoryID:   row.CategoryID,
 		Type:         row.Type,
 		AmountCents:  row.AmountCents,

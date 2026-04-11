@@ -17,21 +17,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func buildSettingsHandler(repo *mocks.MockUserStorer) http.HandlerFunc {
-	userSvc := service.NewUserService(repo, testutil.TestLogger())
-	return api.SettingsHandlerForTest(userSvc, 0, testutil.TestLogger())
+func buildSettingsHandler(userRepo *mocks.MockUserStorer, accountRepo *mocks.MockAccountStorer) http.HandlerFunc {
+	log := testutil.TestLogger()
+	userSvc := service.NewUserService(userRepo, log)
+	accountSvc := service.NewAccountService(accountRepo, nil, log)
+	return api.SettingsHandlerForTest(userSvc, accountSvc, 0, log)
 }
 
 func TestSettingsHandler_GET(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
 		ID:                1,
-		CurrencyCode:      "USD",
 		Language:          domain.LangEN,
 		DisplayCurrencies: []string{"EUR"},
 	}, nil)
 
-	h := buildSettingsHandler(repo)
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
 	r = r.WithContext(api.WithUserID(r.Context(), 1))
@@ -44,43 +48,20 @@ func TestSettingsHandler_GET(t *testing.T) {
 	assert.Equal(t, "en", resp["language"])
 }
 
-func TestSettingsHandler_PATCH_InvalidCurrency(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1, CurrencyCode: "USD"}, nil)
+func TestSettingsHandler_GET_BaseCurrencyFromDefaultAccount(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:       1,
+		Language: domain.LangEN,
+	}, nil)
 
-	h := buildSettingsHandler(repo)
-	body := `{"base_currency":"INVALID"}`
+	accountRepo := &mocks.MockAccountStorer{}
+	// Default account has EUR — this should be returned as base_currency
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 2, CurrencyCode: "EUR"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
-	r = r.WithContext(api.WithUserID(r.Context(), 1))
-	h.ServeHTTP(w, r)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
-
-func TestSettingsHandler_PATCH_TooManyDisplayCurrencies(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1, CurrencyCode: "USD"}, nil)
-
-	h := buildSettingsHandler(repo)
-	body := `{"display_currencies":["USD","EUR","GBP","JPY"]}`
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
-	r = r.WithContext(api.WithUserID(r.Context(), 1))
-	h.ServeHTTP(w, r)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
-
-func TestSettingsHandler_PATCH_ValidCurrency(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1, CurrencyCode: "USD"}, nil)
-	repo.On("UpdateCurrency", mock.Anything, int64(1), "EUR").Return(&domain.User{ID: 1, CurrencyCode: "EUR"}, nil)
-
-	h := buildSettingsHandler(repo)
-	body := `{"base_currency":"EUR"}`
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
 	r = r.WithContext(api.WithUserID(r.Context(), 1))
 	h.ServeHTTP(w, r)
 
@@ -90,8 +71,24 @@ func TestSettingsHandler_PATCH_ValidCurrency(t *testing.T) {
 	assert.Equal(t, "EUR", resp["base_currency"])
 }
 
+func TestSettingsHandler_PATCH_TooManyDisplayCurrencies(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{ID: 1}, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	body := `{"display_currencies":["USD","EUR","GBP","JPY"]}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
 func TestSettingsHandler_UnsupportedMethod(t *testing.T) {
-	h := buildSettingsHandler(&mocks.MockUserStorer{})
+	h := buildSettingsHandler(&mocks.MockUserStorer{}, &mocks.MockAccountStorer{})
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodDelete, "/api/v1/settings", nil)
 	r = r.WithContext(api.WithUserID(r.Context(), 1))
@@ -100,10 +97,9 @@ func TestSettingsHandler_UnsupportedMethod(t *testing.T) {
 }
 
 func TestSettingsHandler_GET_IncludesNotificationPrefs(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
-	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
 		ID:                       1,
-		CurrencyCode:             "USD",
 		Language:                 domain.LangEN,
 		NotifyBudgetAlerts:       true,
 		NotifyRecurringReminders: false,
@@ -111,7 +107,10 @@ func TestSettingsHandler_GET_IncludesNotificationPrefs(t *testing.T) {
 		NotifyGoalMilestones:     false,
 	}, nil)
 
-	h := buildSettingsHandler(repo)
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
 	r = r.WithContext(api.WithUserID(r.Context(), 1))
@@ -127,17 +126,16 @@ func TestSettingsHandler_GET_IncludesNotificationPrefs(t *testing.T) {
 }
 
 func TestSettingsHandler_PATCH_NotificationPrefs(t *testing.T) {
-	repo := &mocks.MockUserStorer{}
+	userRepo := &mocks.MockUserStorer{}
 	existing := &domain.User{
 		ID:                       1,
-		CurrencyCode:             "USD",
 		Language:                 domain.LangEN,
 		NotifyBudgetAlerts:       true,
 		NotifyRecurringReminders: false,
 		NotifyWeeklySummary:      false,
 		NotifyGoalMilestones:     false,
 	}
-	repo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
 
 	updatedPrefs := domain.NotificationPrefs{
 		BudgetAlerts:       false,
@@ -147,13 +145,15 @@ func TestSettingsHandler_PATCH_NotificationPrefs(t *testing.T) {
 	}
 	updated := &domain.User{
 		ID:                 1,
-		CurrencyCode:       "USD",
 		Language:           domain.LangEN,
 		NotifyBudgetAlerts: false,
 	}
-	repo.On("UpdateNotificationPreferences", mock.Anything, int64(1), updatedPrefs).Return(updated, nil)
+	userRepo.On("UpdateNotificationPreferences", mock.Anything, int64(1), updatedPrefs).Return(updated, nil)
 
-	h := buildSettingsHandler(repo)
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
 	body := `{"notification_preferences":{"notify_budget_alerts":false}}`
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
@@ -164,5 +164,5 @@ func TestSettingsHandler_PATCH_NotificationPrefs(t *testing.T) {
 	var resp map[string]any
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
 	assert.Equal(t, false, resp["notify_budget_alerts"])
-	repo.AssertExpectations(t)
+	userRepo.AssertExpectations(t)
 }

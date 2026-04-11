@@ -75,12 +75,17 @@ func (m *MockAccountStorer) GetBalance(ctx context.Context, accountID, userID in
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockAccountStorer) GetBalanceInBase(ctx context.Context, accountID, userID int64) (int64, error) {
+func (m *MockAccountStorer) CountAccounts(ctx context.Context, userID int64) (int64, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockAccountStorer) CountTransfers(ctx context.Context, accountID, userID int64) (int64, error) {
 	args := m.Called(ctx, accountID, userID)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockAccountStorer) GetBaseCurrency(ctx context.Context, accountID, userID int64) (string, error) {
+func (m *MockAccountStorer) CountRecurring(ctx context.Context, accountID, userID int64) (int64, error) {
 	args := m.Called(ctx, accountID, userID)
-	return args.String(0), args.Error(1)
+	return args.Get(0).(int64), args.Error(1)
 }

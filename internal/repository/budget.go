@@ -74,7 +74,7 @@ func (r *BudgetRepository) ListByUser(ctx context.Context, userID int64) ([]*dom
 			CreatedAt:            goTime(row.CreatedAt),
 			UpdatedAt:            goTime(row.UpdatedAt),
 			CategoryName:         row.CategoryName,
-			CategoryEmoji:        row.CategoryEmoji,
+			CategoryIcon:         row.CategoryIcon,
 			CategoryColor:        row.CategoryColor,
 		}
 		if row.LastNotifiedAt.Valid {
@@ -127,14 +127,15 @@ func (r *BudgetRepository) GetByUserCategoryPeriod(ctx context.Context, userID, 
 	return rowToBudget(row), nil
 }
 
-// GetSpentInPeriod returns total expense amount for a category in a date range.
+// GetSpentInPeriod returns total expense amount for a category in a date range,
+// converting all transactions to the target currency via exchange_rate_snapshots.
 func (r *BudgetRepository) GetSpentInPeriod(ctx context.Context, userID, categoryID int64, currency string, from, to time.Time) (int64, error) {
 	return r.q.GetSpentInPeriod(ctx, sqlcgen.GetSpentInPeriodParams{
-		UserID:       userID,
-		CategoryID:   categoryID,
-		CurrencyCode: currency,
-		CreatedAt:    pgTimestamptz(from),
-		CreatedAt_2:  pgTimestamptz(to),
+		UserID:         userID,
+		CategoryID:     categoryID,
+		TargetCurrency: currency,
+		CreatedAt:      pgTimestamptz(from),
+		CreatedAt_2:    pgTimestamptz(to),
 	})
 }
 

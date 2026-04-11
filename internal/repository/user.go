@@ -27,12 +27,11 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 // Upsert creates a new user or updates username/name fields if already exists.
 func (r *UserRepository) Upsert(ctx context.Context, u *domain.User) (*domain.User, error) {
 	row, err := r.q.UpsertUser(ctx, sqlcgen.UpsertUserParams{
-		ID:           u.ID,
-		Username:     u.Username,
-		FirstName:    u.FirstName,
-		LastName:     u.LastName,
-		CurrencyCode: u.CurrencyCode,
-		Language:     string(u.Language),
+		ID:        u.ID,
+		Username:  u.Username,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		Language:  string(u.Language),
 	})
 	if err != nil {
 		return nil, err
@@ -47,18 +46,6 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*domain.User, e
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domain.ErrUserNotFound
 		}
-		return nil, err
-	}
-	return rowToUser(row), nil
-}
-
-// UpdateCurrency changes the user's preferred currency code.
-func (r *UserRepository) UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error) {
-	row, err := r.q.UpdateUserCurrency(ctx, sqlcgen.UpdateUserCurrencyParams{
-		ID:           id,
-		CurrencyCode: code,
-	})
-	if err != nil {
 		return nil, err
 	}
 	return rowToUser(row), nil
@@ -155,7 +142,6 @@ func rowToUser(row sqlcgen.User) *domain.User {
 		Username:                 row.Username,
 		FirstName:                row.FirstName,
 		LastName:                 row.LastName,
-		CurrencyCode:             row.CurrencyCode,
 		Language:                 domain.Language(row.Language),
 		DisplayCurrencies:        dc,
 		CreatedAt:                goTime(row.CreatedAt),

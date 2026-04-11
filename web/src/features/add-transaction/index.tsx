@@ -148,12 +148,11 @@ export function AddTransactionPage() {
         type: mode as TransactionType,
         amount_cents: parseCents(amount),
         note: note.trim() || undefined,
-        currency_code: baseCurrency,
         created_at: txDate !== today ? txDate : undefined,
-        account_id: selectedAccountId ?? undefined,
+        account_id: selectedAccountId!,
       })
     }
-  }, [canSubmit, isTransfer, fromAccountId, toAccountId, amount, note, categoryID, mode, baseCurrency, txDate, selectedAccountId, txMutation, transferMutation])
+  }, [canSubmit, isTransfer, fromAccountId, toAccountId, amount, note, categoryID, mode, txDate, selectedAccountId, txMutation, transferMutation])
 
   const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(sanitizeAmount(e.target.value))
@@ -378,7 +377,7 @@ export function AddTransactionPage() {
                             : (cat.color || 'var(--color-accent)')
                           }}
                         >
-                          <CategoryIcon emoji={cat.emoji} size={20} weight="fill" className="text-white" />
+                          <CategoryIcon icon={cat.icon} size={20} weight="fill" className="text-white" />
                         </div>
                         <span className="text-center leading-tight px-0.5 truncate w-full">
                           {tCategory(cat.name)}

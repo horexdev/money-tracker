@@ -110,7 +110,7 @@ func TestCategoriesHandler_POST_InvalidJSON(t *testing.T) {
 
 func TestCategoriesHandler_POST_EmptyName(t *testing.T) {
 	h := buildCatHandler(&mocks.MockCategoryStorer{})
-	body := `{"name":"","emoji":"🍔","type":"expense"}`
+	body := `{"name":"","icon":"fork-knife","type":"expense"}`
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/api/v1/categories", bytes.NewBufferString(body))
 	r = r.WithContext(api.WithUserID(r.Context(), 1))
@@ -120,11 +120,11 @@ func TestCategoriesHandler_POST_EmptyName(t *testing.T) {
 
 func TestCategoriesHandler_POST_Create(t *testing.T) {
 	repo := &mocks.MockCategoryStorer{}
-	repo.On("CreateForUser", mock.Anything, int64(1), "Groceries", "🛒", "expense", "#6366f1").
+	repo.On("CreateForUser", mock.Anything, int64(1), "Groceries", "shopping-bag", "expense", "#6366f1").
 		Return(&domain.Category{ID: 10, UserID: 1, Name: "Groceries"}, nil)
 
 	h := buildCatHandler(repo)
-	body := `{"name":"Groceries","emoji":"🛒","type":"expense"}`
+	body := `{"name":"Groceries","icon":"shopping-bag","type":"expense"}`
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/api/v1/categories", bytes.NewBufferString(body))
 	r = r.WithContext(api.WithUserID(r.Context(), 1))
@@ -137,7 +137,7 @@ func TestCategoriesHandler_PUT_SystemCategory(t *testing.T) {
 	repo.On("GetByID", mock.Anything, int64(1)).Return(&domain.Category{ID: 1, UserID: 0, IsProtected: true}, nil)
 
 	h := buildCatHandler(repo)
-	body := `{"name":"Changed","emoji":"","type":"expense","color":"#fff"}`
+	body := `{"name":"Changed","icon":"","type":"expense","color":"#fff"}`
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPut, "/api/v1/categories/1", bytes.NewBufferString(body))
 	r.URL.Path = "/api/v1/categories/1"

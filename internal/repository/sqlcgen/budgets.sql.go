@@ -130,29 +130,37 @@ func (q *Queries) GetBudgetByUserCategoryPeriod(ctx context.Context, arg GetBudg
 }
 
 const getSpentInPeriod = `-- name: GetSpentInPeriod :one
-SELECT COALESCE(SUM(amount_cents), 0)::BIGINT AS total_spent
-FROM transactions
-WHERE user_id     = $1
-  AND category_id = $2
-  AND type         = 'expense'
-  AND currency_code = $3
-  AND created_at  >= $4
-  AND created_at  <  $5
+SELECT COALESCE(SUM(
+    ROUND(t.amount_cents * COALESCE(ers.rate, 1.0))
+), 0)::BIGINT AS total_spent
+FROM transactions t
+LEFT JOIN exchange_rate_snapshots ers
+    ON ers.snapshot_date   = t.snapshot_date
+   AND ers.base_currency   = t.currency_code
+   AND ers.target_currency = $3
+WHERE t.user_id     = $1
+  AND t.category_id = $2
+  AND t.type         = 'expense'
+  AND t.created_at  >= $4
+  AND t.created_at  <  $5
 `
 
 type GetSpentInPeriodParams struct {
-	UserID       int64              `json:"user_id"`
-	CategoryID   int64              `json:"category_id"`
-	CurrencyCode string             `json:"currency_code"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	CreatedAt_2  pgtype.Timestamptz `json:"created_at_2"`
+	UserID         int64              `json:"user_id"`
+	CategoryID     int64              `json:"category_id"`
+	TargetCurrency string             `json:"target_currency"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	CreatedAt_2    pgtype.Timestamptz `json:"created_at_2"`
 }
 
+// Cross-currency aggregation: converts each transaction's amount to the
+// budget's target currency using exchange_rate_snapshots. Same-currency
+// transactions pass through at rate 1.0 (no snapshot row needed).
 func (q *Queries) GetSpentInPeriod(ctx context.Context, arg GetSpentInPeriodParams) (int64, error) {
 	row := q.db.QueryRow(ctx, getSpentInPeriod,
 		arg.UserID,
 		arg.CategoryID,
-		arg.CurrencyCode,
+		arg.TargetCurrency,
 		arg.CreatedAt,
 		arg.CreatedAt_2,
 	)
@@ -165,7 +173,7 @@ const listBudgetsByUser = `-- name: ListBudgetsByUser :many
 SELECT
     b.id, b.user_id, b.category_id, b.limit_cents, b.period, b.currency_code, b.notify_at_percent, b.created_at, b.updated_at, b.last_notified_at, b.notifications_enabled, b.last_notified_percent,
     c.name  AS category_name,
-    c.emoji AS category_emoji,
+    c.icon AS category_icon,
     c.color AS category_color
 FROM budgets b
 JOIN categories c ON c.id = b.category_id
@@ -187,7 +195,7 @@ type ListBudgetsByUserRow struct {
 	NotificationsEnabled bool               `json:"notifications_enabled"`
 	LastNotifiedPercent  int32              `json:"last_notified_percent"`
 	CategoryName         string             `json:"category_name"`
-	CategoryEmoji        string             `json:"category_emoji"`
+	CategoryIcon         string             `json:"category_icon"`
 	CategoryColor        string             `json:"category_color"`
 }
 
@@ -214,7 +222,7 @@ func (q *Queries) ListBudgetsByUser(ctx context.Context, userID int64) ([]ListBu
 			&i.NotificationsEnabled,
 			&i.LastNotifiedPercent,
 			&i.CategoryName,
-			&i.CategoryEmoji,
+			&i.CategoryIcon,
 			&i.CategoryColor,
 		); err != nil {
 			return nil, err

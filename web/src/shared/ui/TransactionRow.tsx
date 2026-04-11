@@ -33,7 +33,7 @@ export function TransactionRow({ tx, compact = false, onDelete, onEdit, isDeleti
         className="w-11 h-11 rounded-(--radius-btn) flex items-center justify-center shrink-0"
         style={{ background: tx.category_color || 'var(--color-accent)' }}
       >
-        <CategoryIcon emoji={tx.category_emoji} size={22} weight="fill" className="text-white" />
+        <CategoryIcon icon={tx.category_icon} size={22} weight="fill" className="text-white" />
       </div>
 
       <div className="flex-1 min-w-0">

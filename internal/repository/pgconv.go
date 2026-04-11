@@ -39,6 +39,14 @@ func pgDate(t *time.Time) pgtype.Date {
 	return pgtype.Date{Time: *t, Valid: true}
 }
 
+// goDateValue converts a pgtype.Date to a time.Time (zero if invalid).
+func goDateValue(d pgtype.Date) time.Time {
+	if !d.Valid {
+		return time.Time{}
+	}
+	return d.Time
+}
+
 // goDatePtr converts a pgtype.Date to a *time.Time (nil if invalid).
 func goDatePtr(d pgtype.Date) *time.Time {
 	if !d.Valid {

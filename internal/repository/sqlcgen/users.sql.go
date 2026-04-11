@@ -84,7 +84,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones FROM users WHERE id = $1
+SELECT id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -95,7 +95,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Username,
 		&i.FirstName,
 		&i.LastName,
-		&i.CurrencyCode,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
@@ -113,7 +112,7 @@ UPDATE users
 SET display_currencies = $2,
     updated_at         = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpdateDisplayCurrenciesParams struct {
@@ -129,7 +128,6 @@ func (q *Queries) UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplay
 		&i.Username,
 		&i.FirstName,
 		&i.LastName,
-		&i.CurrencyCode,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
@@ -150,7 +148,7 @@ SET notify_budget_alerts       = $2,
     notify_goal_milestones     = $5,
     updated_at                 = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpdateNotificationPreferencesParams struct {
@@ -175,41 +173,6 @@ func (q *Queries) UpdateNotificationPreferences(ctx context.Context, arg UpdateN
 		&i.Username,
 		&i.FirstName,
 		&i.LastName,
-		&i.CurrencyCode,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DisplayCurrencies,
-		&i.Language,
-		&i.NotifyBudgetAlerts,
-		&i.NotifyRecurringReminders,
-		&i.NotifyWeeklySummary,
-		&i.NotifyGoalMilestones,
-	)
-	return i, err
-}
-
-const updateUserCurrency = `-- name: UpdateUserCurrency :one
-UPDATE users
-SET currency_code = $2,
-    updated_at    = NOW()
-WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
-`
-
-type UpdateUserCurrencyParams struct {
-	ID           int64  `json:"id"`
-	CurrencyCode string `json:"currency_code"`
-}
-
-func (q *Queries) UpdateUserCurrency(ctx context.Context, arg UpdateUserCurrencyParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUserCurrency, arg.ID, arg.CurrencyCode)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.FirstName,
-		&i.LastName,
-		&i.CurrencyCode,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
@@ -227,7 +190,7 @@ UPDATE users
 SET language   = $2,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpdateUserLanguageParams struct {
@@ -243,7 +206,6 @@ func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguage
 		&i.Username,
 		&i.FirstName,
 		&i.LastName,
-		&i.CurrencyCode,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,
@@ -257,25 +219,23 @@ func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguage
 }
 
 const upsertUser = `-- name: UpsertUser :one
-INSERT INTO users (id, username, first_name, last_name, currency_code, language)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO users (id, username, first_name, last_name, language)
+VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT (id) DO UPDATE
     SET username      = EXCLUDED.username,
         first_name    = EXCLUDED.first_name,
         last_name     = EXCLUDED.last_name,
         language      = CASE WHEN users.language = '' OR users.language IS NULL THEN EXCLUDED.language ELSE users.language END,
-        currency_code = CASE WHEN users.currency_code = '' OR users.currency_code IS NULL THEN EXCLUDED.currency_code ELSE users.currency_code END,
         updated_at    = NOW()
-RETURNING id, username, first_name, last_name, currency_code, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
 `
 
 type UpsertUserParams struct {
-	ID           int64  `json:"id"`
-	Username     string `json:"username"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	CurrencyCode string `json:"currency_code"`
-	Language     string `json:"language"`
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Language  string `json:"language"`
 }
 
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
@@ -284,7 +244,6 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		arg.Username,
 		arg.FirstName,
 		arg.LastName,
-		arg.CurrencyCode,
 		arg.Language,
 	)
 	var i User
@@ -293,7 +252,6 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.Username,
 		&i.FirstName,
 		&i.LastName,
-		&i.CurrencyCode,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DisplayCurrencies,

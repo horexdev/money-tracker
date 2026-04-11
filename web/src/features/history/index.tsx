@@ -51,7 +51,7 @@ function TransactionRow({
           className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
           style={{ background: tx.category_color || 'var(--color-accent)' }}
         >
-          <CategoryIcon emoji={tx.category_emoji} size={20} weight="fill" className="text-white" />
+          <CategoryIcon icon={tx.category_icon} size={20} weight="fill" className="text-white" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -250,13 +250,13 @@ export function HistoryPage() {
 
   // Collect unique categories from loaded transactions (no adjustment)
   const uniqueCategories = useMemo(() => {
-    const seen = new Map<number, { id: number; name: string; emoji: string; color: string }>()
+    const seen = new Map<number, { id: number; name: string; icon: string; color: string }>()
     for (const tx of allItems) {
       if (!seen.has(tx.category_id)) {
         seen.set(tx.category_id, {
           id: tx.category_id,
           name: tx.category_name,
-          emoji: tx.category_emoji,
+          icon: tx.category_icon,
           color: tx.category_color,
         })
       }
@@ -576,7 +576,7 @@ export function HistoryPage() {
                         className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
                         style={{ background: cat.color }}
                       >
-                        <CategoryIcon emoji={cat.emoji} size={10} weight="fill" className={isActive ? 'text-accent-text' : 'text-white'} />
+                        <CategoryIcon icon={cat.icon} size={10} weight="fill" className={isActive ? 'text-accent-text' : 'text-white'} />
                       </span>
                       <span>{tCategory(cat.name)}</span>
                     </button>

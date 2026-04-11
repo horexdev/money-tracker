@@ -40,45 +40,12 @@ import {
   Tag,
   ArrowsLeftRight,
   PiggyBank,
+  Scales,
   type IconWeight,
 } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 
 type IconComponent = React.ComponentType<{ size?: number; weight?: IconWeight; className?: string }>
-
-/** Emoji → Phosphor icon mapping (for legacy emoji-based categories) */
-const EMOJI_MAP: Record<string, IconComponent> = {
-  // Food
-  '🍔': ForkKnife, '🍕': Pizza, '🍳': ForkKnife, '🥗': ForkKnife,
-  '🍜': ForkKnife, '🍱': ForkKnife, '🥘': ForkKnife,
-  // Transport
-  '🚕': Taxi, '🚗': Car, '🚌': Bus, '🚎': Bus, '🏍️': Car, '🏍': Car,
-  '🚂': Car, '⛽': Car,
-  // Entertainment
-  '🎬': FilmSlate, '🎭': FilmSlate, '🎪': FilmSlate, '🎮': GameController,
-  '🎵': MusicNote, '🎶': MusicNote,
-  // Shopping
-  '🛍️': ShoppingBag, '🛍': ShoppingBag, '🛒': ShoppingBag,
-  // Health
-  '💊': FirstAid, '🏥': FirstAid, '🩺': FirstAid,
-  // Money / income
-  '💰': Money, '💵': Money, '💸': Money, '💲': CurrencyDollar,
-  '💼': Briefcase, '🧾': Money,
-  // Tech
-  '💻': Laptop, '🖥️': Laptop, '📱': DeviceMobile, '📲': DeviceMobile,
-  // Home
-  '🏠': House, '🏡': House, '🛋️': Bed, '🛋': Bed,
-  // Other
-  '📦': Tag, '📫': Tag, '📬': Tag,
-  '☕': Coffee, '⚡': Lightning, '❤️': Heartbeat, '🎓': GraduationCap,
-  '✈️': Airplane, '🎁': Gift, '🐾': PawPrint, '👕': TShirt,
-  '💪': Barbell, '🏦': PiggyBank, '👛': Wallet, '🌸': Flower,
-  '🌺': Flower, '🐶': PawPrint, '🐱': PawPrint, '👶': Baby,
-  '📚': BookOpen, '📖': BookOpen, '🔧': Wrench, '✂️': Scissors,
-  '📷': Camera, '📸': Camera, '🔒': ShieldCheck,
-  // Transfer system category
-  '↔️': ArrowsLeftRight, '↔': ArrowsLeftRight,
-}
 
 /** All available icons for the icon picker, keyed by a stable string ID */
 export const ICON_CHOICES: { id: string; Icon: IconComponent; label: string }[] = [
@@ -121,6 +88,9 @@ export const ICON_CHOICES: { id: string; Icon: IconComponent; label: string }[] 
   { id: 'shield-check', Icon: ShieldCheck, label: 'Insurance' },
   { id: 'star', Icon: Star, label: 'Other' },
   { id: 'tag', Icon: Tag, label: 'Tags' },
+  { id: 'piggy-bank', Icon: PiggyBank, label: 'Savings' },
+  { id: 'arrows-left-right', Icon: ArrowsLeftRight, label: 'Transfer' },
+  { id: 'scales', Icon: Scales, label: 'Adjustment' },
 ]
 
 /** Lookup map: icon ID → component */
@@ -130,31 +100,20 @@ for (const choice of ICON_CHOICES) {
 }
 
 /**
- * Render a category icon. Accepts either:
- * - A Phosphor icon ID (e.g. "fork-knife") — new format
- * - An emoji string (e.g. "🍔") — legacy format, mapped to Phosphor icon or rendered as emoji fallback
+ * Render a category icon by its Phosphor icon ID (e.g. "fork-knife").
+ * Falls back to Star if the ID is not recognized.
  */
 export function CategoryIcon({
-  emoji,
+  icon,
   size = 20,
   weight = 'fill',
   className = '',
 }: {
-  emoji: string
+  icon: string
   size?: number
   weight?: IconWeight
   className?: string
 }): ReactNode {
-  // Try icon ID first (new format)
-  const IconById = ICON_ID_MAP[emoji]
-  if (IconById) {
-    return <IconById size={size} weight={weight} className={className} />
-  }
-  // Try emoji mapping (legacy format)
-  const IconByEmoji = EMOJI_MAP[emoji]
-  if (IconByEmoji) {
-    return <IconByEmoji size={size} weight={weight} className={className} />
-  }
-  // Fallback: render as emoji text
-  return <span style={{ fontSize: size * 0.9, lineHeight: 1 }}>{emoji}</span>
+  const IconComponent = ICON_ID_MAP[icon] ?? Star
+  return <IconComponent size={size} weight={weight} className={className} />
 }

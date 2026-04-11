@@ -94,7 +94,7 @@ func (r *AccountRepository) ListByUser(ctx context.Context, userID int64) ([]*do
 	return out, nil
 }
 
-// Update updates mutable account fields.
+// Update updates mutable account fields (currency_code is immutable and not updated).
 func (r *AccountRepository) Update(ctx context.Context, a *domain.Account) (*domain.Account, error) {
 	row, err := r.q.UpdateAccount(ctx, sqlcgen.UpdateAccountParams{
 		ID:             a.ID,
@@ -103,7 +103,6 @@ func (r *AccountRepository) Update(ctx context.Context, a *domain.Account) (*dom
 		Icon:           a.Icon,
 		Color:          a.Color,
 		Type:           sqlcgen.AccountType(a.Type),
-		CurrencyCode:   a.CurrencyCode,
 		IncludeInTotal: a.IncludeInTotal,
 	})
 	if err != nil {
@@ -154,7 +153,7 @@ func (r *AccountRepository) Delete(ctx context.Context, id, userID int64) error 
 // CountTransactions returns how many transactions are linked to the account.
 func (r *AccountRepository) CountTransactions(ctx context.Context, accountID, userID int64) (int64, error) {
 	n, err := r.q.CountAccountTransactions(ctx, sqlcgen.CountAccountTransactionsParams{
-		AccountID: pgInt8(accountID),
+		AccountID: accountID,
 		UserID:    userID,
 	})
 	if err != nil {
@@ -163,10 +162,31 @@ func (r *AccountRepository) CountTransactions(ctx context.Context, accountID, us
 	return n, nil
 }
 
+// CountAccounts returns how many accounts a user has.
+func (r *AccountRepository) CountAccounts(ctx context.Context, userID int64) (int64, error) {
+	n, err := r.q.CountUserAccounts(ctx, userID)
+	if err != nil {
+		return 0, fmt.Errorf("count user accounts: %w", err)
+	}
+	return n, nil
+}
+
+// CountTransfers returns how many transfers involve the given account.
+func (r *AccountRepository) CountTransfers(ctx context.Context, accountID, userID int64) (int64, error) {
+	n, err := r.q.CountAccountTransfers(ctx, sqlcgen.CountAccountTransfersParams{
+		FromAccountID: accountID,
+		UserID:        userID,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("count account transfers: %w", err)
+	}
+	return n, nil
+}
+
 // GetBalance returns the net balance (income - expense) for an account.
 func (r *AccountRepository) GetBalance(ctx context.Context, accountID, userID int64) (int64, error) {
 	cents, err := r.q.GetAccountBalance(ctx, sqlcgen.GetAccountBalanceParams{
-		AccountID: pgInt8(accountID),
+		AccountID: accountID,
 		UserID:    userID,
 	})
 	if err != nil {
@@ -175,28 +195,15 @@ func (r *AccountRepository) GetBalance(ctx context.Context, accountID, userID in
 	return cents, nil
 }
 
-// GetBalanceInBase returns the net balance converted to the user's base currency
-// using per-transaction exchange_rate_snapshot values.
-func (r *AccountRepository) GetBalanceInBase(ctx context.Context, accountID, userID int64) (int64, error) {
-	cents, err := r.q.GetAccountBalanceInBase(ctx, sqlcgen.GetAccountBalanceInBaseParams{
-		AccountID: pgInt8(accountID),
+// CountRecurring returns how many recurring transactions are linked to the account.
+func (r *AccountRepository) CountRecurring(ctx context.Context, accountID, userID int64) (int64, error) {
+	n, err := r.q.CountAccountRecurring(ctx, sqlcgen.CountAccountRecurringParams{
+		AccountID: accountID,
 		UserID:    userID,
 	})
 	if err != nil {
-		return 0, fmt.Errorf("get account balance in base: %w", err)
+		return 0, fmt.Errorf("count account recurring: %w", err)
 	}
-	return cents, nil
+	return n, nil
 }
 
-// GetBaseCurrency returns the base_currency_at_creation of the most recent transaction
-// on this account, which represents the base currency used for balance calculations.
-func (r *AccountRepository) GetBaseCurrency(ctx context.Context, accountID, userID int64) (string, error) {
-	cur, err := r.q.GetAccountBaseCurrency(ctx, sqlcgen.GetAccountBaseCurrencyParams{
-		AccountID: pgInt8(accountID),
-		UserID:    userID,
-	})
-	if err != nil {
-		return "", fmt.Errorf("get account base currency: %w", err)
-	}
-	return cur, nil
-}

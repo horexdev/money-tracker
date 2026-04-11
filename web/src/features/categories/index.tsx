@@ -41,17 +41,17 @@ function CategoryForm({
   const defaultColor = editingCat?.color ?? COLOR_SWATCHES[categoryCount % COLOR_SWATCHES.length]
 
   const [name, setName] = useState(editingCat ? tCategory(editingCat.name) : '')
-  const [iconId, setIconId] = useState(editingCat?.emoji ?? 'star')
+  const [iconId, setIconId] = useState(editingCat?.icon ?? 'star')
   const [catType, setCatType] = useState(editingCat?.type ?? 'both')
   const [color, setColor] = useState(defaultColor)
 
   const createMut = useMutation({
-    mutationFn: () => categoriesApi.create({ name, emoji: iconId, type: catType, color }),
+    mutationFn: () => categoriesApi.create({ name, icon: iconId, type: catType, color }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); notification('success'); onClose() },
   })
 
   const updateMut = useMutation({
-    mutationFn: () => categoriesApi.update(editingCat!.id, { name, emoji: iconId, type: catType, color }),
+    mutationFn: () => categoriesApi.update(editingCat!.id, { name, icon: iconId, type: catType, color }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); notification('success'); onClose() },
   })
 
@@ -74,7 +74,7 @@ function CategoryForm({
             className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: color, boxShadow: `0 2px 8px ${color}66` }}
           >
-            <CategoryIcon emoji={iconId} size={22} weight="fill" className="text-white" />
+            <CategoryIcon icon={iconId} size={22} weight="fill" className="text-white" />
           </div>
           <div className="flex-1">
             <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
@@ -178,7 +178,7 @@ function CategoryRow({
             className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
             style={{ background: cat.color || 'var(--color-accent)' }}
           >
-            <CategoryIcon emoji={cat.emoji} size={20} weight="fill" className="text-white" />
+            <CategoryIcon icon={cat.icon} size={20} weight="fill" className="text-white" />
           </div>
           <button
             onClick={() => onEdit(cat)}

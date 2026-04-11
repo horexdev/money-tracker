@@ -132,12 +132,21 @@ type Category struct {
 	ID          int64              `json:"id"`
 	UserID      pgtype.Int8        `json:"user_id"`
 	Name        string             `json:"name"`
-	Emoji       string             `json:"emoji"`
+	Icon        string             `json:"icon"`
 	Type        string             `json:"type"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
 	Color       string             `json:"color"`
 	IsProtected bool               `json:"is_protected"`
+}
+
+type ExchangeRateSnapshot struct {
+	ID             int64              `json:"id"`
+	SnapshotDate   pgtype.Date        `json:"snapshot_date"`
+	BaseCurrency   string             `json:"base_currency"`
+	TargetCurrency string             `json:"target_currency"`
+	Rate           pgtype.Numeric     `json:"rate"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 type GoalTransaction struct {
@@ -162,6 +171,7 @@ type RecurringTransaction struct {
 	IsActive     bool                   `json:"is_active"`
 	CreatedAt    pgtype.Timestamptz     `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz     `json:"updated_at"`
+	AccountID    int64                  `json:"account_id"`
 }
 
 type SavingsGoal struct {
@@ -178,18 +188,17 @@ type SavingsGoal struct {
 }
 
 type Transaction struct {
-	ID                     int64                  `json:"id"`
-	UserID                 int64                  `json:"user_id"`
-	Type                   domain.TransactionType `json:"type"`
-	AmountCents            int64                  `json:"amount_cents"`
-	CategoryID             int64                  `json:"category_id"`
-	Note                   string                 `json:"note"`
-	CreatedAt              pgtype.Timestamptz     `json:"created_at"`
-	CurrencyCode           string                 `json:"currency_code"`
-	ExchangeRateSnapshot   pgtype.Numeric         `json:"exchange_rate_snapshot"`
-	BaseCurrencyAtCreation string                 `json:"base_currency_at_creation"`
-	AccountID              pgtype.Int8            `json:"account_id"`
-	IsAdjustment           bool                   `json:"is_adjustment"`
+	ID           int64                  `json:"id"`
+	UserID       int64                  `json:"user_id"`
+	Type         domain.TransactionType `json:"type"`
+	AmountCents  int64                  `json:"amount_cents"`
+	CategoryID   int64                  `json:"category_id"`
+	Note         string                 `json:"note"`
+	CreatedAt    pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode string                 `json:"currency_code"`
+	AccountID    int64                  `json:"account_id"`
+	IsAdjustment bool                   `json:"is_adjustment"`
+	SnapshotDate pgtype.Date            `json:"snapshot_date"`
 }
 
 type Transfer struct {
@@ -212,7 +221,6 @@ type User struct {
 	Username                 string             `json:"username"`
 	FirstName                string             `json:"first_name"`
 	LastName                 string             `json:"last_name"`
-	CurrencyCode             string             `json:"currency_code"`
 	CreatedAt                pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
 	DisplayCurrencies        string             `json:"display_currencies"`

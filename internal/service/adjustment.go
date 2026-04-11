@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/horexdev/money-tracker/internal/domain"
 )
@@ -58,15 +59,14 @@ func (s *AdjustmentService) Apply(ctx context.Context, userID, accountID, deltaC
 	}
 
 	tx, err := s.txRepo.CreateAdjustment(ctx, &domain.Transaction{
-		UserID:                 userID,
-		Type:                   txType,
-		AmountCents:            amountCents,
-		CategoryID:             cat.ID,
-		Note:                   note,
-		CurrencyCode:           acc.CurrencyCode,
-		BaseCurrencyAtCreation: acc.CurrencyCode,
-		ExchangeRateSnapshot:   1.0,
-		AccountID:              accountID,
+		UserID:       userID,
+		Type:         txType,
+		AmountCents:  amountCents,
+		CategoryID:   cat.ID,
+		Note:         note,
+		CurrencyCode: acc.CurrencyCode,
+		AccountID:    accountID,
+		SnapshotDate: time.Now().UTC().Truncate(24 * time.Hour),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create adjustment transaction: %w", err)

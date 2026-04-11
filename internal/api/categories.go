@@ -15,7 +15,7 @@ import (
 type categoryResponse struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
-	Emoji       string `json:"emoji"`
+	Icon        string `json:"icon"`
 	Type        string `json:"type"`
 	Color       string `json:"color"`
 	IsSystem    bool   `json:"is_system"`
@@ -28,14 +28,14 @@ type categoriesListResponse struct {
 
 type createCategoryRequest struct {
 	Name  string `json:"name"`
-	Emoji string `json:"emoji"`
+	Icon  string `json:"icon"`
 	Type  string `json:"type"`
 	Color string `json:"color"`
 }
 
 type updateCategoryRequest struct {
 	Name  string `json:"name"`
-	Emoji string `json:"emoji"`
+	Icon  string `json:"icon"`
 	Type  string `json:"type"`
 	Color string `json:"color"`
 }
@@ -63,7 +63,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 					writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
 					return
 				}
-				cat, err := catSvc.Update(ctx, userID, id, req.Name, req.Emoji, req.Type, req.Color)
+				cat, err := catSvc.Update(ctx, userID, id, req.Name, req.Icon, req.Type, req.Color)
 				if err != nil {
 					writeError(w, log, err)
 					return
@@ -107,7 +107,7 @@ func categoriesHandler(catSvc *service.CategoryService, log *slog.Logger) http.H
 				writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
 				return
 			}
-			cat, err := catSvc.Create(ctx, userID, req.Name, req.Emoji, req.Type, req.Color)
+			cat, err := catSvc.Create(ctx, userID, req.Name, req.Icon, req.Type, req.Color)
 			if err != nil {
 				writeError(w, log, err)
 				return
@@ -124,7 +124,7 @@ func toCategoryResponse(c *domain.Category) categoryResponse {
 	return categoryResponse{
 		ID:          c.ID,
 		Name:        c.Name,
-		Emoji:       c.Emoji,
+		Icon:        c.Icon,
 		Type:        string(c.Type),
 		Color:       c.Color,
 		IsSystem:    c.IsSystem(),

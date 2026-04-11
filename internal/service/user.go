@@ -38,19 +38,6 @@ func (s *UserService) GetByID(ctx context.Context, id int64) (*domain.User, erro
 	return u, nil
 }
 
-// UpdateCurrency changes the user's preferred currency code.
-func (s *UserService) UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error) {
-	if !domain.ValidCurrency(code) {
-		return nil, domain.ErrInvalidCurrency
-	}
-	u, err := s.repo.UpdateCurrency(ctx, id, code)
-	if err != nil {
-		return nil, fmt.Errorf("update currency for user %d: %w", id, err)
-	}
-	s.log.InfoContext(ctx, "currency updated", slog.Int64("user_id", id), slog.String("currency", code))
-	return u, nil
-}
-
 // UpdateLanguage changes the user's preferred language.
 func (s *UserService) UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error) {
 	if !domain.ValidLanguage(lang) {

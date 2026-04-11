@@ -11,7 +11,6 @@ import (
 type UserStorer interface {
 	Upsert(ctx context.Context, u *domain.User) (*domain.User, error)
 	GetByID(ctx context.Context, id int64) (*domain.User, error)
-	UpdateCurrency(ctx context.Context, id int64, code string) (*domain.User, error)
 	UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error)
 	UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error)
 	UpdateNotificationPreferences(ctx context.Context, id int64, prefs domain.NotificationPrefs) (*domain.User, error)
@@ -26,7 +25,7 @@ type TransactionStorer interface {
 	GetBalance(ctx context.Context, userID int64) (incomeCents, expenseCents int64, err error)
 	GetBalanceByCurrency(ctx context.Context, userID int64) ([]domain.BalanceByCurrency, error)
 	GetBalanceByCurrencyAndAccount(ctx context.Context, userID, accountID int64) ([]domain.BalanceByCurrency, error)
-	GetTotalInBaseCurrency(ctx context.Context, userID int64) (int64, error)
+	GetTotalInBaseCurrency(ctx context.Context, userID int64, targetCurrency string) (int64, error)
 	List(ctx context.Context, userID int64, limit, offset int) ([]*domain.Transaction, error)
 	ListByAccount(ctx context.Context, userID, accountID int64, limit, offset int) ([]*domain.Transaction, error)
 	ListWithDateRange(ctx context.Context, userID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error)
@@ -52,9 +51,9 @@ type CategoryStorer interface {
 	ListForUserByType(ctx context.Context, userID int64, catType string) ([]*domain.Category, error)
 	ListSorted(ctx context.Context, userID int64, catType, order string) ([]*domain.Category, error)
 	HasCategories(ctx context.Context, userID int64) (bool, error)
-	CreateForUser(ctx context.Context, userID int64, name, emoji, catType, color string) (*domain.Category, error)
+	CreateForUser(ctx context.Context, userID int64, name, icon, catType, color string) (*domain.Category, error)
 	BulkCreateForUser(ctx context.Context, userID int64, seeds []domain.CategorySeed) error
-	Update(ctx context.Context, userID, id int64, name, emoji, catType, color string) (*domain.Category, error)
+	Update(ctx context.Context, userID, id int64, name, icon, catType, color string) (*domain.Category, error)
 	SoftDelete(ctx context.Context, id, userID int64) error
 	CountTransactions(ctx context.Context, categoryID int64) (int64, error)
 }
@@ -107,9 +106,10 @@ type AccountStorer interface {
 	SetDefault(ctx context.Context, id, userID int64) (*domain.Account, error)
 	Delete(ctx context.Context, id, userID int64) error
 	CountTransactions(ctx context.Context, accountID, userID int64) (int64, error)
+	CountAccounts(ctx context.Context, userID int64) (int64, error)
+	CountTransfers(ctx context.Context, accountID, userID int64) (int64, error)
+	CountRecurring(ctx context.Context, accountID, userID int64) (int64, error)
 	GetBalance(ctx context.Context, accountID, userID int64) (int64, error)
-	GetBalanceInBase(ctx context.Context, accountID, userID int64) (int64, error)
-	GetBaseCurrency(ctx context.Context, accountID, userID int64) (string, error)
 }
 
 // AdminStorer is the repository interface for admin analytics queries.

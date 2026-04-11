@@ -16,6 +16,7 @@ const (
 type RecurringTransaction struct {
 	ID            int64
 	UserID        int64
+	AccountID     int64
 	CategoryID    int64
 	Type          TransactionType
 	AmountCents   int64
@@ -29,7 +30,7 @@ type RecurringTransaction struct {
 
 	// Joined fields for display.
 	CategoryName  string
-	CategoryEmoji string
+	CategoryIcon  string
 	CategoryColor string
 }
 

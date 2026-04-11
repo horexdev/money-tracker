@@ -11,13 +11,14 @@ import (
 
 // RecurringService handles business logic for recurring transactions.
 type RecurringService struct {
-	repo   RecurringStorer
-	txRepo TransactionStorer
-	log    *slog.Logger
+	repo    RecurringStorer
+	txRepo  TransactionStorer
+	accRepo AccountStorer
+	log     *slog.Logger
 }
 
-func NewRecurringService(repo RecurringStorer, txRepo TransactionStorer, log *slog.Logger) *RecurringService {
-	return &RecurringService{repo: repo, txRepo: txRepo, log: log}
+func NewRecurringService(repo RecurringStorer, txRepo TransactionStorer, accRepo AccountStorer, log *slog.Logger) *RecurringService {
+	return &RecurringService{repo: repo, txRepo: txRepo, accRepo: accRepo, log: log}
 }
 
 // Create adds a new recurring transaction.
@@ -27,6 +28,9 @@ func (s *RecurringService) Create(ctx context.Context, rt *domain.RecurringTrans
 	}
 	if !validFrequency(rt.Frequency) {
 		return nil, domain.ErrInvalidFrequency
+	}
+	if rt.AccountID == 0 {
+		return nil, domain.ErrAccountNotFound
 	}
 
 	if rt.NextRunAt.IsZero() {
@@ -89,7 +93,8 @@ func (s *RecurringService) Delete(ctx context.Context, id, userID int64) error {
 	return nil
 }
 
-// ProcessDue finds all due recurring transactions, creates actual transactions, and advances next_run_at.
+// ProcessDue finds all due recurring transactions, creates actual transactions
+// with the account's currency, and advances next_run_at.
 func (s *RecurringService) ProcessDue(ctx context.Context) (int, error) {
 	now := time.Now()
 	due, err := s.repo.GetDue(ctx, now)
@@ -99,15 +104,26 @@ func (s *RecurringService) ProcessDue(ctx context.Context) (int, error) {
 
 	var processed int
 	for _, rt := range due {
-		_, err := s.txRepo.Create(ctx, &domain.Transaction{
-			UserID:                 rt.UserID,
-			Type:                   rt.Type,
-			AmountCents:            rt.AmountCents,
-			CategoryID:             rt.CategoryID,
-			Note:                   rt.Note,
-			CurrencyCode:           rt.CurrencyCode,
-			ExchangeRateSnapshot:   1.0,
-			BaseCurrencyAtCreation: rt.CurrencyCode,
+		// Look up the account to get its currency.
+		acc, err := s.accRepo.GetByID(ctx, rt.AccountID, rt.UserID)
+		if err != nil {
+			s.log.ErrorContext(ctx, "recurring: account not found, skipping",
+				slog.Int64("recurring_id", rt.ID),
+				slog.Int64("account_id", rt.AccountID),
+				slog.String("error", err.Error()),
+			)
+			continue
+		}
+
+		_, err = s.txRepo.Create(ctx, &domain.Transaction{
+			UserID:       rt.UserID,
+			Type:         rt.Type,
+			AmountCents:  rt.AmountCents,
+			CategoryID:   rt.CategoryID,
+			Note:         rt.Note,
+			CurrencyCode: acc.CurrencyCode,
+			AccountID:    rt.AccountID,
+			SnapshotDate: now.UTC().Truncate(24 * time.Hour),
 		})
 		if err != nil {
 			s.log.ErrorContext(ctx, "failed to create transaction from recurring",
@@ -130,6 +146,7 @@ func (s *RecurringService) ProcessDue(ctx context.Context) (int, error) {
 		s.log.InfoContext(ctx, "recurring transaction processed",
 			slog.Int64("recurring_id", rt.ID),
 			slog.Int64("user_id", rt.UserID),
+			slog.Int64("account_id", rt.AccountID),
 		)
 	}
 	return processed, nil

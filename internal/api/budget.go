@@ -15,7 +15,7 @@ type budgetResponse struct {
 	ID                   int64   `json:"id"`
 	CategoryID           int64   `json:"category_id"`
 	CategoryName         string  `json:"category_name"`
-	CategoryEmoji        string  `json:"category_emoji"`
+	CategoryIcon        string  `json:"category_icon"`
 	CategoryColor        string  `json:"category_color"`
 	LimitCents           int64   `json:"limit_cents"`
 	SpentCents           int64   `json:"spent_cents"`
@@ -194,7 +194,7 @@ func listBudgetTransactions(w http.ResponseWriter, r *http.Request, userID, id i
 			ID:            tx.ID,
 			AmountCents:   tx.AmountCents,
 			CategoryName:  tx.CategoryName,
-			CategoryEmoji: tx.CategoryEmoji,
+			CategoryIcon: tx.CategoryIcon,
 			CategoryColor: tx.CategoryColor,
 			Note:          tx.Note,
 			CurrencyCode:  tx.CurrencyCode,
@@ -208,7 +208,7 @@ type budgetTransactionResponse struct {
 	ID            int64  `json:"id"`
 	AmountCents   int64  `json:"amount_cents"`
 	CategoryName  string `json:"category_name"`
-	CategoryEmoji string `json:"category_emoji"`
+	CategoryIcon string `json:"category_icon"`
 	CategoryColor string `json:"category_color"`
 	Note          string `json:"note"`
 	CurrencyCode  string `json:"currency_code"`
@@ -220,7 +220,7 @@ func budgetToResponse(b *domain.Budget) budgetResponse {
 		ID:                   b.ID,
 		CategoryID:           b.CategoryID,
 		CategoryName:         b.CategoryName,
-		CategoryEmoji:        b.CategoryEmoji,
+		CategoryIcon:        b.CategoryIcon,
 		CategoryColor:        b.CategoryColor,
 		LimitCents:           b.LimitCents,
 		SpentCents:           b.SpentCents,

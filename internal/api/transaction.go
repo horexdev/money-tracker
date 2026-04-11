@@ -20,11 +20,11 @@ type transactionResponse struct {
 	CurrencyCode  string `json:"currency_code"`
 	CategoryID    int64  `json:"category_id"`
 	CategoryName  string `json:"category_name"`
-	CategoryEmoji string `json:"category_emoji"`
+	CategoryIcon string `json:"category_icon"`
 	CategoryColor string `json:"category_color"`
 	Note          string `json:"note"`
 	CreatedAt     string `json:"created_at"`
-	AccountID     *int64 `json:"account_id,omitempty"`
+	AccountID     int64  `json:"account_id"`
 	AccountName   string `json:"account_name,omitempty"`
 	IsAdjustment  bool   `json:"is_adjustment,omitempty"`
 }
@@ -36,18 +36,17 @@ type listTransactionsResponse struct {
 }
 
 type createTransactionRequest struct {
-	Type         string  `json:"type"`
-	AmountCents  int64   `json:"amount_cents"`
-	CategoryID   int64   `json:"category_id"`
-	Note         string  `json:"note"`
-	CurrencyCode string  `json:"currency_code"`
-	AccountID    *int64  `json:"account_id"`
-	CreatedAt    *string `json:"created_at"`
+	Type        string  `json:"type"`
+	AmountCents int64   `json:"amount_cents"`
+	CategoryID  int64   `json:"category_id"`
+	Note        string  `json:"note"`
+	AccountID   int64   `json:"account_id"`
+	CreatedAt   *string `json:"created_at"`
 }
 
 type transactionManager interface {
-	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error)
-	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode, baseCurrency string, exchangeRate float64, accountID *int64, createdAt *time.Time) (*domain.Transaction, error)
+	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error)
+	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error)
 	ListPaged(ctx context.Context, userID int64, page, pageSize int) ([]*domain.Transaction, int, error)
 	ListPagedByAccount(ctx context.Context, userID, accountID int64, page, pageSize int) ([]*domain.Transaction, int, error)
 	ListPagedWithDateRange(ctx context.Context, userID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error)
@@ -59,7 +58,7 @@ type transactionManager interface {
 const defaultPageSize = 20
 
 // transactionHandler routes GET/POST/DELETE for /api/v1/transactions[/{id}]
-func transactionHandler(txSvc transactionManager, userSvc *service.UserService, exchangeSvc *service.ExchangeService, log *slog.Logger) http.HandlerFunc {
+func transactionHandler(txSvc transactionManager, accountSvc *service.AccountService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		userID := userIDFromContext(ctx)
@@ -93,7 +92,7 @@ func transactionHandler(txSvc transactionManager, userSvc *service.UserService, 
 		case http.MethodGet:
 			listTransactions(w, r, userID, txSvc, log)
 		case http.MethodPost:
-			createTransaction(w, r, userID, txSvc, userSvc, exchangeSvc, log)
+			createTransaction(w, r, userID, txSvc, accountSvc, log)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -172,7 +171,7 @@ func listTransactions(w http.ResponseWriter, r *http.Request, userID int64, txSv
 	})
 }
 
-func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txSvc transactionManager, userSvc *service.UserService, exchangeSvc *service.ExchangeService, log *slog.Logger) {
+func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txSvc transactionManager, accountSvc *service.AccountService, log *slog.Logger) {
 	var req createTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid JSON body"})
@@ -187,33 +186,20 @@ func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txS
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "category_id is required"})
 		return
 	}
+	if req.AccountID <= 0 {
+		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "account_id is required"})
+		return
+	}
 
 	ctx := r.Context()
 
-	// Resolve base currency and exchange rate snapshot.
-	user, err := userSvc.GetByID(ctx, userID)
+	// Derive currency from the account.
+	acc, err := accountSvc.GetByID(ctx, req.AccountID, userID)
 	if err != nil {
 		writeError(w, log, err)
 		return
 	}
-	baseCurrency := user.CurrencyCode
-	if req.CurrencyCode == "" {
-		req.CurrencyCode = baseCurrency
-	}
-
-	exchangeRate := 1.0
-	if req.CurrencyCode != baseCurrency {
-		rate, rateErr := exchangeSvc.GetRate(ctx, req.CurrencyCode, baseCurrency)
-		if rateErr != nil {
-			log.WarnContext(ctx, "exchange rate unavailable, using 1.0",
-				slog.String("from", req.CurrencyCode),
-				slog.String("to", baseCurrency),
-				slog.String("error", rateErr.Error()),
-			)
-		} else {
-			exchangeRate = rate
-		}
-	}
+	currencyCode := acc.CurrencyCode
 
 	var customTime *time.Time
 	if req.CreatedAt != nil && *req.CreatedAt != "" {
@@ -228,9 +214,9 @@ func createTransaction(w http.ResponseWriter, r *http.Request, userID int64, txS
 	var tx *domain.Transaction
 	switch req.Type {
 	case "expense":
-		tx, err = txSvc.AddExpense(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate, req.AccountID, customTime)
+		tx, err = txSvc.AddExpense(ctx, userID, req.AmountCents, req.CategoryID, req.Note, currencyCode, req.AccountID, customTime)
 	case "income":
-		tx, err = txSvc.AddIncome(ctx, userID, req.AmountCents, req.CategoryID, req.Note, req.CurrencyCode, baseCurrency, exchangeRate, req.AccountID, customTime)
+		tx, err = txSvc.AddIncome(ctx, userID, req.AmountCents, req.CategoryID, req.Note, currencyCode, req.AccountID, customTime)
 	default:
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "type must be 'expense' or 'income'"})
 		return
@@ -289,23 +275,19 @@ func updateTransaction(w http.ResponseWriter, r *http.Request, userID, id int64,
 }
 
 func txToResponse(tx *domain.Transaction) transactionResponse {
-	resp := transactionResponse{
+	return transactionResponse{
 		ID:            tx.ID,
 		Type:          string(tx.Type),
 		AmountCents:   tx.AmountCents,
 		CurrencyCode:  tx.CurrencyCode,
 		CategoryID:    tx.CategoryID,
 		CategoryName:  tx.CategoryName,
-		CategoryEmoji: tx.CategoryEmoji,
+		CategoryIcon:  tx.CategoryIcon,
 		CategoryColor: tx.CategoryColor,
 		Note:          tx.Note,
 		CreatedAt:     tx.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		AccountName:  tx.AccountName,
-		IsAdjustment: tx.IsAdjustment,
+		AccountID:     tx.AccountID,
+		AccountName:   tx.AccountName,
+		IsAdjustment:  tx.IsAdjustment,
 	}
-	if tx.AccountID != 0 {
-		id := tx.AccountID
-		resp.AccountID = &id
-	}
-	return resp
 }

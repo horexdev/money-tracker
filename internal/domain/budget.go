@@ -30,7 +30,7 @@ type Budget struct {
 
 	// Joined fields for display.
 	CategoryName  string
-	CategoryEmoji string
+	CategoryIcon  string
 	CategoryColor string
 	SpentCents    int64
 }
