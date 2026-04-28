@@ -7,9 +7,10 @@ import { Plus, Pause, Play, ArrowsClockwise } from '@phosphor-icons/react'
 import { fetchRecurring, createRecurring, updateRecurring, toggleRecurring, deleteRecurring } from '../../shared/api/recurring'
 import { categoriesApi } from '../../shared/api/categories'
 import { accountsApi } from '../../shared/api/accounts'
-import { formatCents, parseCents, formatDate, sanitizeAmount } from '../../shared/lib/money'
+import { formatCents, parseCents, formatDate } from '../../shared/lib/money'
 import { friendlyError } from '../../shared/lib/errors'
 import { CategoryIcon } from '../../shared/lib/categoryIcons'
+import { AmountInput } from '../../shared/ui/AmountInput'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
@@ -19,7 +20,6 @@ import { Badge, EmptyState, ActionRow, FAB, BottomSheet } from '../../shared/ui'
 import { AccountDropdown } from '../../shared/ui/AccountDropdown'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
-import { CurrencyBadge } from '../../shared/lib/currencyIcons'
 import type { RecurringTransaction, TransactionType } from '../../shared/types'
 
 const FREQ_OPTIONS = [
@@ -206,16 +206,7 @@ function RecurringForm({
           <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
             {t('transactions.amount')}
           </label>
-          <div className="flex items-baseline gap-1.5 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-(--shadow-focus) transition-shadow">
-            <CurrencyBadge currency={currencyCode} className="text-muted/40" />
-            <input
-              inputMode="decimal"
-              placeholder="0.00"
-              value={amount}
-              onChange={e => setAmount(sanitizeAmount(e.target.value))}
-              className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/30 tabular-nums min-w-0"
-            />
-          </div>
+          <AmountInput value={amount} onChange={setAmount} currency={currencyCode} />
         </div>
 
         {/* Frequency */}

@@ -9,12 +9,12 @@ import { transactionsApi } from '../../shared/api/transactions'
 import { transfersApi, exchangeApi } from '../../shared/api/transfers'
 import { balanceApi } from '../../shared/api/balance'
 import { accountsApi } from '../../shared/api/accounts'
-import { parseCents, sanitizeAmount } from '../../shared/lib/money'
+import { parseCents } from '../../shared/lib/money'
 import { CategoryIcon } from '../../shared/lib/categoryIcons'
-import { CurrencyBadge } from '../../shared/lib/currencyIcons'
 import { useTgMainButton } from '../../shared/hooks/useMainButton'
 import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
 import { useHaptic } from '../../shared/hooks/useHaptic'
+import { AmountInput } from '../../shared/ui/AmountInput'
 import { Spinner } from '../../shared/ui/Spinner'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
@@ -154,10 +154,6 @@ export function AddTransactionPage() {
     }
   }, [canSubmit, isTransfer, fromAccountId, toAccountId, amount, note, categoryID, mode, txDate, selectedAccountId, txMutation, transferMutation])
 
-  const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(sanitizeAmount(e.target.value))
-  }, [])
-
   const handleModeChange = (m: Mode) => {
     setMode(m)
     setCategoryID(null)
@@ -232,17 +228,14 @@ export function AddTransactionPage() {
             </div>
 
             {/* Amount input — always shown */}
-            <div className="mt-4 flex items-baseline gap-1">
-              <CurrencyBadge currency={baseCurrency} className="text-white/50" />
-              <input
-                inputMode="decimal"
-                placeholder="0.00"
-                value={amount}
-                onChange={handleAmountChange}
-                autoFocus
-                className="flex-1 bg-transparent text-white text-4xl font-extrabold outline-none tabular-nums placeholder:text-white/25 min-w-0"
-              />
-            </div>
+            <AmountInput
+              className="mt-4"
+              variant="hero"
+              value={amount}
+              onChange={setAmount}
+              currency={baseCurrency}
+              autoFocus
+            />
 
             {/* Transfer: from ⇄ to row */}
             {isTransfer && (

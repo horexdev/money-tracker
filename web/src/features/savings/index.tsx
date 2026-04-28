@@ -7,9 +7,9 @@ import { Plus, X, CheckCircle, ArrowCircleDown, ArrowCircleUp, CalendarBlank, Cl
 import { fetchGoals, createGoal, updateGoal, depositGoal, withdrawGoal, deleteGoal, fetchGoalHistory } from '../../shared/api/goals'
 import type { GoalTransaction } from '../../shared/api/goals'
 import { accountsApi } from '../../shared/api/accounts'
-import { formatCents, parseCents, formatDate, sanitizeAmount } from '../../shared/lib/money'
-import { CurrencyBadge } from '../../shared/lib/currencyIcons'
+import { formatCents, parseCents, formatDate } from '../../shared/lib/money'
 import { friendlyError } from '../../shared/lib/errors'
+import { AmountInput } from '../../shared/ui/AmountInput'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
@@ -192,16 +192,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
             <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {t('savings.target')}
             </label>
-            <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-(--shadow-focus) transition-shadow">
-              <CurrencyBadge currency={currencyCode} className="text-muted/40" />
-              <input
-                inputMode="decimal"
-                placeholder="0.00"
-                value={targetStr}
-                onChange={e => setTargetStr(sanitizeAmount(e.target.value))}
-                className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/20 tabular-nums min-w-0"
-              />
-            </div>
+            <AmountInput value={targetStr} onChange={setTargetStr} currency={currencyCode} />
           </div>
 
           {/* Deadline */}
@@ -337,17 +328,7 @@ function AmountSheet({
           </button>
         </div>
 
-        <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-(--shadow-focus) transition-shadow">
-          <CurrencyBadge currency={amountCurrency} className="text-muted/40" />
-          <input
-            inputMode="decimal"
-            placeholder="0.00"
-            value={amountStr}
-            onChange={e => setAmountStr(sanitizeAmount(e.target.value))}
-            autoFocus
-            className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/20 tabular-nums min-w-0"
-          />
-        </div>
+        <AmountInput value={amountStr} onChange={setAmountStr} currency={amountCurrency} autoFocus />
 
         <button
           onClick={() => onConfirm(cents)}
