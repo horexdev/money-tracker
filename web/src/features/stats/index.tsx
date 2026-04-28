@@ -15,6 +15,7 @@ import { PageTransition } from '../../shared/ui/PageTransition'
 import { EmptyState, RangeDateModal } from '../../shared/ui'
 import { AccountDropdown } from '../../shared/ui/AccountDropdown'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
+import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
 import type { TransactionType, CategoryStat } from '../../shared/types'
 
 type Period = 'month' | 'week' | 'today' | 'lastmonth'
@@ -24,8 +25,19 @@ interface CustomRange {
   to: string
 }
 
+type NumberProps = { value: number; formatter?: (v: number) => string }
+
 /* ─── Animated Number Counter ─── */
-function AnimatedNumber({ value, formatter }: { value: number; formatter?: (v: number) => string }) {
+function AnimatedNumber(props: NumberProps) {
+  const [animate] = useAnimateNumbers()
+  return animate ? <SpringNumber {...props} /> : <StaticNumber {...props} />
+}
+
+function StaticNumber({ value, formatter }: NumberProps) {
+  return <span>{formatter ? formatter(value) : value.toString()}</span>
+}
+
+function SpringNumber({ value, formatter }: NumberProps) {
   const spring = useSpring(0, { stiffness: 80, damping: 20 })
   const formatterRef = useRef(formatter)
   formatterRef.current = formatter

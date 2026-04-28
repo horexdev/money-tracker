@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Ringkasan Mingguan",
     "notify_weekly_summary_desc": "Ringkasan hari Isnin tentang perbelanjaan minggu lalu",
     "notify_goal_milestones": "Pencapaian Matlamat",
-    "notify_goal_milestones_desc": "Amaran pada 25%, 50%, 75%, 100% matlamat"
+    "notify_goal_milestones_desc": "Amaran pada 25%, 50%, 75%, 100% matlamat",
+    "display": "Paparan",
+    "animate_numbers": "Animasikan nombor",
+    "animate_numbers_desc": "Kesan spring apabila baki dan jumlah berubah"
   },
   "more": {
     "title": "Lagi",

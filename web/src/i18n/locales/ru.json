@@ -231,7 +231,10 @@
     "notify_weekly_summary": "Итог недели",
     "notify_weekly_summary_desc": "Понедельничный обзор расходов за неделю",
     "notify_goal_milestones": "Достижения целей",
-    "notify_goal_milestones_desc": "Оповещение при 25%, 50%, 75%, 100% цели"
+    "notify_goal_milestones_desc": "Оповещение при 25%, 50%, 75%, 100% цели",
+    "display": "Отображение",
+    "animate_numbers": "Анимация чисел",
+    "animate_numbers_desc": "Плавная анимация при изменении баланса и сумм"
   },
   "more": {
     "title": "Ещё",

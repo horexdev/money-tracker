@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Ringkasan Mingguan",
     "notify_weekly_summary_desc": "Rekap hari Senin tentang pengeluaran minggu lalu",
     "notify_goal_milestones": "Pencapaian Tujuan",
-    "notify_goal_milestones_desc": "Peringatan di 25%, 50%, 75%, 100% tujuan"
+    "notify_goal_milestones_desc": "Peringatan di 25%, 50%, 75%, 100% tujuan",
+    "display": "Tampilan",
+    "animate_numbers": "Animasikan angka",
+    "animate_numbers_desc": "Efek pegas saat saldo dan total berubah"
   },
   "more": {
     "title": "Lainnya",

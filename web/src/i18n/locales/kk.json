@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Апталық қорытынды",
     "notify_weekly_summary_desc": "Дүйсенбідегі апталық шығыс шолуы",
     "notify_goal_milestones": "Мақсат жетістіктері",
-    "notify_goal_milestones_desc": "25%, 50%, 75%, 100% кезінде хабарландыру"
+    "notify_goal_milestones_desc": "25%, 50%, 75%, 100% кезінде хабарландыру",
+    "display": "Көрсету",
+    "animate_numbers": "Сандар анимациясы",
+    "animate_numbers_desc": "Баланс пен жиынтықтар өзгергендегі серіппе әсері"
   },
   "more": {
     "title": "Тағы",

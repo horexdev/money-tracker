@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Resumen semanal",
     "notify_weekly_summary_desc": "Resumen del lunes sobre el gasto semanal",
     "notify_goal_milestones": "Hitos de objetivos",
-    "notify_goal_milestones_desc": "Alerta al 25%, 50%, 75%, 100% de un objetivo"
+    "notify_goal_milestones_desc": "Alerta al 25%, 50%, 75%, 100% de un objetivo",
+    "display": "Visualización",
+    "animate_numbers": "Animar números",
+    "animate_numbers_desc": "Efecto de resorte al cambiar el saldo y los totales"
   },
   "more": {
     "title": "Más",

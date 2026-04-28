@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Wochenzusammenfassung",
     "notify_weekly_summary_desc": "Montags-Rückblick auf die Wochenausgaben",
     "notify_goal_milestones": "Zielerreichungen",
-    "notify_goal_milestones_desc": "Benachrichtigung bei 25%, 50%, 75%, 100%"
+    "notify_goal_milestones_desc": "Benachrichtigung bei 25%, 50%, 75%, 100%",
+    "display": "Anzeige",
+    "animate_numbers": "Zahlen animieren",
+    "animate_numbers_desc": "Federeffekt bei Änderung von Saldo und Summen"
   },
   "more": {
     "title": "Mehr",
