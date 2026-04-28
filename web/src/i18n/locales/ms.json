@@ -240,8 +240,7 @@
     "export": "Eksport",
     "settings": "Tetapan",
     "admin_panel": "Panel Admin",
-    "accounts": "Akaun",
-    "transfers": "Pindahan"
+    "accounts": "Akaun"
   },
   "admin": {
     "title": "Panel Admin",
@@ -263,7 +262,6 @@
   },
   "accounts": "Akaun",
   "accountsAll": "Semua akaun",
-  "transfers": "Pindahan",
   "transfer_action": "Pindah",
   "transfer_need_two_accounts": "Tambah akaun lain untuk membuat pindahan",
   "errors": {

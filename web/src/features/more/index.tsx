@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ArrowsHorizontal, ShieldStar } from '@phosphor-icons/react'
+import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ShieldStar } from '@phosphor-icons/react'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { settingsApi } from '../../shared/api/settings'
 import type { ReactNode } from 'react'
@@ -29,7 +29,6 @@ const GRID_ITEMS: MenuItem[] = [
   { to: '/recurring', icon: <ArrowsClockwise size={22} weight="bold" />,   labelKey: 'more.recurring', gradient: 'from-violet-400 to-purple-600' },
   { to: '/categories',icon: <Tag size={22} weight="fill" />,               labelKey: 'more.categories',gradient: 'from-blue-400 to-indigo-500' },
   { to: '/accounts',  icon: <Bank size={22} weight="fill" />,              labelKey: 'more.accounts',  gradient: 'from-amber-400 to-orange-500' },
-  { to: '/transfers', icon: <ArrowsHorizontal size={22} weight="bold" />,  labelKey: 'more.transfers', gradient: 'from-pink-400 to-rose-500' },
   { to: '/export',    icon: <DownloadSimple size={22} weight="bold" />,    labelKey: 'more.export',    gradient: 'from-cyan-400 to-sky-500', comingSoon: true },
   { to: '/settings',  icon: <GearSix size={22} weight="fill" />,           labelKey: 'more.settings',  gradient: 'from-slate-400 to-slate-600' },
 ]

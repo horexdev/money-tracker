@@ -247,7 +247,6 @@
     "export": "Экспорт",
     "settings": "Настройки",
     "accounts": "Счета",
-    "transfers": "Переводы",
     "admin_panel": "Админ панель"
   },
   "admin": {
@@ -270,7 +269,6 @@
   },
   "accounts": "Счета",
   "accountsAll": "Все счета",
-  "transfers": "Переводы",
   "transfer_action": "Перевести",
   "transfer_need_two_accounts": "Добавьте ещё один счёт для перевода",
   "newAccount": "Новый счёт",

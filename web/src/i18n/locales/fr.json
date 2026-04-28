@@ -240,8 +240,7 @@
     "export": "Exporter",
     "settings": "Paramètres",
     "admin_panel": "Panneau Admin",
-    "accounts": "Comptes",
-    "transfers": "Virements"
+    "accounts": "Comptes"
   },
   "admin": {
     "title": "Panneau Admin",
@@ -263,7 +262,6 @@
   },
   "accounts": "Comptes",
   "accountsAll": "Tous les comptes",
-  "transfers": "Virements",
   "transfer_action": "Virer",
   "transfer_need_two_accounts": "Ajoutez un autre compte pour effectuer un virement",
   "errors": {
