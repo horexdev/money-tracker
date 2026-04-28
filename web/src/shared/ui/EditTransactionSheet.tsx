@@ -35,7 +35,7 @@ export function EditTransactionSheet({
   const [txDate, setTxDate] = useState(tx.created_at.split('T')[0])
   const [showDatePicker, setShowDatePicker] = useState(false)
 
-  const catsQ = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list() })
+  const catsQ = useQuery({ queryKey: ['categories', { order: 'frequency' }], queryFn: () => categoriesApi.list(undefined, 'frequency') })
   const categories = catsQ.data?.categories ?? []
   const filtered = categories.filter(c => c.type === tx.type || c.type === 'both')
 
@@ -59,6 +59,7 @@ export function EditTransactionSheet({
       qc.invalidateQueries({ queryKey: ['balance'] })
       qc.invalidateQueries({ queryKey: ['accounts'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
       notification('success')
       onClose()
     },

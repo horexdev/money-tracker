@@ -237,6 +237,7 @@ export function HistoryPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['balance'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
     },
   })
 
