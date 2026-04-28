@@ -87,6 +87,8 @@ make build         # Build binary to bin/bot
 make run           # Run bot locally
 make test          # Run all tests (unit + integration)
 make test-unit     # Run only unit tests (no Docker needed)
+make test-cover    # Run unit tests with coverage and per-package summary
+make web-test      # Run Mini App test suite (vitest)
 make lint          # Run golangci-lint
 make tidy          # go mod tidy
 make down          # Stop Docker services
@@ -169,16 +171,38 @@ Required GitHub repository secrets:
 ## Testing
 
 ```bash
-# Unit tests (no external dependencies)
-make test-unit
+# Backend
+make test-unit         # unit tests (no external dependencies)
+make test-cover        # unit tests + coverage profile (coverage.out)
+make test-integration  # integration tests (requires DATABASE_URL + REDIS_URL)
+make test              # everything (unit + integration)
 
-# All tests including integration (requires Docker)
-make test
+# Frontend (Mini App)
+cd web && npm run test            # one-shot vitest run
+cd web && npm run test:watch      # watch mode
+cd web && npm run test:coverage   # vitest + v8 coverage report into web/coverage/
+make web-test                     # shorthand for `cd web && npm run test`
 ```
 
-Integration tests use [testcontainers-go](https://golang.testcontainers.org/) to spin up real Postgres and Redis containers. They are tagged with `//go:build integration` and run via `go test -tags=integration ./...` in CI.
+Integration tests are tagged with `//go:build integration` and require a running PostgreSQL + Redis. CI provisions both via service containers; locally use `make up` to start them.
 
-Unit tests for the FSM store use [miniredis](https://github.com/alicebob/miniredis) — an in-memory Redis server — for fast, dependency-free testing.
+Frontend tests use [Vitest](https://vitest.dev/) + [@testing-library/react](https://testing-library.com/docs/react-testing-library/intro/) with a jsdom environment. The shared setup lives in `web/src/test/`:
+
+- `setup.ts` — global mocks (`window.Telegram`, `matchMedia`, `@tma.js/sdk-react`, `framer-motion`).
+- `render.tsx` — `renderWithProviders` helper that wires `QueryClientProvider`, `MemoryRouter`, and an in-memory i18next instance.
+
+### Local CI gate (run before opening a PR)
+
+In strict order — stop on the first failure:
+
+```bash
+make lint
+make vuln
+make test-unit
+make build-check
+make test-cover
+cd web && npm ci && npm run lint && npm run build && npm run test:coverage
+```
 
 ## License
 
