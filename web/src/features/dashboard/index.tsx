@@ -9,19 +9,31 @@ import { balanceApi } from '../../shared/api/balance'
 import { transactionsApi } from '../../shared/api/transactions'
 import { accountsApi } from '../../shared/api/accounts'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
+import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState } from '../../shared/ui'
 import type { Transaction } from '../../shared/types'
 
+type MoneyProps = { cents: number; currency: string; className?: string }
+
+/** Picks between spring-animated and static rendering based on user preference. */
+function AnimatedMoney(props: MoneyProps) {
+  const [animate] = useAnimateNumbers()
+  return animate ? <SpringMoney {...props} /> : <StaticMoney {...props} />
+}
+
+function StaticMoney({ cents, currency, className }: MoneyProps) {
+  return <span className={className}>{formatCents(cents, currency)}</span>
+}
+
 /** Animates a numeric cents value with a spring, formatted via formatCents */
-function AnimatedMoney({ cents, currency, className }: { cents: number; currency: string; className?: string }) {
+function SpringMoney({ cents, currency, className }: MoneyProps) {
   const spring = useSpring(cents, { stiffness: 70, damping: 18 })
   const formatterRef = useRef((v: number) => formatCents(Math.round(v), currency))
   const [display, setDisplay] = useState(() => formatCents(cents, currency))
 
-  // Update formatter ref when currency changes
   formatterRef.current = (v: number) => formatCents(Math.round(v), currency)
 
   useEffect(() => {
