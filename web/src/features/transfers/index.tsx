@@ -8,7 +8,7 @@ import { transfersApi } from '../../shared/api/transfers'
 import { accountsApi } from '../../shared/api/accounts'
 import { formatCents, formatDate, parseCents, sanitizeAmount } from '../../shared/lib/money'
 import { friendlyError } from '../../shared/lib/errors'
-import { CurrencyBadge } from '../../shared/lib/currencyIcons'
+import { AmountInput } from '../../shared/ui/AmountInput'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
@@ -181,16 +181,13 @@ function TransferFormSheet({
           <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
             {t('transactions.amount')}
           </label>
-          <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-(--shadow-focus) transition-shadow">
-            {fromAccount && <CurrencyBadge currency={fromAccount.currency_code} className="text-muted/40" />}
-            <input
-              inputMode="decimal"
-              placeholder="0.00"
+          {fromAccount && (
+            <AmountInput
               value={amountStr}
-              onChange={e => setAmountStr(sanitizeAmount(e.target.value))}
-              className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/20 tabular-nums min-w-0"
+              onChange={setAmountStr}
+              currency={fromAccount.currency_code}
             />
-          </div>
+          )}
         </div>
 
         {/* Exchange rate (only when currencies differ) */}
