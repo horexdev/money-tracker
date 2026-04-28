@@ -99,7 +99,9 @@
     "avg_per_tx": "Avg per tx",
     "date_from": "From",
     "date_to": "To",
-    "apply": "Apply"
+    "apply": "Apply",
+    "prev_month": "Previous month",
+    "next_month": "Next month"
   },
   "categories": {
     "title": "Categories",

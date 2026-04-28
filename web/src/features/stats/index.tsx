@@ -3,10 +3,10 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
-import { CalendarDots, ChartBar } from '@phosphor-icons/react'
+import { CalendarDots, CaretLeft, CaretRight, ChartBar } from '@phosphor-icons/react'
 import { statsApi } from '../../shared/api/stats'
 import { accountsApi } from '../../shared/api/accounts'
-import { formatCents } from '../../shared/lib/money'
+import { formatCents, formatDate } from '../../shared/lib/money'
 import { CHART_COLORS } from '../../shared/lib/constants'
 import { CategoryIcon } from '../../shared/lib/categoryIcons'
 import { Spinner } from '../../shared/ui/Spinner'
@@ -200,15 +200,32 @@ function CategoryRow({
   )
 }
 
+/* ─── Date helpers ─── */
+function pad(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+function fmtLocalISO(d: Date): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+function computeMonthRange(offset: number): { from: string; to: string; firstDay: Date } {
+  const now = new Date()
+  const firstDay = new Date(now.getFullYear(), now.getMonth() + offset, 1)
+  const lastInclusive = new Date(firstDay.getFullYear(), firstDay.getMonth() + 1, 0)
+  return { from: fmtLocalISO(firstDay), to: fmtLocalISO(lastInclusive), firstDay }
+}
+
 /* ─── Main Page ─── */
 export function StatsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const tCategory = useCategoryName()
   const location = useLocation()
   const initialType = (location.state as { type?: TransactionType } | null)?.type ?? 'expense'
   const [type, setType] = useState<TransactionType>(initialType)
   const [period, setPeriod] = useState<Period>('month')
   const [customRange, setCustomRange] = useState<CustomRange | null>(null)
+  const [monthOffset, setMonthOffset] = useState(0)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
 
@@ -239,13 +256,23 @@ export function StatsPage() {
     { value: 'custom',    label: t('stats.custom'), icon: true },
   ]
 
+  const useMonthOffset = period === 'month' && !customRange && monthOffset !== 0
+  const monthRange = useMemo(
+    () => (useMonthOffset ? computeMonthRange(monthOffset) : null),
+    [useMonthOffset, monthOffset],
+  )
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: customRange
       ? ['stats', 'custom', customRange.from, customRange.to, selectedAccountId]
-      : ['stats', period, selectedAccountId],
+      : monthRange
+        ? ['stats', 'month-offset', monthRange.from, monthRange.to, selectedAccountId]
+        : ['stats', period, selectedAccountId],
     queryFn: customRange
       ? () => statsApi.getRange(customRange.from, customRange.to, selectedAccountId)
-      : () => statsApi.get(period, selectedAccountId),
+      : monthRange
+        ? () => statsApi.getRange(monthRange.from, monthRange.to, selectedAccountId)
+        : () => statsApi.get(period, selectedAccountId),
     placeholderData: keepPreviousData,
   })
 
@@ -265,9 +292,10 @@ export function StatsPage() {
 
   const topCategory = withPercent[0] ?? null
   const avgPerTx = txCount > 0 ? Math.round(total / txCount) : 0
-  const animationKey = `${type}-${period}-${customRange?.from ?? ''}-${customRange?.to ?? ''}-${selectedAccountId ?? 'all'}`
+  const animationKey = `${type}-${period}-${monthOffset}-${customRange?.from ?? ''}-${customRange?.to ?? ''}-${selectedAccountId ?? 'all'}`
 
   function handlePeriodChange(v: Period | 'custom') {
+    setMonthOffset(0)
     if (v === 'custom') {
       setShowDatePicker(true)
     } else {
@@ -360,6 +388,32 @@ export function StatsPage() {
 
         {/* Content area */}
         <div className="flex-1 min-h-0 px-4 pb-3 flex flex-col gap-3">
+          {period === 'month' && !customRange && (
+            <div className="shrink-0 flex items-center justify-between px-1">
+              <button
+                onClick={() => setMonthOffset((o) => o - 1)}
+                aria-label={t('stats.prev_month')}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-muted active:text-accent active:bg-accent/10 transition-colors"
+              >
+                <CaretLeft size={18} weight="bold" />
+              </button>
+              <span className="text-sm font-bold text-text capitalize tabular-nums">
+                {formatDate(
+                  computeMonthRange(monthOffset).firstDay,
+                  i18n.language,
+                  { month: 'long', year: 'numeric' },
+                )}
+              </span>
+              <button
+                onClick={() => setMonthOffset((o) => Math.min(0, o + 1))}
+                disabled={monthOffset >= 0}
+                aria-label={t('stats.next_month')}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-muted active:text-accent active:bg-accent/10 transition-colors disabled:opacity-30 disabled:active:bg-transparent disabled:active:text-muted"
+              >
+                <CaretRight size={18} weight="bold" />
+              </button>
+            </div>
+          )}
           {isLoading && <div className="flex justify-center py-12"><Spinner /></div>}
           {isError && <ErrorMessage onRetry={refetch} />}
 

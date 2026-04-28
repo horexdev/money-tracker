@@ -99,7 +99,9 @@
     "avg_per_tx": "Средн. за тр.",
     "date_from": "С",
     "date_to": "По",
-    "apply": "Применить"
+    "apply": "Применить",
+    "prev_month": "Предыдущий месяц",
+    "next_month": "Следующий месяц"
   },
   "categories": {
     "title": "Категории",

@@ -95,7 +95,9 @@
     "avg_per_tx": "Rata-rata per tx",
     "date_from": "Dari",
     "date_to": "Sampai",
-    "apply": "Terapkan"
+    "apply": "Terapkan",
+    "prev_month": "Bulan sebelumnya",
+    "next_month": "Bulan berikutnya"
   },
   "categories": {
     "title": "Kategori",

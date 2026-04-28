@@ -95,7 +95,9 @@
     "avg_per_tx": "Gem. per tx",
     "date_from": "Van",
     "date_to": "Tot",
-    "apply": "Toepassen"
+    "apply": "Toepassen",
+    "prev_month": "Vorige maand",
+    "next_month": "Volgende maand"
   },
   "categories": {
     "title": "Categorieën",

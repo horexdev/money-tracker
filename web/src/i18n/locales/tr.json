@@ -95,7 +95,9 @@
     "avg_per_tx": "İşlem başına ort.",
     "date_from": "Başlangıç",
     "date_to": "Bitiş",
-    "apply": "Uygula"
+    "apply": "Uygula",
+    "prev_month": "Önceki ay",
+    "next_month": "Sonraki ay"
   },
   "categories": {
     "title": "Kategoriler",

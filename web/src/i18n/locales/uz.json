@@ -95,7 +95,9 @@
     "avg_per_tx": "O'rtacha",
     "date_from": "Dan",
     "date_to": "Gacha",
-    "apply": "Qo'llash"
+    "apply": "Qo'llash",
+    "prev_month": "Oldingi oy",
+    "next_month": "Keyingi oy"
   },
   "categories": {
     "title": "Kategoriyalar",

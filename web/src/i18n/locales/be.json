@@ -95,7 +95,9 @@
     "avg_per_tx": "Сярэдняе за аперацыю",
     "date_from": "Ад",
     "date_to": "Да",
-    "apply": "Ужыць"
+    "apply": "Ужыць",
+    "prev_month": "Папярэдні месяц",
+    "next_month": "Наступны месяц"
   },
   "categories": {
     "title": "Катэгорыі",

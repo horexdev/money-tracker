@@ -95,7 +95,9 @@
     "avg_per_tx": "المعدل لكل معاملة",
     "date_from": "من",
     "date_to": "إلى",
-    "apply": "تطبيق"
+    "apply": "تطبيق",
+    "prev_month": "الشهر السابق",
+    "next_month": "الشهر التالي"
   },
   "categories": {
     "title": "الفئات",
