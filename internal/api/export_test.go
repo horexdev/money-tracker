@@ -98,6 +98,30 @@ func AdminUsersHandlerForTest(adminSvc *service.AdminService, log *slog.Logger) 
 	return adminUsersHandler(adminSvc, log)
 }
 
+// BalanceFetcher is the exported alias for the unexported balanceFetcher
+// interface, allowing api_test handlers to inject mock implementations.
+type BalanceFetcher = balanceFetcher
+
+// BalanceHandlerForTest exposes balanceHandler for testing. exchangeSvc may be
+// nil if the user's DisplayCurrencies is empty.
+func BalanceHandlerForTest(txSvc BalanceFetcher, userSvc *service.UserService, accountSvc *service.AccountService, exchangeSvc *service.ExchangeService, log *slog.Logger) http.HandlerFunc {
+	return balanceHandler(txSvc, userSvc, accountSvc, exchangeSvc, log)
+}
+
+// StatsHandlerForTest exposes statsHandler for testing.
+func StatsHandlerForTest(statsSvc *service.StatsService, log *slog.Logger) http.HandlerFunc {
+	return statsHandler(statsSvc, log)
+}
+
+// AdjustmentApplier is the exported alias for the unexported adjustmentApplier
+// interface used by adjustAccountHandler.
+type AdjustmentApplier = adjustmentApplier
+
+// AdjustAccountHandlerForTest exposes adjustAccountHandler for testing.
+func AdjustAccountHandlerForTest(svc AdjustmentApplier, log *slog.Logger, accountID int64) http.HandlerFunc {
+	return adjustAccountHandler(svc, log, accountID)
+}
+
 // TelegramUserForTest constructs a TelegramUser for use in tests.
 func TelegramUserForTest(id int64, firstName, langCode string) TelegramUser {
 	return TelegramUser{ID: id, FirstName: firstName, LanguageCode: langCode}
