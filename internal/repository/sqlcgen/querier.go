@@ -105,6 +105,13 @@ type Querier interface {
 	ListTransfersByAccount(ctx context.Context, arg ListTransfersByAccountParams) ([]ListTransfersByAccountRow, error)
 	ListTransfersByUser(ctx context.Context, arg ListTransfersByUserParams) ([]ListTransfersByUserRow, error)
 	ListUserCategories(ctx context.Context, userID pgtype.Int8) ([]Category, error)
+	// Sorts a user's categories by transaction count (descending), name as tiebreaker.
+	// The subquery aggregates without filtering by category type, so transactions
+	// referencing transfer/adjustment system categories simply do not match the
+	// outer JOIN and are discarded.
+	ListUserCategoriesByFrequency(ctx context.Context, userID int64) ([]Category, error)
+	// Same as ListUserCategoriesByFrequency, restricted to a single type plus 'both'.
+	ListUserCategoriesByFrequencyAndType(ctx context.Context, arg ListUserCategoriesByFrequencyAndTypeParams) ([]Category, error)
 	ListUserCategoriesByNameAsc(ctx context.Context, userID pgtype.Int8) ([]Category, error)
 	ListUserCategoriesByNameDesc(ctx context.Context, userID pgtype.Int8) ([]Category, error)
 	ListUserCategoriesByType(ctx context.Context, arg ListUserCategoriesByTypeParams) ([]Category, error)
