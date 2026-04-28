@@ -43,8 +43,8 @@ export function AddTransactionPage() {
   const [exchangeRate, setExchangeRate] = useState<number | null>(null)
 
   const { data: catData, isLoading } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoriesApi.list(),
+    queryKey: ['categories', { order: 'frequency' }],
+    queryFn: () => categoriesApi.list(undefined, 'frequency'),
   })
 
   const { data: balanceData } = useQuery({
@@ -101,6 +101,7 @@ export function AddTransactionPage() {
       qc.invalidateQueries({ queryKey: ['balance'] })
       qc.invalidateQueries({ queryKey: ['accounts'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
       navigate('/')
     },
     onError: () => notification('error'),

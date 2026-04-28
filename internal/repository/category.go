@@ -49,33 +49,38 @@ func (r *CategoryRepository) ListForUserByType(ctx context.Context, userID int64
 	return cats, nil
 }
 
-// ListSorted returns categories sorted by name in the given direction.
-// catType filters by category type when non-empty; order is "asc" or "desc".
+// ListSorted returns categories sorted by the given order.
+// catType filters by category type when non-empty.
+// order is "asc"/"desc" for name sorting, or "frequency" for transaction-count
+// descending with name-asc tiebreaker.
 func (r *CategoryRepository) ListSorted(ctx context.Context, userID int64, catType, order string) ([]*domain.Category, error) {
 	var (
 		rows []sqlcgen.Category
 		err  error
-		desc = order == "desc"
 	)
 
-	if catType != "" {
-		if desc {
-			rows, err = r.q.ListUserCategoriesByTypeFilterDesc(ctx, sqlcgen.ListUserCategoriesByTypeFilterDescParams{
-				UserID: pgInt8(userID),
-				Type:   catType,
-			})
-		} else {
-			rows, err = r.q.ListUserCategoriesByTypeFilterAsc(ctx, sqlcgen.ListUserCategoriesByTypeFilterAscParams{
-				UserID: pgInt8(userID),
-				Type:   catType,
-			})
-		}
-	} else {
-		if desc {
-			rows, err = r.q.ListUserCategoriesByNameDesc(ctx, pgInt8(userID))
-		} else {
-			rows, err = r.q.ListUserCategoriesByNameAsc(ctx, pgInt8(userID))
-		}
+	switch {
+	case order == "frequency" && catType != "":
+		rows, err = r.q.ListUserCategoriesByFrequencyAndType(ctx, sqlcgen.ListUserCategoriesByFrequencyAndTypeParams{
+			UserID: userID,
+			Type:   catType,
+		})
+	case order == "frequency":
+		rows, err = r.q.ListUserCategoriesByFrequency(ctx, userID)
+	case catType != "" && order == "desc":
+		rows, err = r.q.ListUserCategoriesByTypeFilterDesc(ctx, sqlcgen.ListUserCategoriesByTypeFilterDescParams{
+			UserID: pgInt8(userID),
+			Type:   catType,
+		})
+	case catType != "":
+		rows, err = r.q.ListUserCategoriesByTypeFilterAsc(ctx, sqlcgen.ListUserCategoriesByTypeFilterAscParams{
+			UserID: pgInt8(userID),
+			Type:   catType,
+		})
+	case order == "desc":
+		rows, err = r.q.ListUserCategoriesByNameDesc(ctx, pgInt8(userID))
+	default:
+		rows, err = r.q.ListUserCategoriesByNameAsc(ctx, pgInt8(userID))
 	}
 
 	if err != nil {

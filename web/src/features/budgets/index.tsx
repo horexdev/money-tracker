@@ -182,7 +182,7 @@ function BudgetForm({
   const [period, setPeriod] = useState(editBudget?.period ?? 'monthly')
   const [notificationsEnabled, setNotificationsEnabled] = useState(editBudget?.notifications_enabled ?? true)
 
-  const catsQ = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list('expense') })
+  const catsQ = useQuery({ queryKey: ['categories', { type: 'expense', order: 'frequency' }], queryFn: () => categoriesApi.list('expense', 'frequency') })
   const categories = catsQ.data?.categories ?? []
 
   const createMut = useMutation({

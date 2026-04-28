@@ -115,7 +115,7 @@ function RecurringForm({
   const [accountID, setAccountID] = useState<number | null>(editItem?.account_id ?? null)
 
   const { data: accounts = [] } = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list })
-  const catsQ = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list() })
+  const catsQ = useQuery({ queryKey: ['categories', { order: 'frequency' }], queryFn: () => categoriesApi.list(undefined, 'frequency') })
   const categories = catsQ.data?.categories ?? []
   const filtered = categories.filter(c => c.type === type || c.type === 'both')
 
