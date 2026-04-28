@@ -82,6 +82,9 @@ function DonutChart({
   let accumulated = 0
   const segments = data.map((d, i) => {
     const segLen = (d.percent / 100) * circumference
+    // Clamp to non-negative: a negative dasharray renders as a full ring and overdraws prior segments.
+    const dashLen = Math.max(segLen - 2, 0)
+    const gapLen = circumference - dashLen
     const offset = circumference - accumulated
     accumulated += segLen
 
@@ -95,10 +98,10 @@ function DonutChart({
         stroke={d.category_color || CHART_COLORS[i % CHART_COLORS.length]}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
-        strokeDasharray={`${segLen - 2} ${circumference - segLen + 2}`}
+        strokeDasharray={`${dashLen} ${gapLen}`}
         strokeDashoffset={offset}
         initial={{ opacity: 0, strokeDasharray: `0 ${circumference}` }}
-        animate={{ opacity: 1, strokeDasharray: `${segLen - 2} ${circumference - segLen + 2}` }}
+        animate={{ opacity: 1, strokeDasharray: `${dashLen} ${gapLen}` }}
         exit={{ opacity: 0, strokeDasharray: `0 ${circumference}` }}
         transition={{ duration: 0.6, delay: i * 0.08, ease: 'easeOut' }}
       />
