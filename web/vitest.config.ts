@@ -24,6 +24,15 @@ export default defineConfig({
         'src/i18n/**',
         'src/vite-env.d.ts',
       ],
+      // Mild thresholds — these reflect the actual 'foundation + critical
+      // mass' coverage shipped here. They prevent regressions but leave
+      // headroom for future feature-coverage PRs to ratchet up.
+      thresholds: {
+        lines: 30,
+        functions: 40,
+        branches: 60,
+        statements: 30,
+      },
     },
   },
 })
