@@ -240,8 +240,7 @@
     "export": "Exportar",
     "settings": "Configurações",
     "admin_panel": "Painel Admin",
-    "accounts": "Contas",
-    "transfers": "Transferências"
+    "accounts": "Contas"
   },
   "admin": {
     "title": "Painel Admin",
@@ -263,7 +262,6 @@
   },
   "accounts": "Contas",
   "accountsAll": "Todas as contas",
-  "transfers": "Transferências",
   "transfer_action": "Transferir",
   "transfer_need_two_accounts": "Adicione outra conta para fazer uma transferência",
   "errors": {

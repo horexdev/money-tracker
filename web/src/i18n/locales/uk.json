@@ -240,8 +240,7 @@
     "export": "Експорт",
     "settings": "Налаштування",
     "admin_panel": "Адмін панель",
-    "accounts": "Рахунки",
-    "transfers": "Перекази"
+    "accounts": "Рахунки"
   },
   "admin": {
     "title": "Адмін панель",
@@ -263,7 +262,6 @@
   },
   "accounts": "Рахунки",
   "accountsAll": "Всі рахунки",
-  "transfers": "Перекази",
   "transfer_action": "Перевести",
   "transfer_need_two_accounts": "Додайте ще один рахунок для переказу",
   "errors": {

@@ -240,8 +240,7 @@
     "export": "Exporteren",
     "settings": "Instellingen",
     "admin_panel": "Beheerpaneel",
-    "accounts": "Rekeningen",
-    "transfers": "Overboekingen"
+    "accounts": "Rekeningen"
   },
   "admin": {
     "title": "Beheerpaneel",
@@ -263,7 +262,6 @@
   },
   "accounts": "Rekeningen",
   "accountsAll": "Alle rekeningen",
-  "transfers": "Overboekingen",
   "transfer_action": "Overmaken",
   "transfer_need_two_accounts": "Voeg een ander account toe om een overboeking te doen",
   "errors": {

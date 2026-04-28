@@ -240,8 +240,7 @@
     "export": "Dışa Aktar",
     "settings": "Ayarlar",
     "admin_panel": "Yönetim Paneli",
-    "accounts": "Hesaplar",
-    "transfers": "Transferler"
+    "accounts": "Hesaplar"
   },
   "admin": {
     "title": "Yönetim Paneli",
@@ -263,7 +262,6 @@
   },
   "accounts": "Hesaplar",
   "accountsAll": "Tüm hesaplar",
-  "transfers": "Transferler",
   "transfer_action": "Transfer Et",
   "transfer_need_two_accounts": "Transfer yapmak için başka bir hesap ekleyin",
   "errors": {

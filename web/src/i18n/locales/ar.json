@@ -240,8 +240,7 @@
     "export": "تصدير",
     "settings": "الإعدادات",
     "admin_panel": "لوحة الإدارة",
-    "accounts": "الحسابات",
-    "transfers": "التحويلات"
+    "accounts": "الحسابات"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -263,7 +262,6 @@
   },
   "accounts": "الحسابات",
   "accountsAll": "جميع الحسابات",
-  "transfers": "التحويلات",
   "transfer_action": "تحويل",
   "transfer_need_two_accounts": "أضف حساباً آخر لإجراء تحويل",
   "errors": {

@@ -20,7 +20,6 @@ const RecurringPage      = lazy(() => import('../features/recurring').then(m => 
 const SavingsPage        = lazy(() => import('../features/savings').then(m => ({ default: m.SavingsPage })))
 const ExportPage         = lazy(() => import('../features/export').then(m => ({ default: m.ExportPage })))
 const AccountsPage       = lazy(() => import('../features/accounts').then(m => ({ default: m.AccountsPage })))
-const TransfersPage      = lazy(() => import('../features/transfers').then(m => ({ default: m.TransfersPage })))
 const AdminPage          = lazy(() => import('../features/admin').then(m => ({ default: m.AdminPage })))
 
 function PageLoader() {
@@ -47,7 +46,6 @@ function AnimatedRoutes() {
             <Route path="savings" element={<SavingsPage />} />
             <Route path="export" element={<ExportPage />} />
             <Route path="accounts" element={<AccountsPage />} />
-            <Route path="transfers" element={<TransfersPage />} />
             <Route path="admin" element={<AdminPage />} />
           </Route>
         </Routes>

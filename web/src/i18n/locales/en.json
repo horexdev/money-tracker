@@ -247,7 +247,6 @@
     "export": "Export",
     "settings": "Settings",
     "accounts": "Accounts",
-    "transfers": "Transfers",
     "admin_panel": "Admin Panel"
   },
   "admin": {
@@ -270,7 +269,6 @@
   },
   "accounts": "Accounts",
   "accountsAll": "All accounts",
-  "transfers": "Transfers",
   "transfer_action": "Transfer",
   "transfer_need_two_accounts": "Add another account to make a transfer",
   "newAccount": "New Account",

@@ -240,8 +240,7 @@
     "export": "Eksport",
     "settings": "Sozlamalar",
     "admin_panel": "Admin panel",
-    "accounts": "Hisoblar",
-    "transfers": "O'tkazmalar"
+    "accounts": "Hisoblar"
   },
   "admin": {
     "title": "Admin panel",
@@ -263,7 +262,6 @@
   },
   "accounts": "Hisoblar",
   "accountsAll": "Barcha hisoblar",
-  "transfers": "O'tkazmalar",
   "transfer_action": "O'tkazish",
   "transfer_need_two_accounts": "O'tkazma uchun boshqa hisob qo'shing",
   "errors": {

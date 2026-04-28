@@ -240,8 +240,7 @@
     "export": "Ekspor",
     "settings": "Pengaturan",
     "admin_panel": "Panel Admin",
-    "accounts": "Akun",
-    "transfers": "Transfer"
+    "accounts": "Akun"
   },
   "admin": {
     "title": "Panel Admin",
@@ -263,7 +262,6 @@
   },
   "accounts": "Akun",
   "accountsAll": "Semua akun",
-  "transfers": "Transfer",
   "transfer_action": "Transfer",
   "transfer_need_two_accounts": "Tambahkan akun lain untuk melakukan transfer",
   "errors": {

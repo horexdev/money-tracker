@@ -240,8 +240,7 @@
     "export": "Экспорт",
     "settings": "Баптаулар",
     "admin_panel": "Админ панель",
-    "accounts": "Шоттар",
-    "transfers": "Аударымдар"
+    "accounts": "Шоттар"
   },
   "admin": {
     "title": "Админ панель",
@@ -263,7 +262,6 @@
   },
   "accounts": "Шоттар",
   "accountsAll": "Барлық шоттар",
-  "transfers": "Аударымдар",
   "transfer_action": "Аудару",
   "transfer_need_two_accounts": "Аударым жасау үшін басқа шот қосыңыз",
   "errors": {

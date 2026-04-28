@@ -240,8 +240,7 @@
     "export": "내보내기",
     "settings": "설정",
     "admin_panel": "관리자 패널",
-    "accounts": "계좌",
-    "transfers": "이체 내역"
+    "accounts": "계좌"
   },
   "admin": {
     "title": "관리자 패널",
@@ -263,7 +262,6 @@
   },
   "accounts": "계좌",
   "accountsAll": "모든 계좌",
-  "transfers": "이체 내역",
   "transfer_action": "이체",
   "transfer_need_two_accounts": "이체하려면 다른 계좌를 추가하세요",
   "errors": {
