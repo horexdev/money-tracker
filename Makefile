@@ -8,7 +8,7 @@ DATABASE_URL := $(shell grep -v '^\#' .env | grep '^DATABASE_URL=' | cut -d'=' -
 GOOSE      := $(GOOSE_BIN) -dir db/migrations postgres "$(DATABASE_URL)"
 SQLC       := cd db && sqlc generate
 
-.PHONY: help up down migrate migrate-down migrate-status sqlc build build-api build-check run run-api web-dev web-build test test-unit test-integration lint vet vuln tidy clean smoke-test rollback backup backup-status
+.PHONY: help up down migrate migrate-down migrate-status sqlc build build-api build-check run run-api web-dev web-build web-test test test-unit test-integration test-cover lint vet vuln tidy clean smoke-test rollback backup backup-status
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
@@ -56,6 +56,9 @@ web-dev: ## Start Mini App dev server (proxies /api → localhost:8080)
 web-build: ## Build Mini App for production into web/dist/
 	cd web && npm run build
 
+web-test: ## Run Mini App test suite (vitest)
+	cd web && npm run test
+
 test: ## Run all tests (unit + integration)
 	go test -v -race -timeout 120s -p 2 ./...
 
@@ -64,6 +67,10 @@ test-unit: ## Run unit tests only (skips integration tests)
 
 test-integration: ## Run integration tests only (requires DATABASE_URL and REDIS_URL)
 	go test -v -race -tags integration -timeout 120s -p 2 ./...
+
+test-cover: ## Run unit tests with coverage and print per-package summary
+	go test -race -short -timeout 60s -coverprofile=coverage.out ./...
+	go tool cover -func=coverage.out
 
 lint: ## Run golangci-lint
 	golangci-lint run ./...
