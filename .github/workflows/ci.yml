@@ -73,12 +73,20 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         env:
           BOT_TOKEN: test_token_placeholder
           LOG_LEVEL: warn
           MIGRATIONS_DIR: db/migrations
-        run: go test -v -race -short -timeout 60s ./...
+        run: go test -v -race -short -timeout 60s -coverprofile=coverage.out ./...
+
+      - name: Upload backend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: coverage.out
+          retention-days: 14
 
   web-build:
     runs-on: ubuntu-latest
@@ -97,9 +105,21 @@ jobs:
         working-directory: web
         run: npm ci
 
+      - name: Run Mini App tests with coverage
+        working-directory: web
+        run: npm run test:coverage
+
       - name: Build Mini App
         working-directory: web
         run: npm run build
+
+      - name: Upload web coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-coverage
+          path: web/coverage
+          retention-days: 14
 
   integration-tests:
     runs-on: ubuntu-latest
