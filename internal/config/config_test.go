@@ -93,11 +93,11 @@ func TestLoad_ErrorsOnMissingRequired(t *testing.T) {
 		if v, ok := osLookupEnv(k); ok {
 			saved[k] = v
 		}
-		osUnsetenv(k)
+		require.NoError(t, osUnsetenv(k))
 	}
 	t.Cleanup(func() {
 		for k, v := range saved {
-			osSetenv(k, v)
+			_ = osSetenv(k, v)
 		}
 	})
 
