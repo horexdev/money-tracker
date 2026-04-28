@@ -34,7 +34,10 @@ function SpringMoney({ cents, currency, className }: MoneyProps) {
   const formatterRef = useRef((v: number) => formatCents(Math.round(v), currency))
   const [display, setDisplay] = useState(() => formatCents(cents, currency))
 
-  formatterRef.current = (v: number) => formatCents(Math.round(v), currency)
+  // Keep the formatter ref in sync without writing during render.
+  useEffect(() => {
+    formatterRef.current = (v: number) => formatCents(Math.round(v), currency)
+  }, [currency])
 
   useEffect(() => {
     spring.set(cents)
@@ -43,7 +46,7 @@ function SpringMoney({ cents, currency, className }: MoneyProps) {
   // When currency changes, snap immediately (avoid showing wrong currency symbol during animation)
   useEffect(() => {
     setDisplay(formatCents(Math.round(spring.get()), currency))
-  }, [currency]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currency, spring])
 
   useMotionValueEvent(spring, 'change', (v) => {
     setDisplay(formatterRef.current(v))
@@ -64,10 +67,14 @@ export function DashboardPage() {
     queryFn: accountsApi.list,
   })
 
-  // Pre-select the default account once accounts load
+  // Pre-select the default account once accounts load. The setState call
+  // inside an effect is intentional — there is no place to derive
+  // selectedAccountId from at render time without breaking the user's manual
+  // selection later.
   useEffect(() => {
     if (selectedAccountId === null && accounts.length > 0) {
       const def = accounts.find(a => a.is_default) ?? accounts[0]
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedAccountId(def.id)
     }
   }, [accounts, selectedAccountId])

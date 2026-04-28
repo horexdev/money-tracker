@@ -63,8 +63,29 @@ vi.mock('@tma.js/sdk-react', () => ({
     hide: vi.fn(),
     onClick: vi.fn(() => () => {}),
   },
+  mainButton: {
+    isMounted: () => false,
+    setText: vi.fn(),
+    showLoader: vi.fn(),
+    hideLoader: vi.fn(),
+    enable: vi.fn(),
+    disable: vi.fn(),
+    show: vi.fn(),
+    hide: vi.fn(),
+    onClick: vi.fn(() => () => {}),
+  },
   useSignal: () => undefined,
   retrieveRawInitData: () => 'mock_init_data',
+}))
+
+// `@tma.js/sdk` is imported by useHaptic via top-level await; without a mock
+// the import would fail in jsdom.
+vi.mock('@tma.js/sdk', () => ({
+  hapticFeedback: {
+    impactOccurred: vi.fn(),
+    notificationOccurred: vi.fn(),
+    selectionChanged: vi.fn(),
+  },
 }))
 
 const motionProps = new Set([
@@ -113,5 +134,7 @@ vi.mock('framer-motion', () => {
     useInView: () => true,
     useScroll: () => ({ scrollY: { get: () => 0, on: () => () => {} } }),
     animate: () => ({ stop: () => {} }),
+    useReducedMotion: () => false,
+    useMotionValueEvent: () => undefined,
   }
 })

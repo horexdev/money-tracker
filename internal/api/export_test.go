@@ -122,6 +122,14 @@ func AdjustAccountHandlerForTest(svc AdjustmentApplier, log *slog.Logger, accoun
 	return adjustAccountHandler(svc, log, accountID)
 }
 
+// UserDataHandlerForTest exposes userDataHandler for testing.
+func UserDataHandlerForTest(userSvc *service.UserService, log *slog.Logger) http.HandlerFunc {
+	return userDataHandler(userSvc, log)
+}
+
+// DefaultCategoriesFor exposes defaultCategoriesFor for tests.
+var DefaultCategoriesFor = defaultCategoriesFor
+
 // TelegramUserForTest constructs a TelegramUser for use in tests.
 func TelegramUserForTest(id int64, firstName, langCode string) TelegramUser {
 	return TelegramUser{ID: id, FirstName: firstName, LanguageCode: langCode}
