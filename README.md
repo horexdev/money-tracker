@@ -201,7 +201,7 @@ make vuln
 make test-unit
 make build-check
 make test-cover
-cd web && npm ci && npm run lint && npm run build && npm run test:coverage
+cd web && npm ci && npm run build && npm run test:coverage
 ```
 
 ## License
