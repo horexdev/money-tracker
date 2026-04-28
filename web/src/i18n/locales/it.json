@@ -95,7 +95,9 @@
     "avg_per_tx": "Media per tx",
     "date_from": "Da",
     "date_to": "A",
-    "apply": "Applica"
+    "apply": "Applica",
+    "prev_month": "Mese precedente",
+    "next_month": "Mese successivo"
   },
   "categories": {
     "title": "Categorie",

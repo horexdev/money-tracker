@@ -95,7 +95,9 @@
     "avg_per_tx": "거래당 평균",
     "date_from": "시작일",
     "date_to": "종료일",
-    "apply": "적용"
+    "apply": "적용",
+    "prev_month": "이전 달",
+    "next_month": "다음 달"
   },
   "categories": {
     "title": "카테고리",

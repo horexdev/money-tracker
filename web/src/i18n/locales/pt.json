@@ -95,7 +95,9 @@
     "avg_per_tx": "Média por tx",
     "date_from": "De",
     "date_to": "Até",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "prev_month": "Mês anterior",
+    "next_month": "Próximo mês"
   },
   "categories": {
     "title": "Categorias",

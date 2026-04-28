@@ -95,7 +95,9 @@
     "avg_per_tx": "Орташа",
     "date_from": "Бастап",
     "date_to": "Дейін",
-    "apply": "Қолдану"
+    "apply": "Қолдану",
+    "prev_month": "Алдыңғы ай",
+    "next_month": "Келесі ай"
   },
   "categories": {
     "title": "Санаттар",

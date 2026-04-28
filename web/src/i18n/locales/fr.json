@@ -95,7 +95,9 @@
     "avg_per_tx": "Moy. par tx",
     "date_from": "Du",
     "date_to": "Au",
-    "apply": "Appliquer"
+    "apply": "Appliquer",
+    "prev_month": "Mois précédent",
+    "next_month": "Mois suivant"
   },
   "categories": {
     "title": "Catégories",

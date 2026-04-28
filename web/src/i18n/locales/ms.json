@@ -95,7 +95,9 @@
     "avg_per_tx": "Purata setiap tx",
     "date_from": "Dari",
     "date_to": "Hingga",
-    "apply": "Gunakan"
+    "apply": "Gunakan",
+    "prev_month": "Bulan sebelumnya",
+    "next_month": "Bulan seterusnya"
   },
   "categories": {
     "title": "Kategori",

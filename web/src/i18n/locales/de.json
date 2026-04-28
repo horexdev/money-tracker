@@ -95,7 +95,9 @@
     "avg_per_tx": "Durchschnitt pro Tx",
     "date_from": "Von",
     "date_to": "Bis",
-    "apply": "Anwenden"
+    "apply": "Anwenden",
+    "prev_month": "Vorheriger Monat",
+    "next_month": "Nächster Monat"
   },
   "categories": {
     "title": "Kategorien",
