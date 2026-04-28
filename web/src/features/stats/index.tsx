@@ -40,17 +40,21 @@ function StaticNumber({ value, formatter }: NumberProps) {
 function SpringNumber({ value, formatter }: NumberProps) {
   const spring = useSpring(0, { stiffness: 80, damping: 20 })
   const formatterRef = useRef(formatter)
-  formatterRef.current = formatter
 
   const [display, setDisplay] = useState(() =>
     formatter ? formatter(value) : value.toString()
   )
 
   useEffect(() => {
+    formatterRef.current = formatter
+  }, [formatter])
+
+  useEffect(() => {
     spring.set(value)
     // Re-render display immediately when formatter changes (e.g. currency switch)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplay(formatterRef.current ? formatterRef.current(Math.round(spring.get())) : Math.round(spring.get()).toString())
-  }, [value, formatter, spring]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [value, formatter, spring])
 
   useMotionValueEvent(spring, 'change', (v) => {
     const fmt = formatterRef.current
@@ -79,14 +83,20 @@ function DonutChart({
   const strokeWidth = 18
   const circumference = 2 * Math.PI * r
 
-  let accumulated = 0
+  // Pre-compute cumulative offsets so the JSX map stays free of mutation,
+  // satisfying react-hooks/immutability.
+  const offsets: number[] = []
+  data.reduce((acc, d) => {
+    offsets.push(acc)
+    return acc + (d.percent / 100) * circumference
+  }, 0)
+
   const segments = data.map((d, i) => {
     const segLen = (d.percent / 100) * circumference
     // Clamp to non-negative: a negative dasharray renders as a full ring and overdraws prior segments.
     const dashLen = Math.max(segLen - 2, 0)
     const gapLen = circumference - dashLen
-    const offset = circumference - accumulated
-    accumulated += segLen
+    const offset = circumference - offsets[i]
 
     return (
       <motion.circle
@@ -232,6 +242,13 @@ export function StatsPage() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
 
+  // Default date range for the picker — initialised once per mount so the
+  // render path remains pure (avoids react-hooks/purity violation).
+  const [defaultPickerFrom] = useState(() =>
+    new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0],
+  )
+  const [defaultPickerTo] = useState(() => new Date().toISOString().split('T')[0])
+
   const { data: accounts = [] } = useQuery({
     queryKey: ['accounts'],
     queryFn: accountsApi.list,
@@ -240,6 +257,7 @@ export function StatsPage() {
   useEffect(() => {
     if (selectedAccountId === null && accounts.length > 0) {
       const def = accounts.find(a => a.is_default) ?? accounts[0]
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedAccountId(def.id)
     }
   }, [accounts, selectedAccountId])
@@ -509,8 +527,8 @@ export function StatsPage() {
       <AnimatePresence>
         {showDatePicker && (
           <RangeDateModal
-            initialFrom={customRange?.from ?? new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]}
-            initialTo={customRange?.to ?? new Date().toISOString().split('T')[0]}
+            initialFrom={customRange?.from ?? defaultPickerFrom}
+            initialTo={customRange?.to ?? defaultPickerTo}
             onApply={handleCustomApply}
             onClose={() => setShowDatePicker(false)}
             labelFrom={t('stats.date_from')}

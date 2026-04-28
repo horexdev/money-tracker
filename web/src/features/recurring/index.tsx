@@ -122,6 +122,7 @@ function RecurringForm({
   useEffect(() => {
     if (accounts.length === 0) return
     const def = accounts.find(a => a.is_default) ?? accounts[0]
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (accountID === null) setAccountID(def.id)
   }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
 

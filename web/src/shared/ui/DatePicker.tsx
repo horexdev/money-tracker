@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 
 /* ─── Helpers ─── */
+// eslint-disable-next-line react-refresh/only-export-components
 export function fmtISO(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function fmtDisplay(iso: string) {
   const d = new Date(iso + 'T00:00:00')
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
