@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Bilan hebdomadaire",
     "notify_weekly_summary_desc": "Récapitulatif du lundi sur les dépenses",
     "notify_goal_milestones": "Jalons d'objectifs",
-    "notify_goal_milestones_desc": "Alerte à 25%, 50%, 75%, 100% d'un objectif"
+    "notify_goal_milestones_desc": "Alerte à 25%, 50%, 75%, 100% d'un objectif",
+    "display": "Affichage",
+    "animate_numbers": "Animer les nombres",
+    "animate_numbers_desc": "Effet ressort lors des changements de solde et totaux"
   },
   "more": {
     "title": "Plus",

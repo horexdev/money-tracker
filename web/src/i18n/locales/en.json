@@ -231,7 +231,10 @@
     "notify_weekly_summary": "Weekly Summary",
     "notify_weekly_summary_desc": "Monday recap of last week spending",
     "notify_goal_milestones": "Goal Milestones",
-    "notify_goal_milestones_desc": "Alert at 25%, 50%, 75%, 100% of a goal"
+    "notify_goal_milestones_desc": "Alert at 25%, 50%, 75%, 100% of a goal",
+    "display": "Display",
+    "animate_numbers": "Animate numbers",
+    "animate_numbers_desc": "Spring effect when balance and totals change"
   },
   "more": {
     "title": "More",

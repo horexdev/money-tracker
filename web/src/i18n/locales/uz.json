@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Haftalik xulosa",
     "notify_weekly_summary_desc": "Dushanba kuni haftalik xarajatlar sharhi",
     "notify_goal_milestones": "Maqsad yutuklar",
-    "notify_goal_milestones_desc": "Maqsadning 25%, 50%, 75%, 100%'ida ogohlantirish"
+    "notify_goal_milestones_desc": "Maqsadning 25%, 50%, 75%, 100%'ida ogohlantirish",
+    "display": "Koʻrsatish",
+    "animate_numbers": "Raqamlar animatsiyasi",
+    "animate_numbers_desc": "Balans va jamilar oʻzgargandagi prujina effekti"
   },
   "more": {
     "title": "Ko'proq",

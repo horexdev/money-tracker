@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Riepilogo settimanale",
     "notify_weekly_summary_desc": "Riepilogo del lunedì sulle spese settimanali",
     "notify_goal_milestones": "Traguardi degli obiettivi",
-    "notify_goal_milestones_desc": "Avviso al 25%, 50%, 75%, 100% di un obiettivo"
+    "notify_goal_milestones_desc": "Avviso al 25%, 50%, 75%, 100% di un obiettivo",
+    "display": "Visualizzazione",
+    "animate_numbers": "Anima i numeri",
+    "animate_numbers_desc": "Effetto molla quando saldo e totali cambiano"
   },
   "more": {
     "title": "Altro",

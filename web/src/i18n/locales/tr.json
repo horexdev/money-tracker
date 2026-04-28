@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Haftalık Özet",
     "notify_weekly_summary_desc": "Pazartesi haftalık harcama özeti",
     "notify_goal_milestones": "Hedef Dönüm Noktaları",
-    "notify_goal_milestones_desc": "%25, %50, %75, %100'de uyarı"
+    "notify_goal_milestones_desc": "%25, %50, %75, %100'de uyarı",
+    "display": "Görünüm",
+    "animate_numbers": "Sayıları canlandır",
+    "animate_numbers_desc": "Bakiye ve toplamlar değiştiğinde yay efekti"
   },
   "more": {
     "title": "Daha Fazla",

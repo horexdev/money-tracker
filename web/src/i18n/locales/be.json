@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Вынік тыдня",
     "notify_weekly_summary_desc": "Панядзелкавы агляд расходаў за тыдзень",
     "notify_goal_milestones": "Дасягненні мэт",
-    "notify_goal_milestones_desc": "Апавяшчэнне пры 25%, 50%, 75%, 100% мэты"
+    "notify_goal_milestones_desc": "Апавяшчэнне пры 25%, 50%, 75%, 100% мэты",
+    "display": "Адлюстраванне",
+    "animate_numbers": "Анімацыя лікаў",
+    "animate_numbers_desc": "Плыўная анімацыя пры змене балансу і сум"
   },
   "more": {
     "title": "Яшчэ",

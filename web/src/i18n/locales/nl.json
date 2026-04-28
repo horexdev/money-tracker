@@ -224,7 +224,10 @@
     "notify_weekly_summary": "Wekelijkse samenvatting",
     "notify_weekly_summary_desc": "Maandag overzicht van de weekuitgaven",
     "notify_goal_milestones": "Doelmijlpalen",
-    "notify_goal_milestones_desc": "Melding bij 25%, 50%, 75%, 100% van een doel"
+    "notify_goal_milestones_desc": "Melding bij 25%, 50%, 75%, 100% van een doel",
+    "display": "Weergave",
+    "animate_numbers": "Getallen animeren",
+    "animate_numbers_desc": "Veereffect bij wijziging van saldo en totalen"
   },
   "more": {
     "title": "Meer",

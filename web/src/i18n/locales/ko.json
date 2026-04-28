@@ -224,7 +224,10 @@
     "notify_weekly_summary": "주간 요약",
     "notify_weekly_summary_desc": "월요일 주간 지출 요약",
     "notify_goal_milestones": "목표 달성",
-    "notify_goal_milestones_desc": "목표의 25%, 50%, 75%, 100% 시 알림"
+    "notify_goal_milestones_desc": "목표의 25%, 50%, 75%, 100% 시 알림",
+    "display": "표시",
+    "animate_numbers": "숫자 애니메이션",
+    "animate_numbers_desc": "잔액과 합계가 변할 때 스프링 효과"
   },
   "more": {
     "title": "더보기",

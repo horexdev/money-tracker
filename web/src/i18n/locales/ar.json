@@ -224,7 +224,10 @@
     "notify_weekly_summary": "ملخص أسبوعي",
     "notify_weekly_summary_desc": "مراجعة الإنفاق كل يوم اثنين",
     "notify_goal_milestones": "إنجازات الأهداف",
-    "notify_goal_milestones_desc": "تنبيه عند 25% و50% و75% و100%"
+    "notify_goal_milestones_desc": "تنبيه عند 25% و50% و75% و100%",
+    "display": "العرض",
+    "animate_numbers": "تحريك الأرقام",
+    "animate_numbers_desc": "تأثير نابض عند تغيّر الرصيد والمجاميع"
   },
   "more": {
     "title": "المزيد",
