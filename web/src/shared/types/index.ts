@@ -53,6 +53,7 @@ export interface BalanceResponse {
 
 // GET /api/v1/stats
 export interface CategoryStat {
+  category_id: number
   category_name: string
   category_icon: string
   category_color: string
