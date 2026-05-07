@@ -42,7 +42,7 @@ import { statsApi } from '../../shared/api/stats'
 import { accountsApi } from '../../shared/api/accounts'
 import { settingsApi } from '../../shared/api/settings'
 import { renderWithProviders } from '../../test/render'
-import type { StatsChartStyle, UserSettings } from '../../shared/types'
+import type { StatsChartStyle, StatsResponse, UserSettings } from '../../shared/types'
 
 const baseSettings: UserSettings = {
   base_currency: 'USD',
@@ -57,7 +57,7 @@ const baseSettings: UserSettings = {
   animate_numbers: false,
 }
 
-const sampleStats = {
+const sampleStats: StatsResponse = {
   period: 'month',
   items: [
     { category_name: 'Food',      category_icon: 'fork-knife', category_color: '#f97316', type: 'expense', total_cents: 5000, tx_count: 4, currency_code: 'USD' },
