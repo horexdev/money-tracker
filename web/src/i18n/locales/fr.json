@@ -97,7 +97,13 @@
     "date_to": "Au",
     "apply": "Appliquer",
     "prev_month": "Mois précédent",
-    "next_month": "Mois suivant"
+    "next_month": "Mois suivant",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Catégories",

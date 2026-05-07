@@ -97,7 +97,13 @@
     "date_to": "종료일",
     "apply": "적용",
     "prev_month": "이전 달",
-    "next_month": "다음 달"
+    "next_month": "다음 달",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "카테고리",

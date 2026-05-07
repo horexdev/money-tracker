@@ -97,7 +97,13 @@
     "date_to": "إلى",
     "apply": "تطبيق",
     "prev_month": "الشهر السابق",
-    "next_month": "الشهر التالي"
+    "next_month": "الشهر التالي",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "الفئات",

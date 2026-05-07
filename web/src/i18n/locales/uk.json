@@ -97,7 +97,13 @@
     "date_to": "До",
     "apply": "Застосувати",
     "prev_month": "Попередній місяць",
-    "next_month": "Наступний місяць"
+    "next_month": "Наступний місяць",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Категорії",
