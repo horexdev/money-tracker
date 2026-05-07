@@ -31,10 +31,14 @@ type TransactionStorer interface {
 	ListByAccount(ctx context.Context, userID, accountID int64, limit, offset int) ([]*domain.Transaction, error)
 	ListWithDateRange(ctx context.Context, userID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error)
 	ListByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error)
+	ListByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error)
+	ListByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error)
 	Count(ctx context.Context, userID int64) (int64, error)
 	CountByAccount(ctx context.Context, userID, accountID int64) (int64, error)
 	CountWithDateRange(ctx context.Context, userID int64, from, to *time.Time) (int64, error)
 	CountByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time) (int64, error)
+	CountByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time) (int64, error)
+	CountByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time) (int64, error)
 	StatsByCategory(ctx context.Context, userID int64, from, to time.Time) ([]domain.CategoryStat, error)
 	StatsByCategoryAndAccount(ctx context.Context, userID, accountID int64, from, to time.Time) ([]domain.CategoryStat, error)
 	ListByCategoryPeriod(ctx context.Context, userID, categoryID int64, from, to time.Time) ([]*domain.Transaction, error)
@@ -70,6 +74,23 @@ type BudgetStorer interface {
 	GetSpentInPeriod(ctx context.Context, userID, categoryID int64, currency string, from, to time.Time) (int64, error)
 	UpdateLastNotified(ctx context.Context, id int64, notifiedPercent int) error
 	ListDistinctUserIDs(ctx context.Context) ([]int64, error)
+}
+
+// TransactionTemplateStorer is the repository interface for transaction template operations.
+type TransactionTemplateStorer interface {
+	Create(ctx context.Context, t *domain.TransactionTemplate) (*domain.TransactionTemplate, error)
+	GetByID(ctx context.Context, id, userID int64) (*domain.TransactionTemplate, error)
+	ListByUser(ctx context.Context, userID int64) ([]*domain.TransactionTemplate, error)
+	Update(ctx context.Context, t *domain.TransactionTemplate) (*domain.TransactionTemplate, error)
+	Delete(ctx context.Context, id, userID int64) error
+	Reorder(ctx context.Context, userID int64, orderedIDs []int64) error
+}
+
+// TransactionAdder is the narrow interface used by TransactionTemplateService to
+// create a transaction from a template. *TransactionService satisfies it.
+type TransactionAdder interface {
+	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error)
+	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error)
 }
 
 // RecurringStorer is the repository interface for recurring transaction operations.

@@ -146,6 +146,7 @@ type Deps struct {
 	CategorySvc   *service.CategoryService
 	BudgetSvc     *service.BudgetService
 	RecurringSvc  *service.RecurringService
+	TemplateSvc   *service.TransactionTemplateService
 	GoalSvc       *service.SavingsGoalService
 	ExportSvc     *service.ExportService
 	AccountSvc    *service.AccountService
@@ -202,6 +203,10 @@ func NewServer(d Deps) http.Handler {
 	// Recurring transactions CRUD.
 	mux.Handle("/api/v1/recurring", protected(recurringHandler(d.RecurringSvc, d.Log)))
 	mux.Handle("/api/v1/recurring/", protected(recurringHandler(d.RecurringSvc, d.Log)))
+
+	// Transaction templates CRUD + apply + reorder.
+	mux.Handle("/api/v1/templates", protected(templateHandler(d.TemplateSvc, d.Log)))
+	mux.Handle("/api/v1/templates/", protected(templateHandler(d.TemplateSvc, d.Log)))
 
 	// Savings goals CRUD + deposit/withdraw.
 	mux.Handle("/api/v1/goals", protected(goalsHandler(d.GoalSvc, d.Log)))

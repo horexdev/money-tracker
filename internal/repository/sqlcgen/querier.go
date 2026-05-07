@@ -19,12 +19,16 @@ type Querier interface {
 	CountAllUsers(ctx context.Context) (int64, error)
 	CountNewUsers(ctx context.Context, arg CountNewUsersParams) (int64, error)
 	CountRetainedUsers(ctx context.Context, arg CountRetainedUsersParams) (int64, error)
+	CountTransactionTemplatesByAccount(ctx context.Context, accountID int64) (int64, error)
+	CountTransactionTemplatesByCategory(ctx context.Context, categoryID int64) (int64, error)
 	CountTransactionsByCategory(ctx context.Context, categoryID int64) (int64, error)
 	CountTransfersByUser(ctx context.Context, userID int64) (int64, error)
 	CountUserAccounts(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactions(ctx context.Context, userID int64) (int64, error)
 	CountUserTransactionsByAccount(ctx context.Context, arg CountUserTransactionsByAccountParams) (int64, error)
+	CountUserTransactionsByAccountAndCategoryWithDateRange(ctx context.Context, arg CountUserTransactionsByAccountAndCategoryWithDateRangeParams) (int64, error)
 	CountUserTransactionsByAccountWithDateRange(ctx context.Context, arg CountUserTransactionsByAccountWithDateRangeParams) (int64, error)
+	CountUserTransactionsByCategoryWithDateRange(ctx context.Context, arg CountUserTransactionsByCategoryWithDateRangeParams) (int64, error)
 	CountUserTransactionsWithDateRange(ctx context.Context, arg CountUserTransactionsWithDateRangeParams) (int64, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	// Creates a balance-adjustment transaction that is hidden from history and statistics
@@ -34,6 +38,7 @@ type Querier interface {
 	CreateRecurring(ctx context.Context, arg CreateRecurringParams) (RecurringTransaction, error)
 	CreateSavingsGoal(ctx context.Context, arg CreateSavingsGoalParams) (SavingsGoal, error)
 	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
+	CreateTransactionTemplate(ctx context.Context, arg CreateTransactionTemplateParams) (TransactionTemplate, error)
 	CreateTransactionWithDate(ctx context.Context, arg CreateTransactionWithDateParams) (Transaction, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUserCategory(ctx context.Context, arg CreateUserCategoryParams) (Category, error)
@@ -49,6 +54,7 @@ type Querier interface {
 	DeleteRecurring(ctx context.Context, arg DeleteRecurringParams) error
 	DeleteSavingsGoal(ctx context.Context, arg DeleteSavingsGoalParams) error
 	DeleteTransaction(ctx context.Context, arg DeleteTransactionParams) error
+	DeleteTransactionTemplate(ctx context.Context, arg DeleteTransactionTemplateParams) (int64, error)
 	DeleteTransfer(ctx context.Context, arg DeleteTransferParams) error
 	DeleteUser(ctx context.Context, id int64) error
 	DepositToGoal(ctx context.Context, arg DepositToGoalParams) (SavingsGoal, error)
@@ -82,6 +88,7 @@ type Querier interface {
 	// Returns net balance (income - expense) summed across all transactions, converted to the
 	// target currency using exchange_rate_snapshots. Same-currency transactions use rate 1.0.
 	GetTotalInBaseCurrency(ctx context.Context, arg GetTotalInBaseCurrencyParams) (int64, error)
+	GetTransactionTemplateByID(ctx context.Context, arg GetTransactionTemplateByIDParams) (GetTransactionTemplateByIDRow, error)
 	GetTransferByID(ctx context.Context, arg GetTransferByIDParams) (GetTransferByIDRow, error)
 	GetTransferTxIDs(ctx context.Context, arg GetTransferTxIDsParams) (GetTransferTxIDsRow, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
@@ -97,10 +104,13 @@ type Querier interface {
 	ListGoalTransactions(ctx context.Context, arg ListGoalTransactionsParams) ([]GoalTransaction, error)
 	ListRecurringByUser(ctx context.Context, userID int64) ([]ListRecurringByUserRow, error)
 	ListSavingsGoalsByUser(ctx context.Context, userID int64) ([]SavingsGoal, error)
+	ListTransactionTemplatesByUser(ctx context.Context, userID int64) ([]ListTransactionTemplatesByUserRow, error)
 	ListTransactions(ctx context.Context, arg ListTransactionsParams) ([]ListTransactionsRow, error)
 	ListTransactionsByAccount(ctx context.Context, arg ListTransactionsByAccountParams) ([]ListTransactionsByAccountRow, error)
+	ListTransactionsByAccountAndCategoryWithDateRange(ctx context.Context, arg ListTransactionsByAccountAndCategoryWithDateRangeParams) ([]ListTransactionsByAccountAndCategoryWithDateRangeRow, error)
 	ListTransactionsByAccountWithDateRange(ctx context.Context, arg ListTransactionsByAccountWithDateRangeParams) ([]ListTransactionsByAccountWithDateRangeRow, error)
 	ListTransactionsByCategoryPeriod(ctx context.Context, arg ListTransactionsByCategoryPeriodParams) ([]ListTransactionsByCategoryPeriodRow, error)
+	ListTransactionsByCategoryWithDateRange(ctx context.Context, arg ListTransactionsByCategoryWithDateRangeParams) ([]ListTransactionsByCategoryWithDateRangeRow, error)
 	ListTransactionsWithDateRange(ctx context.Context, arg ListTransactionsWithDateRangeParams) ([]ListTransactionsWithDateRangeRow, error)
 	ListTransfersByAccount(ctx context.Context, arg ListTransfersByAccountParams) ([]ListTransfersByAccountRow, error)
 	ListTransfersByUser(ctx context.Context, arg ListTransfersByUserParams) ([]ListTransfersByUserRow, error)
@@ -130,6 +140,8 @@ type Querier interface {
 	UpdateRecurringNextRun(ctx context.Context, arg UpdateRecurringNextRunParams) error
 	UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalParams) (SavingsGoal, error)
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
+	UpdateTransactionTemplate(ctx context.Context, arg UpdateTransactionTemplateParams) (TransactionTemplate, error)
+	UpdateTransactionTemplateSortOrder(ctx context.Context, arg UpdateTransactionTemplateSortOrderParams) (int64, error)
 	UpdateUIPreferences(ctx context.Context, arg UpdateUIPreferencesParams) (User, error)
 	UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguageParams) (User, error)
 	UpsertExchangeRate(ctx context.Context, arg UpsertExchangeRateParams) error

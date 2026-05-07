@@ -14,6 +14,7 @@ import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState } from '../../shared/ui'
+import { QuickTemplates } from './QuickTemplates'
 import type { Transaction } from '../../shared/types'
 
 type MoneyProps = { cents: number; currency: string; className?: string }
@@ -243,6 +244,9 @@ export function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Quick templates — horizontal carousel between bento and recent */}
+        <QuickTemplates />
 
         {/* Recent transactions — fade/slide when account changes */}
         <div className="px-4 pt-3 pb-2 flex flex-col">

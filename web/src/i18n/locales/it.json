@@ -246,7 +246,8 @@
     "export": "Esporta",
     "settings": "Impostazioni",
     "admin_panel": "Pannello Admin",
-    "accounts": "Conti"
+    "accounts": "Conti",
+    "templates": "Modelli rapidi"
   },
   "admin": {
     "title": "Pannello Admin",
@@ -316,5 +317,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Modelli",
+    "no_templates": "Nessun modello ancora",
+    "create_first": "Crea il primo modello per spese frequenti — un tap invece di cinque",
+    "create_new": "Nuovo modello",
+    "edit_title": "Modifica modello",
+    "from_template": "Da modello",
+    "save_as_template": "Salva come modello",
+    "amount_fixed": "Importo fisso",
+    "amount_fixed_hint": "Toccare sulla dashboard crea la transazione all'istante",
+    "amount_variable_hint": "Toccare sulla dashboard chiede l'importo",
+    "amount_variable_hint_short": "chiedi importo",
+    "name": "Nome",
+    "name_placeholder": "Caffè, pranzo, trasporto…",
+    "quick": "Modelli rapidi",
+    "apply": "Applica modello"
   }
 }

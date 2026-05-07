@@ -253,7 +253,8 @@
     "export": "Export",
     "settings": "Settings",
     "accounts": "Accounts",
-    "admin_panel": "Admin Panel"
+    "admin_panel": "Admin Panel",
+    "templates": "Quick Templates"
   },
   "admin": {
     "title": "Admin Panel",
@@ -323,5 +324,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Templates",
+    "no_templates": "No templates yet",
+    "create_first": "Create your first template to record frequent expenses with one tap",
+    "create_new": "New template",
+    "edit_title": "Edit template",
+    "from_template": "From template",
+    "save_as_template": "Save as template",
+    "amount_fixed": "Fixed amount",
+    "amount_fixed_hint": "Tap on the dashboard creates a transaction instantly",
+    "amount_variable_hint": "Tap on the dashboard prompts for the amount",
+    "amount_variable_hint_short": "ask amount",
+    "name": "Name",
+    "name_placeholder": "Coffee, lunch, transit…",
+    "quick": "Quick templates",
+    "apply": "Apply template"
   }
 }

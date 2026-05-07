@@ -246,7 +246,8 @@
     "export": "Экспорт",
     "settings": "Баптаулар",
     "admin_panel": "Админ панель",
-    "accounts": "Шоттар"
+    "accounts": "Шоттар",
+    "templates": "Жылдам үлгілер"
   },
   "admin": {
     "title": "Админ панель",
@@ -316,5 +317,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Үлгілер",
+    "no_templates": "Үлгілер әзірге жоқ",
+    "create_first": "Жиі операциялар үшін бірінші үлгіні жасаңыз — бес тап орнына біреуі",
+    "create_new": "Жаңа үлгі",
+    "edit_title": "Үлгіні өңдеу",
+    "from_template": "Үлгіден",
+    "save_as_template": "Үлгі ретінде сақтау",
+    "amount_fixed": "Бекітілген сома",
+    "amount_fixed_hint": "Басты беттегі тап операцияны бірден жасайды",
+    "amount_variable_hint": "Басты беттегі тап соманы сұрайды",
+    "amount_variable_hint_short": "соманы сұрау",
+    "name": "Атауы",
+    "name_placeholder": "Кофе, түскі ас, жол ақы…",
+    "quick": "Жылдам үлгілер",
+    "apply": "Үлгіні қолдану"
   }
 }

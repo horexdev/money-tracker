@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
 import { CalendarDots, CaretLeft, CaretRight, ChartBar } from '@phosphor-icons/react'
@@ -350,50 +350,59 @@ function CategoryRow({
   index,
   color,
   currency,
+  onClick,
 }: {
   entry: CategoryStat & { percent: number }
   index: number
   color: string
   currency: string
+  onClick?: (categoryId: number) => void
 }) {
   const tCategory = useCategoryName()
   return (
     <motion.div
-      className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-b-0"
+      className="border-b border-border last:border-b-0"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
     >
-      <div
-        className="w-2.5 h-2.5 rounded-full shrink-0"
-        style={{ background: color }}
-      />
-      <div
-        className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
-        style={{ background: entry.category_color || color }}
+      <button
+        type="button"
+        onClick={() => onClick?.(entry.category_id)}
+        disabled={!onClick}
+        className="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors enabled:active:bg-border/40 disabled:cursor-default"
       >
-        <CategoryIcon icon={entry.category_icon} size={18} weight="fill" className="text-white" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-semibold text-text truncate">{tCategory(entry.category_name)}</span>
-          <span className="text-sm font-bold tabular-nums text-text ml-2 shrink-0">
-            {formatCents(entry.total_cents, currency)}
-          </span>
+        <div
+          className="w-2.5 h-2.5 rounded-full shrink-0"
+          style={{ background: color }}
+        />
+        <div
+          className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
+          style={{ background: entry.category_color || color }}
+        >
+          <CategoryIcon icon={entry.category_icon} size={18} weight="fill" className="text-white" />
         </div>
-        <div className="mt-1.5 h-1.5 rounded-full overflow-hidden bg-bg">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ background: color }}
-            initial={{ width: 0 }}
-            animate={{ width: `${entry.percent}%` }}
-            transition={{ duration: 0.5, delay: 0.15 + index * 0.05, ease: 'easeOut' }}
-          />
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-semibold text-text truncate">{tCategory(entry.category_name)}</span>
+            <span className="text-sm font-bold tabular-nums text-text ml-2 shrink-0">
+              {formatCents(entry.total_cents, currency)}
+            </span>
+          </div>
+          <div className="mt-1.5 h-1.5 rounded-full overflow-hidden bg-bg">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: color }}
+              initial={{ width: 0 }}
+              animate={{ width: `${entry.percent}%` }}
+              transition={{ duration: 0.5, delay: 0.15 + index * 0.05, ease: 'easeOut' }}
+            />
+          </div>
         </div>
-      </div>
-      <span className="text-xs font-bold text-muted shrink-0 w-9 text-right">
-        {entry.percent.toFixed(0)}%
-      </span>
+        <span className="text-xs font-bold text-muted shrink-0 w-9 text-right">
+          {entry.percent.toFixed(0)}%
+        </span>
+      </button>
     </motion.div>
   )
 }
@@ -414,11 +423,43 @@ function computeMonthRange(offset: number): { from: string; to: string; firstDay
   return { from: fmtLocalISO(firstDay), to: fmtLocalISO(lastInclusive), firstDay }
 }
 
+// Mirrors backend service.PeriodRange so the History drill-down receives the
+// same window the Stats page is currently aggregating over. Exported for
+// unit testing — production callers go through handleCategoryDrillDown.
+// eslint-disable-next-line react-refresh/only-export-components
+export function computeNamedPeriodRange(period: Period, monthOffset: number, today: Date = new Date()): { from: string; to: string } {
+  switch (period) {
+    case 'today':
+      return { from: fmtLocalISO(today), to: fmtLocalISO(today) }
+    case 'week': {
+      const dayOfWeek = today.getDay()
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+      const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + diffToMonday)
+      const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)
+      return { from: fmtLocalISO(monday), to: fmtLocalISO(sunday) }
+    }
+    case 'month': {
+      const range = (() => {
+        const firstDay = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1)
+        const lastInclusive = new Date(firstDay.getFullYear(), firstDay.getMonth() + 1, 0)
+        return { from: fmtLocalISO(firstDay), to: fmtLocalISO(lastInclusive) }
+      })()
+      return range
+    }
+    case 'lastmonth': {
+      const first = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+      const lastInclusive = new Date(today.getFullYear(), today.getMonth(), 0)
+      return { from: fmtLocalISO(first), to: fmtLocalISO(lastInclusive) }
+    }
+  }
+}
+
 /* ─── Main Page ─── */
 export function StatsPage() {
   const { t, i18n } = useTranslation()
   const tCategory = useCategoryName()
   const location = useLocation()
+  const navigate = useNavigate()
   const initialType = (location.state as { type?: TransactionType } | null)?.type ?? 'expense'
   const [type, setType] = useState<TransactionType>(initialType)
   const [period, setPeriod] = useState<Period>('month')
@@ -543,6 +584,18 @@ export function StatsPage() {
   function handleCustomApply(from: string, to: string) {
     setCustomRange({ from, to })
   }
+
+  const handleCategoryDrillDown = useCallback(
+    (categoryId: number) => {
+      const range = customRange ?? computeNamedPeriodRange(period, monthOffset)
+      const params = new URLSearchParams()
+      params.set('category_id', String(categoryId))
+      params.set('from', range.from)
+      params.set('to', range.to)
+      navigate({ pathname: '/history', search: `?${params.toString()}` })
+    },
+    [customRange, period, monthOffset, navigate],
+  )
 
   return (
     <PageTransition>
@@ -835,6 +888,7 @@ export function StatsPage() {
                                     index={i}
                                     color={entry.category_color || CHART_COLORS[i % CHART_COLORS.length]}
                                     currency={displayCurrency}
+                                    onClick={handleCategoryDrillDown}
                                   />
                                 ))}
                                 {expenseAggregate.slices.length > 0 && (
@@ -849,6 +903,7 @@ export function StatsPage() {
                                     index={i}
                                     color={entry.category_color || CHART_COLORS[i % CHART_COLORS.length]}
                                     currency={displayCurrency}
+                                    onClick={handleCategoryDrillDown}
                                   />
                                 ))}
                               </>
@@ -860,6 +915,7 @@ export function StatsPage() {
                                   index={i}
                                   color={entry.category_color || CHART_COLORS[i % CHART_COLORS.length]}
                                   currency={displayCurrency}
+                                  onClick={handleCategoryDrillDown}
                                 />
                               ))
                             )}

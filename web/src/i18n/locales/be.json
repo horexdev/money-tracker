@@ -246,7 +246,8 @@
     "export": "Экспарт",
     "settings": "Налады",
     "admin_panel": "Адмін панэль",
-    "accounts": "Рахункі"
+    "accounts": "Рахункі",
+    "templates": "Хуткія шаблоны"
   },
   "admin": {
     "title": "Адмін панэль",
@@ -316,5 +317,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Шаблоны",
+    "no_templates": "Шаблонаў пакуль няма",
+    "create_first": "Стварыце першы шаблон для частых аперацый — адзін тап замест пяці",
+    "create_new": "Новы шаблон",
+    "edit_title": "Рэдагаваць шаблон",
+    "from_template": "З шаблона",
+    "save_as_template": "Захаваць як шаблон",
+    "amount_fixed": "Фіксаваная сума",
+    "amount_fixed_hint": "Тап на галоўнай ствараe аперацыю імгненна",
+    "amount_variable_hint": "Тап на галоўнай запытае суму",
+    "amount_variable_hint_short": "запытаць суму",
+    "name": "Назва",
+    "name_placeholder": "Кава, абед, праезд…",
+    "quick": "Хуткія шаблоны",
+    "apply": "Прымяніць шаблон"
   }
 }

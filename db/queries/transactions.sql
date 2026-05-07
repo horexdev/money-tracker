@@ -40,6 +40,7 @@ SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND is_adjustment =
 
 -- name: GetStatsByCategory :many
 SELECT
+    c.id                AS category_id,
     c.name              AS category_name,
     c.icon             AS category_icon,
     c.color             AS category_color,
@@ -53,7 +54,7 @@ WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
   AND t.is_adjustment = false
-GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
+GROUP BY c.id, c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
 -- name: ListTransactionsByCategoryPeriod :many
@@ -132,6 +133,7 @@ SELECT count(*)::BIGINT FROM transactions WHERE user_id = $1 AND account_id = $2
 
 -- name: GetStatsByCategoryAndAccount :many
 SELECT
+    c.id                AS category_id,
     c.name              AS category_name,
     c.icon             AS category_icon,
     c.color             AS category_color,
@@ -146,7 +148,7 @@ WHERE t.user_id    = $1
   AND t.created_at >= $3
   AND t.created_at <  $4
   AND t.is_adjustment = false
-GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
+GROUP BY c.id, c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC;
 
 -- name: GetBalanceByCurrencyAndAccount :many
@@ -228,6 +230,68 @@ SELECT count(*)::BIGINT FROM transactions
 WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
   AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3)
   AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4);
+
+-- name: ListTransactionsByCategoryWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.account_id,
+    c.name  AS category_name,
+    c.icon AS category_icon,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1 AND t.category_id = $2
+  AND t.is_adjustment = false
+  AND ($5::TIMESTAMPTZ IS NULL OR t.created_at >= $5)
+  AND ($6::TIMESTAMPTZ IS NULL OR t.created_at <= $6)
+ORDER BY t.created_at DESC
+LIMIT $3 OFFSET $4;
+
+-- name: CountUserTransactionsByCategoryWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND category_id = $2 AND is_adjustment = false
+  AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3)
+  AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4);
+
+-- name: ListTransactionsByAccountAndCategoryWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.account_id,
+    c.name  AS category_name,
+    c.icon AS category_icon,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1 AND t.account_id = $2 AND t.category_id = $3
+  AND t.is_adjustment = false
+  AND ($6::TIMESTAMPTZ IS NULL OR t.created_at >= $6)
+  AND ($7::TIMESTAMPTZ IS NULL OR t.created_at <= $7)
+ORDER BY t.created_at DESC
+LIMIT $4 OFFSET $5;
+
+-- name: CountUserTransactionsByAccountAndCategoryWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND account_id = $2 AND category_id = $3 AND is_adjustment = false
+  AND ($4::TIMESTAMPTZ IS NULL OR created_at >= $4)
+  AND ($5::TIMESTAMPTZ IS NULL OR created_at <= $5);
 
 -- name: CreateAdjustmentTransaction :one
 -- Creates a balance-adjustment transaction that is hidden from history and statistics

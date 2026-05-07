@@ -76,14 +76,14 @@ export const mockCategories: CategoriesResponse = {
 export const mockStats: StatsResponse = {
   period: 'month',
   items: [
-    { category_name: 'Food', category_icon: 'fork-knife', category_color: '#6366f1', type: 'expense', total_cents: 45000, tx_count: 8, currency_code: 'USD' },
-    { category_name: 'Transport', category_icon: 'taxi', category_color: '#8b5cf6', type: 'expense', total_cents: 32000, tx_count: 5, currency_code: 'USD' },
-    { category_name: 'Entertainment', category_icon: 'film-slate', category_color: '#ec4899', type: 'expense', total_cents: 18000, tx_count: 3, currency_code: 'USD' },
-    { category_name: 'Shopping', category_icon: 'shopping-bag', category_color: '#ef4444', type: 'expense', total_cents: 35000, tx_count: 2, currency_code: 'USD' },
-    { category_name: 'Rent', category_icon: 'house', category_color: '#f97316', type: 'expense', total_cents: 75000, tx_count: 1, currency_code: 'USD' },
-    { category_name: 'Health', category_icon: 'first-aid', category_color: '#22c55e', type: 'expense', total_cents: 15000, tx_count: 2, currency_code: 'USD' },
-    { category_name: 'Salary', category_icon: 'money', category_color: '#10b981', type: 'income', total_cents: 250000, tx_count: 1, currency_code: 'USD' },
-    { category_name: 'Freelance', category_icon: 'laptop', category_color: '#3b82f6', type: 'income', total_cents: 200000, tx_count: 3, currency_code: 'USD' },
+    { category_id: 1, category_name: 'Food', category_icon: 'fork-knife', category_color: '#6366f1', type: 'expense', total_cents: 45000, tx_count: 8, currency_code: 'USD' },
+    { category_id: 2, category_name: 'Transport', category_icon: 'taxi', category_color: '#8b5cf6', type: 'expense', total_cents: 32000, tx_count: 5, currency_code: 'USD' },
+    { category_id: 3, category_name: 'Entertainment', category_icon: 'film-slate', category_color: '#ec4899', type: 'expense', total_cents: 18000, tx_count: 3, currency_code: 'USD' },
+    { category_id: 4, category_name: 'Shopping', category_icon: 'shopping-bag', category_color: '#ef4444', type: 'expense', total_cents: 35000, tx_count: 2, currency_code: 'USD' },
+    { category_id: 8, category_name: 'Rent', category_icon: 'house', category_color: '#f97316', type: 'expense', total_cents: 75000, tx_count: 1, currency_code: 'USD' },
+    { category_id: 5, category_name: 'Health', category_icon: 'first-aid', category_color: '#22c55e', type: 'expense', total_cents: 15000, tx_count: 2, currency_code: 'USD' },
+    { category_id: 6, category_name: 'Salary', category_icon: 'money', category_color: '#10b981', type: 'income', total_cents: 250000, tx_count: 1, currency_code: 'USD' },
+    { category_id: 7, category_name: 'Freelance', category_icon: 'laptop', category_color: '#3b82f6', type: 'income', total_cents: 200000, tx_count: 3, currency_code: 'USD' },
   ],
 }
 

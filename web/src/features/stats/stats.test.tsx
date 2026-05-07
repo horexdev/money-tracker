@@ -60,9 +60,9 @@ const baseSettings: UserSettings = {
 const sampleStats: StatsResponse = {
   period: 'month',
   items: [
-    { category_name: 'Food',      category_icon: 'fork-knife', category_color: '#f97316', type: 'expense', total_cents: 5000, tx_count: 4, currency_code: 'USD' },
-    { category_name: 'Transport', category_icon: 'car',        category_color: '#8b5cf6', type: 'expense', total_cents: 3000, tx_count: 2, currency_code: 'USD' },
-    { category_name: 'Salary',    category_icon: 'briefcase',  category_color: '#22c55e', type: 'income',  total_cents: 9000, tx_count: 1, currency_code: 'USD' },
+    { category_id: 1, category_name: 'Food',      category_icon: 'fork-knife', category_color: '#f97316', type: 'expense', total_cents: 5000, tx_count: 4, currency_code: 'USD' },
+    { category_id: 2, category_name: 'Transport', category_icon: 'car',        category_color: '#8b5cf6', type: 'expense', total_cents: 3000, tx_count: 2, currency_code: 'USD' },
+    { category_id: 3, category_name: 'Salary',    category_icon: 'briefcase',  category_color: '#22c55e', type: 'income',  total_cents: 9000, tx_count: 1, currency_code: 'USD' },
   ],
 }
 

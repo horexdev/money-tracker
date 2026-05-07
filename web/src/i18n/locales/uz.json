@@ -246,7 +246,8 @@
     "export": "Eksport",
     "settings": "Sozlamalar",
     "admin_panel": "Admin panel",
-    "accounts": "Hisoblar"
+    "accounts": "Hisoblar",
+    "templates": "Tezkor shablonlar"
   },
   "admin": {
     "title": "Admin panel",
@@ -316,5 +317,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Shablonlar",
+    "no_templates": "Hozircha shablonlar yo'q",
+    "create_first": "Tez-tez operatsiyalar uchun birinchi shablon yarating — besh tap o'rniga bittasi",
+    "create_new": "Yangi shablon",
+    "edit_title": "Shablonni tahrirlash",
+    "from_template": "Shablondan",
+    "save_as_template": "Shablon sifatida saqlash",
+    "amount_fixed": "Qat'iy summa",
+    "amount_fixed_hint": "Bosh sahifadagi tap operatsiyani bir zumda yaratadi",
+    "amount_variable_hint": "Bosh sahifadagi tap summani so'raydi",
+    "amount_variable_hint_short": "summa so'rash",
+    "name": "Nomi",
+    "name_placeholder": "Kofe, tushlik, yo'lkira…",
+    "quick": "Tezkor shablonlar",
+    "apply": "Shablonni qo'llash"
   }
 }
