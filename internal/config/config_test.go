@@ -41,6 +41,26 @@ func TestLoad_RequiredFields(t *testing.T) {
 }
 
 func TestLoad_AppliesDefaults(t *testing.T) {
+	// Unset any optional env vars that may be inherited from the environment
+	// (e.g. CI sets LOG_LEVEL=warn) so the test actually exercises defaults.
+	optional := []string{
+		"LOG_LEVEL", "MIGRATIONS_DIR", "EXCHANGE_RATE_TTL",
+		"API_PORT", "ALLOWED_ORIGINS", "MINI_APP_URL",
+		"ADMIN_USER_ID", "DEV_MODE", "DEV_LANG",
+	}
+	saved := map[string]string{}
+	for _, k := range optional {
+		if v, ok := osLookupEnv(k); ok {
+			saved[k] = v
+		}
+		require.NoError(t, osUnsetenv(k))
+	}
+	t.Cleanup(func() {
+		for k, v := range saved {
+			_ = osSetenv(k, v)
+		}
+	})
+
 	setEnv(t, map[string]string{
 		"BOT_TOKEN":    "tok",
 		"DATABASE_URL": "postgres://x",
