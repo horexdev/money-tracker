@@ -97,7 +97,13 @@
     "date_to": "Bis",
     "apply": "Anwenden",
     "prev_month": "Vorheriger Monat",
-    "next_month": "Nächster Monat"
+    "next_month": "Nächster Monat",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Kategorien",

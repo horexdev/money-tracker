@@ -101,7 +101,13 @@
     "date_to": "По",
     "apply": "Применить",
     "prev_month": "Предыдущий месяц",
-    "next_month": "Следующий месяц"
+    "next_month": "Следующий месяц",
+    "chart_style": "Тип графика",
+    "chart_donut": "Пирог",
+    "chart_stacked_bar": "Полоска",
+    "chart_dual_bar": "Две полоски",
+    "chart_profit_bars": "Прибыль",
+    "profit": "Прибыль"
   },
   "categories": {
     "title": "Категории",

@@ -97,7 +97,13 @@
     "date_to": "Tot",
     "apply": "Toepassen",
     "prev_month": "Vorige maand",
-    "next_month": "Volgende maand"
+    "next_month": "Volgende maand",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Categorieën",

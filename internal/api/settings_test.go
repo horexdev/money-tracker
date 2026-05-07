@@ -166,3 +166,146 @@ func TestSettingsHandler_PATCH_NotificationPrefs(t *testing.T) {
 	assert.Equal(t, false, resp["notify_budget_alerts"])
 	userRepo.AssertExpectations(t)
 }
+
+func TestSettingsHandler_GET_IncludesUIPreferences_Defaults(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		StatsChartStyle: domain.StatsChartStyleDonut,
+		AnimateNumbers:  nil,
+	}, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, "donut", resp["stats_chart_style"])
+	// nil *bool serializes as JSON null and Decode produces nil interface.
+	v, present := resp["animate_numbers"]
+	assert.True(t, present, "animate_numbers must be present in response")
+	assert.Nil(t, v)
+}
+
+func TestSettingsHandler_GET_IncludesUIPreferences_Set(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	animate := false
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		StatsChartStyle: domain.StatsChartStyleDualBar,
+		AnimateNumbers:  &animate,
+	}, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, "dual_bar", resp["stats_chart_style"])
+	assert.Equal(t, false, resp["animate_numbers"])
+}
+
+func TestSettingsHandler_PATCH_UIPreferences(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	existing := &domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		StatsChartStyle: domain.StatsChartStyleDonut,
+		AnimateNumbers:  nil,
+	}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
+
+	wantStyle := "dual_bar"
+	wantAnimate := false
+	updated := &domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		StatsChartStyle: domain.StatsChartStyleDualBar,
+		AnimateNumbers:  &wantAnimate,
+	}
+	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), wantStyle, &wantAnimate).Return(updated, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	body := `{"ui_preferences":{"stats_chart_style":"dual_bar","animate_numbers":false}}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, "dual_bar", resp["stats_chart_style"])
+	assert.Equal(t, false, resp["animate_numbers"])
+	userRepo.AssertExpectations(t)
+}
+
+func TestSettingsHandler_PATCH_UIPreferences_OnlyStyle(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	existing := &domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		StatsChartStyle: domain.StatsChartStyleDonut,
+		AnimateNumbers:  nil,
+	}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
+
+	updated := &domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		StatsChartStyle: domain.StatsChartStyleStackedBar,
+	}
+	// animate_numbers stays nil because the request omitted it.
+	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), "stacked_bar", (*bool)(nil)).Return(updated, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	body := `{"ui_preferences":{"stats_chart_style":"stacked_bar"}}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	userRepo.AssertExpectations(t)
+}
+
+func TestSettingsHandler_PATCH_UIPreferences_InvalidStyle(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:              1,
+		StatsChartStyle: domain.StatsChartStyleDonut,
+	}, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	body := `{"ui_preferences":{"stats_chart_style":"junk"}}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}

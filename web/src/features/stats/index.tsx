@@ -16,7 +16,8 @@ import { EmptyState, RangeDateModal } from '../../shared/ui'
 import { AccountDropdown } from '../../shared/ui/AccountDropdown'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
-import type { TransactionType, CategoryStat } from '../../shared/types'
+import { useChartStyle } from '../../shared/hooks/useChartStyle'
+import { STATS_CHART_STYLES, type StatsChartStyle, type TransactionType, type CategoryStat } from '../../shared/types'
 
 type Period = 'month' | 'week' | 'today' | 'lastmonth'
 
@@ -159,6 +160,190 @@ function DonutChart({
   )
 }
 
+/* ─── Stacked Bar Chart (single horizontal bar with category segments) ─── */
+type ChartSlice = { percent: number; category_name: string; category_color: string; total_cents: number }
+
+function StackedBarChart({
+  data,
+  total,
+  animationKey,
+  currency,
+}: {
+  data: ChartSlice[]
+  total: number
+  animationKey: string
+  currency: string
+}) {
+  return (
+    <div data-testid="chart-stacked-bar" className="flex flex-col gap-2 w-full">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[10px] font-semibold text-muted uppercase tracking-wide">{currency}</span>
+        <span className="text-base font-extrabold tabular-nums text-text">
+          <AnimatedNumber value={total} formatter={(v) => formatCents(v, currency)} />
+        </span>
+      </div>
+      <div className="flex h-5 w-full overflow-hidden rounded-full bg-bg">
+        {data.map((d, i) => (
+          <motion.div
+            key={`${animationKey}-${i}`}
+            className="h-full first:rounded-l-full last:rounded-r-full"
+            style={{ background: d.category_color || CHART_COLORS[i % CHART_COLORS.length] }}
+            initial={{ width: 0 }}
+            animate={{ width: `${d.percent}%` }}
+            transition={{ duration: 0.5, delay: i * 0.06, ease: 'easeOut' }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ─── Dual Bar Chart (two horizontal bars: expense + income, each split by category) ─── */
+function DualBarRow({
+  label,
+  data,
+  total,
+  animationKey,
+  currency,
+  emptyLabel,
+}: {
+  label: string
+  data: ChartSlice[]
+  total: number
+  animationKey: string
+  currency: string
+  emptyLabel: string
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 w-full">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[10px] font-semibold text-muted uppercase tracking-wide">{label}</span>
+        <span className="text-sm font-bold tabular-nums text-text">
+          <AnimatedNumber value={total} formatter={(v) => formatCents(v, currency)} />
+        </span>
+      </div>
+      {data.length > 0 ? (
+        <div className="flex h-4 w-full overflow-hidden rounded-full bg-bg">
+          {data.map((d, i) => (
+            <motion.div
+              key={`${animationKey}-${i}`}
+              className="h-full first:rounded-l-full last:rounded-r-full"
+              style={{ background: d.category_color || CHART_COLORS[i % CHART_COLORS.length] }}
+              initial={{ width: 0 }}
+              animate={{ width: `${d.percent}%` }}
+              transition={{ duration: 0.5, delay: i * 0.06, ease: 'easeOut' }}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="h-4 w-full rounded-full bg-bg flex items-center justify-center">
+          <span className="text-[10px] font-semibold text-muted">{emptyLabel}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DualBarChart({
+  expenseData,
+  incomeData,
+  expenseTotal,
+  incomeTotal,
+  animationKey,
+  currency,
+  expenseLabel,
+  incomeLabel,
+  emptyLabel,
+}: {
+  expenseData: ChartSlice[]
+  incomeData: ChartSlice[]
+  expenseTotal: number
+  incomeTotal: number
+  animationKey: string
+  currency: string
+  expenseLabel: string
+  incomeLabel: string
+  emptyLabel: string
+}) {
+  return (
+    <div data-testid="chart-dual-bar" className="flex flex-col gap-3 w-full">
+      <DualBarRow
+        label={incomeLabel}
+        data={incomeData}
+        total={incomeTotal}
+        animationKey={`${animationKey}-i`}
+        currency={currency}
+        emptyLabel={emptyLabel}
+      />
+      <DualBarRow
+        label={expenseLabel}
+        data={expenseData}
+        total={expenseTotal}
+        animationKey={`${animationKey}-e`}
+        currency={currency}
+        emptyLabel={emptyLabel}
+      />
+    </div>
+  )
+}
+
+/* ─── Profit Bars Chart (3 vertical columns: Income / Expense / Profit) ─── */
+function ProfitBarsChart({
+  income,
+  expense,
+  profit,
+  animationKey,
+  currency,
+  incomeLabel,
+  expenseLabel,
+  profitLabel,
+}: {
+  income: number
+  expense: number
+  profit: number
+  animationKey: string
+  currency: string
+  incomeLabel: string
+  expenseLabel: string
+  profitLabel: string
+}) {
+  const max = Math.max(income, expense, Math.abs(profit), 1)
+  const profitColor = profit >= 0 ? '#22c55e' : '#ef4444'
+
+  const bars: { label: string; value: number; color: string }[] = [
+    { label: incomeLabel,  value: income,  color: '#22c55e' },
+    { label: expenseLabel, value: expense, color: '#ef4444' },
+    { label: profitLabel,  value: profit,  color: profitColor },
+  ]
+
+  return (
+    <div data-testid="chart-profit-bars" className="flex flex-col gap-3 w-full">
+      <div className="flex items-end justify-around gap-3 h-32">
+        {bars.map((b, i) => {
+          const heightPct = max > 0 ? (Math.abs(b.value) / max) * 100 : 0
+          return (
+            <div key={`${animationKey}-${i}`} className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
+              <span className="text-[10px] font-semibold text-muted uppercase tracking-wide truncate">{b.label}</span>
+              <div className="flex-1 w-full flex items-end">
+                <motion.div
+                  className="w-full rounded-t-lg"
+                  style={{ background: b.color }}
+                  initial={{ height: 0 }}
+                  animate={{ height: `${heightPct}%` }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease: 'easeOut' }}
+                />
+              </div>
+              <span className="text-[11px] font-bold tabular-nums" style={{ color: b.color }}>
+                {b.value < 0 ? '−' : ''}<AnimatedNumber value={Math.abs(b.value)} formatter={(v) => formatCents(v, currency)} />
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 /* ─── Category Row ─── */
 function CategoryRow({
   entry,
@@ -282,6 +467,9 @@ export function StatsPage() {
   const [monthOffset, setMonthOffset] = useState(0)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
+  const [chartStyle, setChartStyle] = useChartStyle()
+  const showTypeToggle = chartStyle === 'donut' || chartStyle === 'stacked_bar'
+  const showAggregateBar = chartStyle === 'dual_bar' || chartStyle === 'profit_bars'
 
   // Default date range for the picker — initialised once per mount so the
   // render path remains pure (avoids react-hooks/purity violation).
@@ -352,9 +540,36 @@ export function StatsPage() {
     [filtered, total],
   )
 
+  // Per-type aggregates for the dual_bar and profit_bars chart styles. They
+  // ignore the expense/income toggle and always work on the full response.
+  const items = useMemo(() => data?.items ?? [], [data?.items])
+  const expenseAggregate = useMemo(() => {
+    const xs = items.filter((s) => s.type === 'expense')
+    const tot = xs.reduce((sum, s) => sum + s.total_cents, 0)
+    const slices = xs
+      .map((s) => ({
+        ...s,
+        percent: tot > 0 ? (s.total_cents / tot) * 100 : 0,
+      }))
+      .sort((a, b) => b.total_cents - a.total_cents)
+    return { total: tot, slices }
+  }, [items])
+  const incomeAggregate = useMemo(() => {
+    const xs = items.filter((s) => s.type === 'income')
+    const tot = xs.reduce((sum, s) => sum + s.total_cents, 0)
+    const slices = xs
+      .map((s) => ({
+        ...s,
+        percent: tot > 0 ? (s.total_cents / tot) * 100 : 0,
+      }))
+      .sort((a, b) => b.total_cents - a.total_cents)
+    return { total: tot, slices }
+  }, [items])
+  const profit = incomeAggregate.total - expenseAggregate.total
+
   const topCategory = withPercent[0] ?? null
   const avgPerTx = txCount > 0 ? Math.round(total / txCount) : 0
-  const animationKey = `${type}-${period}-${monthOffset}-${customRange?.from ?? ''}-${customRange?.to ?? ''}-${selectedAccountId ?? 'all'}`
+  const animationKey = `${chartStyle}-${type}-${period}-${monthOffset}-${customRange?.from ?? ''}-${customRange?.to ?? ''}-${selectedAccountId ?? 'all'}`
 
   function handlePeriodChange(v: Period | 'custom') {
     setMonthOffset(0)
@@ -392,23 +607,25 @@ export function StatsPage() {
           <div className="relative z-10">
             {/* Type toggle + account selector row */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08] shrink-0">
-                {(['expense', 'income'] as TransactionType[]).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setType(v)}
-                    className={`
-                      px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 select-none
-                      ${type === v
-                        ? 'bg-white/20 text-white shadow-[0_2px_8px_rgba(0,0,0,0.15)]'
-                        : 'text-white/50'
-                      }
-                    `}
-                  >
-                    {v === 'expense' ? t('transactions.expense') : t('transactions.income')}
-                  </button>
-                ))}
-              </div>
+              {showTypeToggle ? (
+                <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08] shrink-0">
+                  {(['expense', 'income'] as TransactionType[]).map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setType(v)}
+                      className={`
+                        px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 select-none
+                        ${type === v
+                          ? 'bg-white/20 text-white shadow-[0_2px_8px_rgba(0,0,0,0.15)]'
+                          : 'text-white/50'
+                        }
+                      `}
+                    >
+                      {v === 'expense' ? t('transactions.expense') : t('transactions.income')}
+                    </button>
+                  ))}
+                </div>
+              ) : <div className="shrink-0" />}
 
               {accounts.length > 0 && (
                 <AccountDropdown
@@ -421,20 +638,68 @@ export function StatsPage() {
               )}
             </div>
 
-            {/* Animated total + count */}
+            {/* Animated total + count. In dual/profit modes the hero shows the
+                profit (Income − Expense) rather than a single-type total since
+                the toggle is hidden in those views. */}
             <div className="mt-3 flex items-end gap-3">
               <p className="text-white text-3xl font-extrabold tabular-nums leading-none tracking-tight">
-                <AnimatedNumber value={total} formatter={(v) => formatCents(v, displayCurrency)} />
+                {showAggregateBar ? (
+                  <span>
+                    {profit < 0 ? '−' : '+'}
+                    <AnimatedNumber value={Math.abs(profit)} formatter={(v) => formatCents(v, displayCurrency)} />
+                  </span>
+                ) : (
+                  <AnimatedNumber value={total} formatter={(v) => formatCents(v, displayCurrency)} />
+                )}
               </p>
-              <p className="text-white/40 text-xs font-medium pb-0.5">
-                <AnimatedNumber value={txCount} /> {t('stats.transactions_count_other', { count: txCount }).replace(/^\d+\s*/, '')}
-              </p>
+              {!showAggregateBar && (
+                <p className="text-white/40 text-xs font-medium pb-0.5">
+                  <AnimatedNumber value={txCount} /> {t('stats.transactions_count_other', { count: txCount }).replace(/^\d+\s*/, '')}
+                </p>
+              )}
+              {showAggregateBar && (
+                <p className="text-white/40 text-xs font-medium pb-0.5">
+                  {t('stats.profit')}
+                </p>
+              )}
             </div>
           </div>
         </div>
 
+        {/* Chart style switcher */}
+        <div className="shrink-0 px-4 pt-3 pb-1" data-testid="chart-style-switcher">
+          <div className="flex flex-wrap gap-1.5">
+            {STATS_CHART_STYLES.map((s) => {
+              const labelKey: Record<StatsChartStyle, string> = {
+                donut: 'stats.chart_donut',
+                stacked_bar: 'stats.chart_stacked_bar',
+                dual_bar: 'stats.chart_dual_bar',
+                profit_bars: 'stats.chart_profit_bars',
+              }
+              const isActive = chartStyle === s
+              return (
+                <button
+                  key={s}
+                  onClick={() => setChartStyle(s)}
+                  data-testid={`chart-style-${s}`}
+                  aria-pressed={isActive}
+                  className={`
+                    shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all duration-200 select-none
+                    ${isActive
+                      ? 'bg-text/10 text-text shadow-sm'
+                      : 'bg-surface text-muted active:bg-text/5'
+                    }
+                  `}
+                >
+                  {t(labelKey[s])}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Period pills */}
-        <div className="shrink-0 px-4 pt-3 pb-2">
+        <div className="shrink-0 px-4 pt-2 pb-2">
           {/* -my-1.5 / py-1.5 give the shadow vertical room without adding visible whitespace */}
           <div className="flex flex-wrap gap-2">
             {periodOptions.map((opt) => {
@@ -501,76 +766,165 @@ export function StatsPage() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                {withPercent.length > 0 ? (
-                  <>
-                    {/* Chart card — 3-column layout */}
-                    <div className="card-elevated shrink-0">
-                      <div className="flex items-center px-4 py-4">
-                        {/* Left — top category */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.top_category')}</p>
-                          {topCategory && (
-                            <div className="mt-1.5">
-                              <div
-                                className="w-10 h-10 rounded-2xl flex items-center justify-center mb-1.5"
-                                style={{ background: topCategory.category_color || CHART_COLORS[0] }}
->
-                                <CategoryIcon icon={topCategory.category_icon} size={20} weight="fill" className="text-white" />
-                              </div>
-                              <p className="text-xs font-bold text-text truncate">{tCategory(topCategory.category_name)}</p>
-                              <p className="text-lg font-extrabold tabular-nums" style={{ color: topCategory.category_color || CHART_COLORS[0] }}>
-                                {topCategory.percent.toFixed(0)}%
-                              </p>
+                {(() => {
+                  // Determine "no data at all" state based on the chart style.
+                  const isEmpty = showAggregateBar
+                    ? expenseAggregate.slices.length === 0 && incomeAggregate.slices.length === 0
+                    : withPercent.length === 0
+                  if (isEmpty) {
+                    return (
+                      <div className="card-elevated">
+                        <EmptyState icon={ChartBar} title={t('stats.no_stats')} />
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <>
+                      {/* Chart card */}
+                      <div className="card-elevated shrink-0">
+                        {chartStyle === 'donut' && (
+                          <div className="flex items-center px-4 py-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.top_category')}</p>
+                              {topCategory && (
+                                <div className="mt-1.5">
+                                  <div
+                                    className="w-10 h-10 rounded-2xl flex items-center justify-center mb-1.5"
+                                    style={{ background: topCategory.category_color || CHART_COLORS[0] }}
+                                  >
+                                    <CategoryIcon icon={topCategory.category_icon} size={20} weight="fill" className="text-white" />
+                                  </div>
+                                  <p className="text-xs font-bold text-text truncate">{tCategory(topCategory.category_name)}</p>
+                                  <p className="text-lg font-extrabold tabular-nums" style={{ color: topCategory.category_color || CHART_COLORS[0] }}>
+                                    {topCategory.percent.toFixed(0)}%
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
 
-                        {/* Center — donut */}
-                        <div className="shrink-0 mx-2">
-                          <DonutChart data={withPercent} total={total} animationKey={animationKey} currency={displayCurrency} />
-                        </div>
+                            <div className="shrink-0 mx-2">
+                              <DonutChart data={withPercent} total={total} animationKey={animationKey} currency={displayCurrency} />
+                            </div>
 
-                        {/* Right — stats */}
-                        <div className="flex-1 min-w-0 text-right">
-                          <div className="mb-3">
-                            <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">
-                              {t('stats.categories_count', { count: withPercent.length }).replace(/^\d+\s*/, '')}
-                            </p>
-                            <p className="text-lg font-extrabold text-text tabular-nums">
-                              <AnimatedNumber value={withPercent.length} />
-                            </p>
+                            <div className="flex-1 min-w-0 text-right">
+                              <div className="mb-3">
+                                <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">
+                                  {t('stats.categories_count', { count: withPercent.length }).replace(/^\d+\s*/, '')}
+                                </p>
+                                <p className="text-lg font-extrabold text-text tabular-nums">
+                                  <AnimatedNumber value={withPercent.length} />
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.avg_per_tx')}</p>
+                                <p className="text-sm font-bold text-text tabular-nums">
+                                  <AnimatedNumber value={avgPerTx} formatter={(v) => formatCents(v, displayCurrency)} />
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.avg_per_tx')}</p>
-                            <p className="text-sm font-bold text-text tabular-nums">
-                              <AnimatedNumber value={avgPerTx} formatter={(v) => formatCents(v, displayCurrency)} />
-                            </p>
+                        )}
+
+                        {chartStyle === 'stacked_bar' && (
+                          <div className="px-4 py-4">
+                            <StackedBarChart
+                              data={withPercent}
+                              total={total}
+                              animationKey={animationKey}
+                              currency={displayCurrency}
+                            />
+                          </div>
+                        )}
+
+                        {chartStyle === 'dual_bar' && (
+                          <div className="px-4 py-4">
+                            <DualBarChart
+                              expenseData={expenseAggregate.slices}
+                              incomeData={incomeAggregate.slices}
+                              expenseTotal={expenseAggregate.total}
+                              incomeTotal={incomeAggregate.total}
+                              animationKey={animationKey}
+                              currency={displayCurrency}
+                              expenseLabel={t('transactions.expense')}
+                              incomeLabel={t('transactions.income')}
+                              emptyLabel={t('stats.no_stats')}
+                            />
+                          </div>
+                        )}
+
+                        {chartStyle === 'profit_bars' && (
+                          <div className="px-4 py-4">
+                            <ProfitBarsChart
+                              income={incomeAggregate.total}
+                              expense={expenseAggregate.total}
+                              profit={profit}
+                              animationKey={animationKey}
+                              currency={displayCurrency}
+                              incomeLabel={t('transactions.income')}
+                              expenseLabel={t('transactions.expense')}
+                              profitLabel={t('stats.profit')}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Category breakdown — scrollable. Hidden in profit_bars
+                          since per-category data is not the focus there. */}
+                      {chartStyle !== 'profit_bars' && (
+                        <div className="card-elevated flex-1 min-h-0 flex flex-col">
+                          <div className="overflow-y-auto no-scrollbar flex-1">
+                            {chartStyle === 'dual_bar' ? (
+                              <>
+                                {incomeAggregate.slices.length > 0 && (
+                                  <div className="px-4 pt-3 pb-1 text-[10px] font-semibold text-muted uppercase tracking-wide">
+                                    {t('transactions.income')}
+                                  </div>
+                                )}
+                                {incomeAggregate.slices.map((entry, i) => (
+                                  <CategoryRow
+                                    key={`${animationKey}-i-${entry.category_name}`}
+                                    entry={entry}
+                                    index={i}
+                                    color={entry.category_color || CHART_COLORS[i % CHART_COLORS.length]}
+                                    currency={displayCurrency}
+                                    onClick={handleCategoryDrillDown}
+                                  />
+                                ))}
+                                {expenseAggregate.slices.length > 0 && (
+                                  <div className="px-4 pt-3 pb-1 text-[10px] font-semibold text-muted uppercase tracking-wide">
+                                    {t('transactions.expense')}
+                                  </div>
+                                )}
+                                {expenseAggregate.slices.map((entry, i) => (
+                                  <CategoryRow
+                                    key={`${animationKey}-e-${entry.category_name}`}
+                                    entry={entry}
+                                    index={i}
+                                    color={entry.category_color || CHART_COLORS[i % CHART_COLORS.length]}
+                                    currency={displayCurrency}
+                                    onClick={handleCategoryDrillDown}
+                                  />
+                                ))}
+                              </>
+                            ) : (
+                              withPercent.map((entry, i) => (
+                                <CategoryRow
+                                  key={`${animationKey}-${entry.category_name}`}
+                                  entry={entry}
+                                  index={i}
+                                  color={entry.category_color || CHART_COLORS[i % CHART_COLORS.length]}
+                                  currency={displayCurrency}
+                                  onClick={handleCategoryDrillDown}
+                                />
+                              ))
+                            )}
                           </div>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Category breakdown — scrollable */}
-                    <div className="card-elevated flex-1 min-h-0 flex flex-col">
-                      <div className="overflow-y-auto no-scrollbar flex-1">
-                        {withPercent.map((entry, i) => (
-                          <CategoryRow
-                            key={`${animationKey}-${entry.category_name}`}
-                            entry={entry}
-                            index={i}
-                            color={entry.category_color || CHART_COLORS[i % CHART_COLORS.length]}
-                            currency={displayCurrency}
-                            onClick={handleCategoryDrillDown}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="card-elevated">
-                    <EmptyState icon={ChartBar} title={t('stats.no_stats')} />
-                  </div>
-                )}
+                      )}
+                    </>
+                  )
+                })()}
               </motion.div>
             )}
           </AnimatePresence>

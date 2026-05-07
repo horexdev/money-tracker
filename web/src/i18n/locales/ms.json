@@ -97,7 +97,13 @@
     "date_to": "Hingga",
     "apply": "Gunakan",
     "prev_month": "Bulan sebelumnya",
-    "next_month": "Bulan seterusnya"
+    "next_month": "Bulan seterusnya",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Kategori",

@@ -47,6 +47,23 @@ type NotificationPrefs struct {
 	GoalMilestones     bool
 }
 
+// Stats chart styles selectable by the user on the Statistics screen.
+const (
+	StatsChartStyleDonut       = "donut"
+	StatsChartStyleStackedBar  = "stacked_bar"
+	StatsChartStyleDualBar     = "dual_bar"
+	StatsChartStyleProfitBars  = "profit_bars"
+)
+
+// IsValidStatsChartStyle reports whether s is one of the supported chart styles.
+func IsValidStatsChartStyle(s string) bool {
+	switch s {
+	case StatsChartStyleDonut, StatsChartStyleStackedBar, StatsChartStyleDualBar, StatsChartStyleProfitBars:
+		return true
+	}
+	return false
+}
+
 // User represents a registered Telegram user.
 type User struct {
 	ID                       int64
@@ -61,6 +78,11 @@ type User struct {
 	NotifyRecurringReminders bool
 	NotifyWeeklySummary      bool
 	NotifyGoalMilestones     bool
+	// UI preferences (stored on users table; see migration 00034).
+	StatsChartStyle string
+	// AnimateNumbers is nil when the user has not made an explicit choice;
+	// the client falls back to the OS prefers-reduced-motion setting in that case.
+	AnimateNumbers *bool
 }
 
 // DisplayName returns the best available name for the user.

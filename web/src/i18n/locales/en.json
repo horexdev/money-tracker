@@ -101,7 +101,13 @@
     "date_to": "To",
     "apply": "Apply",
     "prev_month": "Previous month",
-    "next_month": "Next month"
+    "next_month": "Next month",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Categories",

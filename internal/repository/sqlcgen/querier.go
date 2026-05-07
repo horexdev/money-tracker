@@ -142,6 +142,7 @@ type Querier interface {
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
 	UpdateTransactionTemplate(ctx context.Context, arg UpdateTransactionTemplateParams) (TransactionTemplate, error)
 	UpdateTransactionTemplateSortOrder(ctx context.Context, arg UpdateTransactionTemplateSortOrderParams) (int64, error)
+	UpdateUIPreferences(ctx context.Context, arg UpdateUIPreferencesParams) (User, error)
 	UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguageParams) (User, error)
 	UpsertExchangeRate(ctx context.Context, arg UpsertExchangeRateParams) error
 	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)

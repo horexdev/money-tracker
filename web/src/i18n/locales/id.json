@@ -97,7 +97,13 @@
     "date_to": "Sampai",
     "apply": "Terapkan",
     "prev_month": "Bulan sebelumnya",
-    "next_month": "Bulan berikutnya"
+    "next_month": "Bulan berikutnya",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Kategori",

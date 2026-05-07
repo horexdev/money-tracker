@@ -52,6 +52,14 @@ func (m *MockUserStorer) UpdateNotificationPreferences(ctx context.Context, id i
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
+func (m *MockUserStorer) UpdateUIPreferences(ctx context.Context, id int64, style string, animateNumbers *bool) (*domain.User, error) {
+	args := m.Called(ctx, id, style, animateNumbers)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
 func (m *MockUserStorer) ResetData(ctx context.Context, userID int64) error {
 	args := m.Called(ctx, userID)
 	return args.Error(0)

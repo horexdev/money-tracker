@@ -48,6 +48,7 @@ func httpStatus(err error) int {
 		errors.Is(err, domain.ErrInvalidCurrency),
 		errors.Is(err, domain.ErrInvalidFrequency),
 		errors.Is(err, domain.ErrInvalidLanguage),
+		errors.Is(err, domain.ErrInvalidStatsChartStyle),
 		errors.Is(err, domain.ErrTooManyDisplayCurrencies),
 		errors.Is(err, domain.ErrTransferSameAccount):
 		return http.StatusBadRequest
@@ -103,6 +104,8 @@ func userMessage(err error) string {
 		return "invalid frequency: use daily, weekly, monthly, or yearly"
 	case errors.Is(err, domain.ErrInvalidLanguage):
 		return "invalid language: use en or ru"
+	case errors.Is(err, domain.ErrInvalidStatsChartStyle):
+		return "invalid stats_chart_style: use donut, stacked_bar, dual_bar, or profit_bars"
 	case errors.Is(err, domain.ErrTooManyDisplayCurrencies):
 		return "maximum 3 display currencies allowed"
 	case errors.Is(err, domain.ErrBudgetAlreadyExists):
