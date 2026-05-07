@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { StatsChartStyle, UserSettings } from '../types'
+import type { StatsChartStyle, ThemePref, UserSettings } from '../types'
 
 export interface SettingsUpdatePayload {
   display_currencies?: string[]
@@ -13,6 +13,8 @@ export interface SettingsUpdatePayload {
   ui_preferences?: {
     stats_chart_style?: StatsChartStyle
     animate_numbers?: boolean | null
+    theme?: ThemePref
+    hide_amounts?: boolean
   }
 }
 

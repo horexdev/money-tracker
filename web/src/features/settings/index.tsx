@@ -4,17 +4,19 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, Globe, CaretRight, Trash, Desktop, Sun, Moon, Bell, RepeatOnce, CalendarCheck, Trophy, Sparkle } from '@phosphor-icons/react'
+import { Check, X, Globe, CaretRight, Trash, Desktop, Sun, Moon, Bell, RepeatOnce, CalendarCheck, Trophy, Sparkle, EyeSlash } from '@phosphor-icons/react'
 import { settingsApi } from '../../shared/api/settings'
 import { LANGUAGES } from '../../shared/lib/constants'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
-import { useTgBackButton, useThemePreference } from '../../shared/hooks/useTelegramApp'
+import { useTgBackButton } from '../../shared/hooks/useTelegramApp'
+import { useThemePreference } from '../../shared/hooks/useThemePreference'
+import { useHideAmounts } from '../../shared/hooks/useHideAmounts'
 import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
 import { useHaptic } from '../../shared/hooks/useHaptic'
 import { FIRST_LAUNCH_KEY } from '../../shared/hooks/useFirstLaunchSetup'
-import type { ThemePref } from '../../shared/hooks/useTelegramApp'
+import type { ThemePref } from '../../shared/types'
 
 type Modal = 'none' | 'language' | 'reset-confirm'
 
@@ -91,6 +93,7 @@ export function SettingsPage() {
   const [modal, setModal] = useState<Modal>('none')
   const [themePref, setThemePref] = useThemePreference()
   const [animateNumbers, setAnimateNumbers] = useAnimateNumbers()
+  const { hidden: hideAmounts, setHidden: setHideAmounts } = useHideAmounts()
 
   const THEME_OPTIONS: { value: ThemePref; labelKey: string; icon: React.ElementType }[] = [
     { value: 'system', labelKey: 'settings.theme_system', icon: Desktop },
@@ -219,6 +222,36 @@ export function SettingsPage() {
                     className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 ${animateNumbers ? 'bg-accent' : 'bg-border'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${animateNumbers ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Privacy section */}
+              <div className="card-elevated">
+                <div className="px-4 pt-4 pb-2">
+                  <p className="text-[11px] font-bold text-muted uppercase tracking-widest">
+                    {t('settings.privacy')}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 px-4 py-3.5">
+                  <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                    <EyeSlash size={18} weight="fill" className="text-accent" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-text leading-tight">
+                      {t('settings.hide_amounts')}
+                    </p>
+                    <p className="text-[11px] text-muted mt-0.5 leading-tight">
+                      {t('settings.hide_amounts_desc')}
+                    </p>
+                  </div>
+                  <button
+                    role="switch"
+                    aria-checked={hideAmounts}
+                    onClick={() => { selection(); setHideAmounts(!hideAmounts) }}
+                    className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 ${hideAmounts ? 'bg-accent' : 'bg-border'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${hideAmounts ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
                 </div>
               </div>

@@ -55,6 +55,8 @@ const baseSettings: UserSettings = {
   notify_goal_milestones: false,
   stats_chart_style: 'donut',
   animate_numbers: false,
+  theme: 'system',
+  hide_amounts: false,
 }
 
 const sampleStats: StatsResponse = {

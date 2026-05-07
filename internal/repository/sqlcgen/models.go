@@ -247,4 +247,6 @@ type User struct {
 	NotifyGoalMilestones     bool               `json:"notify_goal_milestones"`
 	StatsChartStyle          string             `json:"stats_chart_style"`
 	AnimateNumbers           pgtype.Bool        `json:"animate_numbers"`
+	Theme                    string             `json:"theme"`
+	HideAmounts              bool               `json:"hide_amounts"`
 }

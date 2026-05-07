@@ -7,7 +7,8 @@ import { Plus, Warning, ClockCounterClockwise, ArrowCircleDown, ChartBar, Bell, 
 import { fetchBudgets, createBudget, updateBudget, deleteBudget, fetchBudgetTransactions } from '../../shared/api/budgets'
 import type { BudgetTransaction } from '../../shared/api/budgets'
 import { categoriesApi } from '../../shared/api/categories'
-import { formatCents, parseCents } from '../../shared/lib/money'
+import { parseCents } from '../../shared/lib/money'
+import { MoneyText } from '../../shared/ui/MoneyText'
 import { friendlyError } from '../../shared/lib/errors'
 import { CategoryIcon } from '../../shared/lib/categoryIcons'
 import { AmountInput } from '../../shared/ui/AmountInput'
@@ -78,9 +79,11 @@ function BudgetTransactionsSheet({ budget, onClose }: { budget: Budget; onClose:
                   </p>
                   <p className="text-[11px] text-muted">{fmtDate(tx.created_at)}</p>
                 </div>
-                <span className="text-[13px] font-bold text-expense tabular-nums">
-                  -{formatCents(tx.amount_cents, baseCurrency)}
-                </span>
+                <MoneyText
+                  cents={-tx.amount_cents}
+                  currency={baseCurrency}
+                  className="text-[13px] font-bold text-expense tabular-nums"
+                />
               </div>
             ))}
           </div>
@@ -153,8 +156,8 @@ function BudgetCard({
 
         {/* Spent / limit */}
         <div className="flex justify-between text-xs text-muted">
-          <span>{t('budgets.spent')}: <span className="font-semibold text-text">{formatCents(budget.spent_cents, baseCurrency)}</span></span>
-          <span>{t('budgets.limit')}: <span className="font-semibold text-text">{formatCents(budget.limit_cents, baseCurrency)}</span></span>
+          <span>{t('budgets.spent')}: <MoneyText cents={budget.spent_cents} currency={baseCurrency} className="font-semibold text-text" /></span>
+          <span>{t('budgets.limit')}: <MoneyText cents={budget.limit_cents} currency={baseCurrency} className="font-semibold text-text" /></span>
         </div>
       </button>
     </ActionRow>

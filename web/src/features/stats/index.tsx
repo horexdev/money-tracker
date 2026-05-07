@@ -17,6 +17,8 @@ import { AccountDropdown } from '../../shared/ui/AccountDropdown'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
 import { useChartStyle } from '../../shared/hooks/useChartStyle'
+import { useHideAmounts } from '../../shared/hooks/useHideAmounts'
+import { MoneyText } from '../../shared/ui/MoneyText'
 import { STATS_CHART_STYLES, type StatsChartStyle, type TransactionType, type CategoryStat } from '../../shared/types'
 
 type Period = 'month' | 'week' | 'today' | 'lastmonth'
@@ -26,11 +28,23 @@ interface CustomRange {
   to: string
 }
 
-type NumberProps = { value: number; formatter?: (v: number) => string }
+type NumberProps = { value: number; formatter?: (v: number) => string; isMoney?: boolean }
 
 /* ─── Animated Number Counter ─── */
 function AnimatedNumber(props: NumberProps) {
   const [animate] = useAnimateNumbers()
+  const { hidden, toggle } = useHideAmounts()
+  if (props.isMoney && hidden) {
+    return (
+      <span
+        role="button"
+        onClick={(e) => { e.stopPropagation(); toggle() }}
+        className="cursor-pointer"
+      >
+        ••••
+      </span>
+    )
+  }
   return animate ? <SpringNumber {...props} /> : <StaticNumber {...props} />
 }
 
@@ -143,6 +157,7 @@ function DonutChart({
           <p className="text-[9px] font-semibold text-muted uppercase tracking-wide">{currency}</p>
           <p className="text-[11px] font-bold tabular-nums text-text leading-tight">
             <AnimatedNumber
+              isMoney
               value={total}
               formatter={(v) =>
                 new Intl.NumberFormat('en-US', {
@@ -179,7 +194,7 @@ function StackedBarChart({
       <div className="flex items-baseline justify-between">
         <span className="text-[10px] font-semibold text-muted uppercase tracking-wide">{currency}</span>
         <span className="text-base font-extrabold tabular-nums text-text">
-          <AnimatedNumber value={total} formatter={(v) => formatCents(v, currency)} />
+          <AnimatedNumber isMoney value={total} formatter={(v) => formatCents(v, currency)} />
         </span>
       </div>
       <div className="flex h-5 w-full overflow-hidden rounded-full bg-bg">
@@ -219,7 +234,7 @@ function DualBarRow({
       <div className="flex items-baseline justify-between">
         <span className="text-[10px] font-semibold text-muted uppercase tracking-wide">{label}</span>
         <span className="text-sm font-bold tabular-nums text-text">
-          <AnimatedNumber value={total} formatter={(v) => formatCents(v, currency)} />
+          <AnimatedNumber isMoney value={total} formatter={(v) => formatCents(v, currency)} />
         </span>
       </div>
       {data.length > 0 ? (
@@ -334,7 +349,7 @@ function ProfitBarsChart({
                 />
               </div>
               <span className="text-[11px] font-bold tabular-nums" style={{ color: b.color }}>
-                {b.value < 0 ? '−' : ''}<AnimatedNumber value={Math.abs(b.value)} formatter={(v) => formatCents(v, currency)} />
+                {b.value < 0 ? '−' : ''}<AnimatedNumber isMoney value={Math.abs(b.value)} formatter={(v) => formatCents(v, currency)} />
               </span>
             </div>
           )
@@ -385,9 +400,11 @@ function CategoryRow({
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-center">
             <span className="text-sm font-semibold text-text truncate">{tCategory(entry.category_name)}</span>
-            <span className="text-sm font-bold tabular-nums text-text ml-2 shrink-0">
-              {formatCents(entry.total_cents, currency)}
-            </span>
+            <MoneyText
+              cents={entry.total_cents}
+              currency={currency}
+              className="text-sm font-bold tabular-nums text-text ml-2 shrink-0"
+            />
           </div>
           <div className="mt-1.5 h-1.5 rounded-full overflow-hidden bg-bg">
             <motion.div
@@ -646,10 +663,10 @@ export function StatsPage() {
                 {showAggregateBar ? (
                   <span>
                     {profit < 0 ? '−' : '+'}
-                    <AnimatedNumber value={Math.abs(profit)} formatter={(v) => formatCents(v, displayCurrency)} />
+                    <AnimatedNumber isMoney value={Math.abs(profit)} formatter={(v) => formatCents(v, displayCurrency)} />
                   </span>
                 ) : (
-                  <AnimatedNumber value={total} formatter={(v) => formatCents(v, displayCurrency)} />
+                  <AnimatedNumber isMoney value={total} formatter={(v) => formatCents(v, displayCurrency)} />
                 )}
               </p>
               {!showAggregateBar && (
@@ -819,7 +836,7 @@ export function StatsPage() {
                               <div>
                                 <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.avg_per_tx')}</p>
                                 <p className="text-sm font-bold text-text tabular-nums">
-                                  <AnimatedNumber value={avgPerTx} formatter={(v) => formatCents(v, displayCurrency)} />
+                                  <AnimatedNumber isMoney value={avgPerTx} formatter={(v) => formatCents(v, displayCurrency)} />
                                 </p>
                               </div>
                             </div>

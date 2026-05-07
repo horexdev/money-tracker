@@ -61,18 +61,30 @@ func (s *UserService) UpdateNotificationPreferences(ctx context.Context, id int6
 	return u, nil
 }
 
-// UpdateUIPreferences saves the user's UI preferences for the Statistics screen
-// and the number-animation toggle. animateNumbers nil keeps the no-explicit-choice
-// state (client falls back to OS prefers-reduced-motion).
-func (s *UserService) UpdateUIPreferences(ctx context.Context, id int64, style string, animateNumbers *bool) (*domain.User, error) {
-	if !domain.IsValidStatsChartStyle(style) {
+// UpdateUIPreferences saves all user-controlled UI preferences in one call.
+// AnimateNumbers stays nil when the user has not made an explicit choice — the
+// client falls back to OS prefers-reduced-motion in that case. Stats chart style
+// and theme values are validated; theme defaults to "system" when blank.
+func (s *UserService) UpdateUIPreferences(ctx context.Context, id int64, prefs domain.UIPreferences) (*domain.User, error) {
+	if !domain.IsValidStatsChartStyle(prefs.StatsChartStyle) {
 		return nil, domain.ErrInvalidStatsChartStyle
 	}
-	u, err := s.repo.UpdateUIPreferences(ctx, id, style, animateNumbers)
+	if prefs.Theme == "" {
+		prefs.Theme = domain.ThemeSystem
+	}
+	if !domain.ValidTheme(string(prefs.Theme)) {
+		return nil, domain.ErrInvalidTheme
+	}
+	u, err := s.repo.UpdateUIPreferences(ctx, id, prefs)
 	if err != nil {
 		return nil, fmt.Errorf("update ui preferences for user %d: %w", id, err)
 	}
-	s.log.InfoContext(ctx, "ui preferences updated", slog.Int64("user_id", id), slog.String("stats_chart_style", style))
+	s.log.InfoContext(ctx, "ui preferences updated",
+		slog.Int64("user_id", id),
+		slog.String("stats_chart_style", prefs.StatsChartStyle),
+		slog.String("theme", string(prefs.Theme)),
+		slog.Bool("hide_amounts", prefs.HideAmounts),
+	)
 	return u, nil
 }
 

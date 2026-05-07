@@ -69,6 +69,8 @@ export interface StatsResponse {
 }
 
 // GET /api/v1/settings
+export type ThemePref = 'system' | 'light' | 'dark'
+
 export type StatsChartStyle = 'donut' | 'stacked_bar' | 'dual_bar' | 'profit_bars'
 
 export const STATS_CHART_STYLES: readonly StatsChartStyle[] = [
@@ -90,6 +92,8 @@ export interface UserSettings {
   stats_chart_style: StatsChartStyle
   // null means "no explicit choice" — UI should follow OS prefers-reduced-motion.
   animate_numbers: boolean | null
+  theme: ThemePref
+  hide_amounts: boolean
 }
 
 // GET /api/v1/categories

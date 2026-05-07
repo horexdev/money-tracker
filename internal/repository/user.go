@@ -90,18 +90,24 @@ func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, id i
 	return rowToUser(row), nil
 }
 
-// UpdateUIPreferences persists the user's UI preferences (stats chart style and
-// number-animation toggle). animateNumbers nil means "no explicit choice" — the
-// client falls back to OS prefers-reduced-motion.
-func (r *UserRepository) UpdateUIPreferences(ctx context.Context, id int64, style string, animateNumbers *bool) (*domain.User, error) {
+// UpdateUIPreferences persists every user-controlled UI preference in one go:
+// stats chart style, number-animation toggle (nil means "no explicit choice"),
+// theme, and the hide-amounts privacy flag.
+func (r *UserRepository) UpdateUIPreferences(ctx context.Context, id int64, prefs domain.UIPreferences) (*domain.User, error) {
 	an := pgtype.Bool{}
-	if animateNumbers != nil {
-		an = pgtype.Bool{Bool: *animateNumbers, Valid: true}
+	if prefs.AnimateNumbers != nil {
+		an = pgtype.Bool{Bool: *prefs.AnimateNumbers, Valid: true}
+	}
+	theme := string(prefs.Theme)
+	if theme == "" {
+		theme = string(domain.ThemeSystem)
 	}
 	row, err := r.q.UpdateUIPreferences(ctx, sqlcgen.UpdateUIPreferencesParams{
 		ID:              id,
-		StatsChartStyle: style,
+		StatsChartStyle: prefs.StatsChartStyle,
 		AnimateNumbers:  an,
+		Theme:           theme,
+		HideAmounts:     prefs.HideAmounts,
 	})
 	if err != nil {
 		return nil, err
@@ -176,5 +182,7 @@ func rowToUser(row sqlcgen.User) *domain.User {
 		NotifyGoalMilestones:     row.NotifyGoalMilestones,
 		StatsChartStyle:          row.StatsChartStyle,
 		AnimateNumbers:           animate,
+		Theme:                    domain.ThemePref(row.Theme),
+		HideAmounts:              row.HideAmounts,
 	}
 }

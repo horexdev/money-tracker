@@ -20,6 +20,8 @@ type settingsResponse struct {
 	NotifyGoalMilestones     bool     `json:"notify_goal_milestones"`
 	StatsChartStyle          string   `json:"stats_chart_style"`
 	AnimateNumbers           *bool    `json:"animate_numbers"`
+	Theme                    string   `json:"theme"`
+	HideAmounts              bool     `json:"hide_amounts"`
 }
 
 type notificationPrefsRequest struct {
@@ -32,6 +34,8 @@ type notificationPrefsRequest struct {
 type uiPreferencesRequest struct {
 	StatsChartStyle *string `json:"stats_chart_style"`
 	AnimateNumbers  *bool   `json:"animate_numbers"`
+	Theme           *string `json:"theme"`
+	HideAmounts     *bool   `json:"hide_amounts"`
 }
 
 type patchSettingsRequest struct {
@@ -112,15 +116,25 @@ func settingsHandler(userSvc *service.UserService, accountSvc *service.AccountSe
 			}
 
 			if req.UIPreferences != nil {
-				style := user.StatsChartStyle
+				prefs := domain.UIPreferences{
+					StatsChartStyle: user.StatsChartStyle,
+					AnimateNumbers:  user.AnimateNumbers,
+					Theme:           user.Theme,
+					HideAmounts:     user.HideAmounts,
+				}
 				if req.UIPreferences.StatsChartStyle != nil {
-					style = *req.UIPreferences.StatsChartStyle
+					prefs.StatsChartStyle = *req.UIPreferences.StatsChartStyle
 				}
-				animate := user.AnimateNumbers
 				if req.UIPreferences.AnimateNumbers != nil {
-					animate = req.UIPreferences.AnimateNumbers
+					prefs.AnimateNumbers = req.UIPreferences.AnimateNumbers
 				}
-				user, err = userSvc.UpdateUIPreferences(ctx, userID, style, animate)
+				if req.UIPreferences.Theme != nil {
+					prefs.Theme = domain.ThemePref(*req.UIPreferences.Theme)
+				}
+				if req.UIPreferences.HideAmounts != nil {
+					prefs.HideAmounts = *req.UIPreferences.HideAmounts
+				}
+				user, err = userSvc.UpdateUIPreferences(ctx, userID, prefs)
 				if err != nil {
 					writeError(w, log, err)
 					return
@@ -146,6 +160,10 @@ func settingsToResponse(user *domain.User, baseCurrency string, isAdmin bool) se
 		// but treat empty string as the default style rather than leaking it to clients.
 		style = domain.StatsChartStyleDonut
 	}
+	theme := string(user.Theme)
+	if theme == "" {
+		theme = string(domain.ThemeSystem)
+	}
 	return settingsResponse{
 		BaseCurrency:             baseCurrency,
 		DisplayCurrencies:        user.DisplayCurrencies,
@@ -157,6 +175,8 @@ func settingsToResponse(user *domain.User, baseCurrency string, isAdmin bool) se
 		NotifyGoalMilestones:     user.NotifyGoalMilestones,
 		StatsChartStyle:          style,
 		AnimateNumbers:           user.AnimateNumbers,
+		Theme:                    theme,
+		HideAmounts:              user.HideAmounts,
 	}
 }
 

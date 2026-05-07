@@ -84,7 +84,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers FROM users WHERE id = $1
+SELECT id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers, theme, hide_amounts FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -105,6 +105,8 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.NotifyGoalMilestones,
 		&i.StatsChartStyle,
 		&i.AnimateNumbers,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -114,7 +116,7 @@ UPDATE users
 SET display_currencies = $2,
     updated_at         = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers, theme, hide_amounts
 `
 
 type UpdateDisplayCurrenciesParams struct {
@@ -140,6 +142,8 @@ func (q *Queries) UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplay
 		&i.NotifyGoalMilestones,
 		&i.StatsChartStyle,
 		&i.AnimateNumbers,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -152,7 +156,7 @@ SET notify_budget_alerts       = $2,
     notify_goal_milestones     = $5,
     updated_at                 = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers, theme, hide_amounts
 `
 
 type UpdateNotificationPreferencesParams struct {
@@ -187,6 +191,8 @@ func (q *Queries) UpdateNotificationPreferences(ctx context.Context, arg UpdateN
 		&i.NotifyGoalMilestones,
 		&i.StatsChartStyle,
 		&i.AnimateNumbers,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -195,19 +201,29 @@ const updateUIPreferences = `-- name: UpdateUIPreferences :one
 UPDATE users
 SET stats_chart_style = $2,
     animate_numbers   = $3,
+    theme             = $4,
+    hide_amounts      = $5,
     updated_at        = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers, theme, hide_amounts
 `
 
 type UpdateUIPreferencesParams struct {
 	ID              int64       `json:"id"`
 	StatsChartStyle string      `json:"stats_chart_style"`
 	AnimateNumbers  pgtype.Bool `json:"animate_numbers"`
+	Theme           string      `json:"theme"`
+	HideAmounts     bool        `json:"hide_amounts"`
 }
 
 func (q *Queries) UpdateUIPreferences(ctx context.Context, arg UpdateUIPreferencesParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUIPreferences, arg.ID, arg.StatsChartStyle, arg.AnimateNumbers)
+	row := q.db.QueryRow(ctx, updateUIPreferences,
+		arg.ID,
+		arg.StatsChartStyle,
+		arg.AnimateNumbers,
+		arg.Theme,
+		arg.HideAmounts,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -224,6 +240,8 @@ func (q *Queries) UpdateUIPreferences(ctx context.Context, arg UpdateUIPreferenc
 		&i.NotifyGoalMilestones,
 		&i.StatsChartStyle,
 		&i.AnimateNumbers,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -233,7 +251,7 @@ UPDATE users
 SET language   = $2,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers, theme, hide_amounts
 `
 
 type UpdateUserLanguageParams struct {
@@ -259,6 +277,8 @@ func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguage
 		&i.NotifyGoalMilestones,
 		&i.StatsChartStyle,
 		&i.AnimateNumbers,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -272,7 +292,7 @@ ON CONFLICT (id) DO UPDATE
         last_name     = EXCLUDED.last_name,
         language      = CASE WHEN users.language = '' OR users.language IS NULL THEN EXCLUDED.language ELSE users.language END,
         updated_at    = NOW()
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, stats_chart_style, animate_numbers, theme, hide_amounts
 `
 
 type UpsertUserParams struct {
@@ -307,6 +327,8 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.NotifyGoalMilestones,
 		&i.StatsChartStyle,
 		&i.AnimateNumbers,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }

@@ -125,6 +125,136 @@ func TestSettingsHandler_GET_IncludesNotificationPrefs(t *testing.T) {
 	assert.Equal(t, false, resp["notify_goal_milestones"])
 }
 
+func TestSettingsHandler_GET_DefaultThemeAndHideAmounts(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:       1,
+		Language: domain.LangEN,
+	}, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, "system", resp["theme"], "missing theme should default to 'system'")
+	assert.Equal(t, false, resp["hide_amounts"])
+}
+
+func TestSettingsHandler_GET_IncludesThemeAndHideAmounts(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:          1,
+		Language:    domain.LangEN,
+		Theme:       domain.ThemeDark,
+		HideAmounts: true,
+	}, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, "dark", resp["theme"])
+	assert.Equal(t, true, resp["hide_amounts"])
+}
+
+func TestSettingsHandler_PATCH_Theme(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	existing := &domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		Theme:           domain.ThemeSystem,
+		StatsChartStyle: domain.StatsChartStyleDonut,
+	}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
+	updated := &domain.User{ID: 1, Language: domain.LangEN, Theme: domain.ThemeDark, StatsChartStyle: domain.StatsChartStyleDonut}
+	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), mock.MatchedBy(func(prefs domain.UIPreferences) bool {
+		return prefs.Theme == domain.ThemeDark && prefs.StatsChartStyle == domain.StatsChartStyleDonut
+	})).Return(updated, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	body := `{"ui_preferences":{"theme":"dark"}}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, "dark", resp["theme"])
+	userRepo.AssertExpectations(t)
+}
+
+func TestSettingsHandler_PATCH_InvalidTheme(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(&domain.User{
+		ID:              1,
+		StatsChartStyle: domain.StatsChartStyleDonut,
+	}, nil)
+	accountRepo := &mocks.MockAccountStorer{}
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	body := `{"ui_preferences":{"theme":"midnight"}}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	userRepo.AssertNotCalled(t, "UpdateUIPreferences", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func TestSettingsHandler_PATCH_HideAmounts(t *testing.T) {
+	userRepo := &mocks.MockUserStorer{}
+	existing := &domain.User{
+		ID:              1,
+		Language:        domain.LangEN,
+		HideAmounts:     false,
+		StatsChartStyle: domain.StatsChartStyleDonut,
+		Theme:           domain.ThemeSystem,
+	}
+	userRepo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
+	updated := &domain.User{ID: 1, Language: domain.LangEN, HideAmounts: true, StatsChartStyle: domain.StatsChartStyleDonut, Theme: domain.ThemeSystem}
+	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), mock.MatchedBy(func(prefs domain.UIPreferences) bool {
+		return prefs.HideAmounts && prefs.Theme == domain.ThemeSystem && prefs.StatsChartStyle == domain.StatsChartStyleDonut
+	})).Return(updated, nil)
+
+	accountRepo := &mocks.MockAccountStorer{}
+	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
+
+	h := buildSettingsHandler(userRepo, accountRepo)
+	body := `{"ui_preferences":{"hide_amounts":true}}`
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/api/v1/settings", bytes.NewBufferString(body))
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	assert.Equal(t, true, resp["hide_amounts"])
+	userRepo.AssertExpectations(t)
+}
+
 func TestSettingsHandler_PATCH_NotificationPrefs(t *testing.T) {
 	userRepo := &mocks.MockUserStorer{}
 	existing := &domain.User{
@@ -231,7 +361,6 @@ func TestSettingsHandler_PATCH_UIPreferences(t *testing.T) {
 	}
 	userRepo.On("GetByID", mock.Anything, int64(1)).Return(existing, nil)
 
-	wantStyle := "dual_bar"
 	wantAnimate := false
 	updated := &domain.User{
 		ID:              1,
@@ -239,7 +368,9 @@ func TestSettingsHandler_PATCH_UIPreferences(t *testing.T) {
 		StatsChartStyle: domain.StatsChartStyleDualBar,
 		AnimateNumbers:  &wantAnimate,
 	}
-	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), wantStyle, &wantAnimate).Return(updated, nil)
+	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), mock.MatchedBy(func(prefs domain.UIPreferences) bool {
+		return prefs.StatsChartStyle == "dual_bar" && prefs.AnimateNumbers != nil && *prefs.AnimateNumbers == false
+	})).Return(updated, nil)
 
 	accountRepo := &mocks.MockAccountStorer{}
 	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)
@@ -275,7 +406,9 @@ func TestSettingsHandler_PATCH_UIPreferences_OnlyStyle(t *testing.T) {
 		StatsChartStyle: domain.StatsChartStyleStackedBar,
 	}
 	// animate_numbers stays nil because the request omitted it.
-	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), "stacked_bar", (*bool)(nil)).Return(updated, nil)
+	userRepo.On("UpdateUIPreferences", mock.Anything, int64(1), mock.MatchedBy(func(prefs domain.UIPreferences) bool {
+		return prefs.StatsChartStyle == "stacked_bar" && prefs.AnimateNumbers == nil
+	})).Return(updated, nil)
 
 	accountRepo := &mocks.MockAccountStorer{}
 	accountRepo.On("GetDefault", mock.Anything, int64(1)).Return(&domain.Account{ID: 1, CurrencyCode: "USD"}, nil)

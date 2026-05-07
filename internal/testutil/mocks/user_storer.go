@@ -52,8 +52,8 @@ func (m *MockUserStorer) UpdateNotificationPreferences(ctx context.Context, id i
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *MockUserStorer) UpdateUIPreferences(ctx context.Context, id int64, style string, animateNumbers *bool) (*domain.User, error) {
-	args := m.Called(ctx, id, style, animateNumbers)
+func (m *MockUserStorer) UpdateUIPreferences(ctx context.Context, id int64, prefs domain.UIPreferences) (*domain.User, error) {
+	args := m.Called(ctx, id, prefs)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

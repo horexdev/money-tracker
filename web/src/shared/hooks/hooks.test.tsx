@@ -21,6 +21,8 @@ vi.mock('framer-motion', async () => {
 
 import { useAnimateNumbers } from './useAnimateNumbers'
 import { useChartStyle } from './useChartStyle'
+import { useThemePreference } from './useThemePreference'
+import { useHideAmounts } from './useHideAmounts'
 import { SETTINGS_QUERY_KEY } from './useUserSettings'
 import { useHaptic } from './useHaptic'
 import { useTgMainButton } from './useMainButton'
@@ -42,6 +44,8 @@ const baseSettings: UserSettings = {
   notify_goal_milestones: true,
   stats_chart_style: 'donut',
   animate_numbers: null,
+  theme: 'system',
+  hide_amounts: false,
 }
 
 function renderWithSettings<T>(
@@ -232,5 +236,110 @@ describe('useFirstLaunchSetup', () => {
       { wrapper: Wrapper },
     )
     expect(localStorage.getItem(FIRST_LAUNCH_KEY)).toBe('previous-value')
+  })
+})
+
+describe('useThemePreference', () => {
+  beforeEach(() => {
+    vi.mocked(settingsApi.get).mockResolvedValue(baseSettings)
+    vi.mocked(settingsApi.update).mockReset()
+  })
+
+  it('defaults to "system" before settings load', () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    function Wrapper({ children }: { children: ReactNode }) {
+      return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(() => useThemePreference(), { wrapper: Wrapper })
+    expect(result.current[0]).toBe('system')
+  })
+
+  it('returns the cached theme when settings are present', () => {
+    const { result } = renderWithSettings(
+      () => useThemePreference(),
+      { ...baseSettings, theme: 'dark' },
+    )
+    expect(result.current[0]).toBe('dark')
+  })
+
+  it('setter calls settingsApi.update with ui_preferences.theme', async () => {
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, theme: 'light' })
+    const { result } = renderWithSettings(() => useThemePreference())
+
+    act(() => {
+      result.current[1]('light')
+    })
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { theme: 'light' } })
+    })
+  })
+
+  it('setter is a no-op when theme is unchanged', () => {
+    const { result } = renderWithSettings(
+      () => useThemePreference(),
+      { ...baseSettings, theme: 'dark' },
+    )
+    act(() => {
+      result.current[1]('dark')
+    })
+    expect(settingsApi.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('useHideAmounts', () => {
+  beforeEach(() => {
+    vi.mocked(settingsApi.get).mockResolvedValue(baseSettings)
+    vi.mocked(settingsApi.update).mockReset()
+  })
+
+  it('defaults to hidden=true while settings are still loading', () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    function Wrapper({ children }: { children: ReactNode }) {
+      return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(() => useHideAmounts(), { wrapper: Wrapper })
+    expect(result.current.hidden).toBe(true)
+  })
+
+  it('reflects the cached value when loaded', () => {
+    const { result } = renderWithSettings(
+      () => useHideAmounts(),
+      { ...baseSettings, hide_amounts: false },
+    )
+    expect(result.current.hidden).toBe(false)
+  })
+
+  it('toggle inverts the current value via settingsApi.update', async () => {
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, hide_amounts: false })
+    const { result } = renderWithSettings(
+      () => useHideAmounts(),
+      { ...baseSettings, hide_amounts: true },
+    )
+
+    act(() => {
+      result.current.toggle()
+    })
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { hide_amounts: false } })
+    })
+  })
+
+  it('setHidden writes the explicit value', async () => {
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, hide_amounts: true })
+    const { result } = renderWithSettings(() => useHideAmounts())
+
+    act(() => {
+      result.current.setHidden(true)
+    })
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { hide_amounts: true } })
+    })
   })
 })

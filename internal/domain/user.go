@@ -39,6 +39,24 @@ func ValidLanguage(code string) bool {
 	return ok
 }
 
+// ThemePref represents a user's UI theme preference.
+type ThemePref string
+
+const (
+	ThemeSystem ThemePref = "system"
+	ThemeLight  ThemePref = "light"
+	ThemeDark   ThemePref = "dark"
+)
+
+// ValidTheme reports whether the given string is an accepted ThemePref value.
+func ValidTheme(t string) bool {
+	switch ThemePref(t) {
+	case ThemeSystem, ThemeLight, ThemeDark:
+		return true
+	}
+	return false
+}
+
 // NotificationPrefs holds a user's notification opt-in settings.
 type NotificationPrefs struct {
 	BudgetAlerts       bool
@@ -49,10 +67,10 @@ type NotificationPrefs struct {
 
 // Stats chart styles selectable by the user on the Statistics screen.
 const (
-	StatsChartStyleDonut       = "donut"
-	StatsChartStyleStackedBar  = "stacked_bar"
-	StatsChartStyleDualBar     = "dual_bar"
-	StatsChartStyleProfitBars  = "profit_bars"
+	StatsChartStyleDonut      = "donut"
+	StatsChartStyleStackedBar = "stacked_bar"
+	StatsChartStyleDualBar    = "dual_bar"
+	StatsChartStyleProfitBars = "profit_bars"
 )
 
 // IsValidStatsChartStyle reports whether s is one of the supported chart styles.
@@ -62,6 +80,17 @@ func IsValidStatsChartStyle(s string) bool {
 		return true
 	}
 	return false
+}
+
+// UIPreferences groups all server-side UI prefs that share the same
+// PATCH /api/v1/settings { "ui_preferences": {...} } envelope.
+type UIPreferences struct {
+	StatsChartStyle string
+	// AnimateNumbers is nil when the user has not made an explicit choice;
+	// the client falls back to the OS prefers-reduced-motion setting in that case.
+	AnimateNumbers *bool
+	Theme          ThemePref
+	HideAmounts    bool
 }
 
 // User represents a registered Telegram user.
@@ -78,11 +107,11 @@ type User struct {
 	NotifyRecurringReminders bool
 	NotifyWeeklySummary      bool
 	NotifyGoalMilestones     bool
-	// UI preferences (stored on users table; see migration 00034).
+	// UI preferences (stored on users table; see migrations 00035 and 00036).
 	StatsChartStyle string
-	// AnimateNumbers is nil when the user has not made an explicit choice;
-	// the client falls back to the OS prefers-reduced-motion setting in that case.
-	AnimateNumbers *bool
+	AnimateNumbers  *bool
+	Theme           ThemePref
+	HideAmounts     bool
 }
 
 // DisplayName returns the best available name for the user.

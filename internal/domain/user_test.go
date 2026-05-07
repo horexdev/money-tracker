@@ -28,6 +28,27 @@ func TestUser_DisplayName(t *testing.T) {
 	}
 }
 
+func TestValidTheme(t *testing.T) {
+	tests := []struct {
+		theme string
+		want  bool
+	}{
+		{"system", true},
+		{"light", true},
+		{"dark", true},
+		{"", false},
+		{"auto", false},
+		{"Dark", false},
+		{"SYSTEM", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.theme, func(t *testing.T) {
+			assert.Equal(t, tt.want, domain.ValidTheme(tt.theme))
+		})
+	}
+}
+
 func TestValidLanguage(t *testing.T) {
 	tests := []struct {
 		code string
