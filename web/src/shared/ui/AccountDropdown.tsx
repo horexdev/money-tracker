@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { CaretDown, Bank, PiggyBank, Money, CreditCard, Coins, type Icon } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatCents } from '../lib/money'
+import { MoneyText } from './MoneyText'
 import type { Account, AccountType } from '../types'
 
 const ICONS: Record<AccountType, Icon> = {
@@ -127,7 +127,7 @@ export function AccountDropdown({ accounts, selectedId, onChange, allLabel, show
                   </p>
                   {showBalance && (
                     <p className="text-[11px] text-muted tabular-nums">
-                      {formatCents(acc.balance_cents, acc.currency_code)}
+                      <MoneyText cents={acc.balance_cents} currency={acc.currency_code} />
                     </p>
                   )}
                 </div>

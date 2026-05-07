@@ -15,7 +15,8 @@
     "close": "Cerrar",
     "done": "Listo",
     "coming_soon": "Próximamente",
-    "none": "Ninguno"
+    "none": "Ninguno",
+    "show_amounts": "Mostrar montos"
   },
   "tabs": {
     "home": "Inicio",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Alerta al 25%, 50%, 75%, 100% de un objetivo",
     "display": "Visualización",
     "animate_numbers": "Animar números",
-    "animate_numbers_desc": "Efecto de resorte al cambiar el saldo y los totales"
+    "animate_numbers_desc": "Efecto de resorte al cambiar el saldo y los totales",
+    "privacy": "Privacidad",
+    "hide_amounts": "Ocultar montos",
+    "hide_amounts_desc": "Se muestra como ••••; toca cualquier monto oculto para revelarlo."
   },
   "more": {
     "title": "Más",

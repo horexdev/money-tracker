@@ -36,6 +36,20 @@ SET notify_budget_alerts       = $2,
 WHERE id = $1
 RETURNING *;
 
+-- name: UpdateUserTheme :one
+UPDATE users
+SET theme      = $2,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateUserHideAmounts :one
+UPDATE users
+SET hide_amounts = $2,
+    updated_at   = NOW()
+WHERE id = $1
+RETURNING *;
+
 -- name: DeleteAllUserTransactions :exec
 DELETE FROM transactions WHERE user_id = $1;
 

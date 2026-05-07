@@ -68,6 +68,8 @@ export interface StatsResponse {
 }
 
 // GET /api/v1/settings
+export type ThemePref = 'system' | 'light' | 'dark'
+
 export interface UserSettings {
   base_currency: string
   display_currencies: string[]
@@ -77,6 +79,8 @@ export interface UserSettings {
   notify_recurring_reminders: boolean
   notify_weekly_summary: boolean
   notify_goal_milestones: boolean
+  theme: ThemePref
+  hide_amounts: boolean
 }
 
 // GET /api/v1/categories

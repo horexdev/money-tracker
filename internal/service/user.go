@@ -61,6 +61,29 @@ func (s *UserService) UpdateNotificationPreferences(ctx context.Context, id int6
 	return u, nil
 }
 
+// UpdateTheme changes the user's UI theme preference.
+func (s *UserService) UpdateTheme(ctx context.Context, id int64, theme string) (*domain.User, error) {
+	if !domain.ValidTheme(theme) {
+		return nil, domain.ErrInvalidTheme
+	}
+	u, err := s.repo.UpdateTheme(ctx, id, domain.ThemePref(theme))
+	if err != nil {
+		return nil, fmt.Errorf("update theme for user %d: %w", id, err)
+	}
+	s.log.InfoContext(ctx, "theme updated", slog.Int64("user_id", id), slog.String("theme", theme))
+	return u, nil
+}
+
+// UpdateHideAmounts toggles the user's privacy mode for monetary amounts.
+func (s *UserService) UpdateHideAmounts(ctx context.Context, id int64, hide bool) (*domain.User, error) {
+	u, err := s.repo.UpdateHideAmounts(ctx, id, hide)
+	if err != nil {
+		return nil, fmt.Errorf("update hide_amounts for user %d: %w", id, err)
+	}
+	s.log.InfoContext(ctx, "hide_amounts updated", slog.Int64("user_id", id), slog.Bool("hide", hide))
+	return u, nil
+}
+
 // ResetData deletes all user-owned data while keeping the user account and settings.
 func (s *UserService) ResetData(ctx context.Context, userID int64) error {
 	if err := s.repo.ResetData(ctx, userID); err != nil {

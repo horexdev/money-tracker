@@ -15,7 +15,8 @@
     "close": "Tutup",
     "done": "Selesai",
     "coming_soon": "Akan datang",
-    "none": "Tiada"
+    "none": "Tiada",
+    "show_amounts": "Tunjukkan jumlah"
   },
   "tabs": {
     "home": "Utama",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Amaran pada 25%, 50%, 75%, 100% matlamat",
     "display": "Paparan",
     "animate_numbers": "Animasikan nombor",
-    "animate_numbers_desc": "Kesan spring apabila baki dan jumlah berubah"
+    "animate_numbers_desc": "Kesan spring apabila baki dan jumlah berubah",
+    "privacy": "Privasi",
+    "hide_amounts": "Sembunyikan jumlah",
+    "hide_amounts_desc": "Ditunjukkan sebagai ••••; ketik jumlah tersembunyi untuk menunjukkannya."
   },
   "more": {
     "title": "Lagi",

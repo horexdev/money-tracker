@@ -39,6 +39,24 @@ func ValidLanguage(code string) bool {
 	return ok
 }
 
+// ThemePref represents a user's UI theme preference.
+type ThemePref string
+
+const (
+	ThemeSystem ThemePref = "system"
+	ThemeLight  ThemePref = "light"
+	ThemeDark   ThemePref = "dark"
+)
+
+// ValidTheme reports whether the given string is an accepted ThemePref value.
+func ValidTheme(t string) bool {
+	switch ThemePref(t) {
+	case ThemeSystem, ThemeLight, ThemeDark:
+		return true
+	}
+	return false
+}
+
 // NotificationPrefs holds a user's notification opt-in settings.
 type NotificationPrefs struct {
 	BudgetAlerts       bool
@@ -61,6 +79,8 @@ type User struct {
 	NotifyRecurringReminders bool
 	NotifyWeeklySummary      bool
 	NotifyGoalMilestones     bool
+	Theme                    ThemePref
+	HideAmounts              bool
 }
 
 // DisplayName returns the best available name for the user.

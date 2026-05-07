@@ -15,7 +15,8 @@
     "close": "Close",
     "done": "Done",
     "coming_soon": "Coming soon",
-    "none": "None"
+    "none": "None",
+    "show_amounts": "Show amounts"
   },
   "tabs": {
     "home": "Home",
@@ -236,7 +237,10 @@
     "notify_goal_milestones_desc": "Alert at 25%, 50%, 75%, 100% of a goal",
     "display": "Display",
     "animate_numbers": "Animate numbers",
-    "animate_numbers_desc": "Spring effect when balance and totals change"
+    "animate_numbers_desc": "Spring effect when balance and totals change",
+    "privacy": "Privacy",
+    "hide_amounts": "Hide amounts",
+    "hide_amounts_desc": "Shown as ••••; tap any hidden amount to reveal."
   },
   "more": {
     "title": "More",

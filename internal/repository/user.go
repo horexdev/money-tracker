@@ -90,6 +90,30 @@ func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, id i
 	return rowToUser(row), nil
 }
 
+// UpdateTheme changes the user's UI theme preference.
+func (r *UserRepository) UpdateTheme(ctx context.Context, id int64, theme domain.ThemePref) (*domain.User, error) {
+	row, err := r.q.UpdateUserTheme(ctx, sqlcgen.UpdateUserThemeParams{
+		ID:    id,
+		Theme: string(theme),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
+// UpdateHideAmounts toggles the user's privacy mode for monetary amounts.
+func (r *UserRepository) UpdateHideAmounts(ctx context.Context, id int64, hide bool) (*domain.User, error) {
+	row, err := r.q.UpdateUserHideAmounts(ctx, sqlcgen.UpdateUserHideAmountsParams{
+		ID:          id,
+		HideAmounts: hide,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
 // ResetData deletes all user-owned data atomically. Deletion order respects FK constraints:
 // transfers → transactions → budgets → recurring → savings_goals → categories → accounts.
 func (r *UserRepository) ResetData(ctx context.Context, userID int64) error {
@@ -150,5 +174,7 @@ func rowToUser(row sqlcgen.User) *domain.User {
 		NotifyRecurringReminders: row.NotifyRecurringReminders,
 		NotifyWeeklySummary:      row.NotifyWeeklySummary,
 		NotifyGoalMilestones:     row.NotifyGoalMilestones,
+		Theme:                    domain.ThemePref(row.Theme),
+		HideAmounts:              row.HideAmounts,
 	}
 }

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useThemePreference } from './useThemePreference'
 
 let sdkLoaded = false
 let sdkModules: {
@@ -25,20 +26,9 @@ try {
   // SDK not available outside Telegram
 }
 
-export type ThemePref = 'system' | 'light' | 'dark'
-export const THEME_KEY = 'app_theme'
-
-function getStoredTheme(): ThemePref {
-  try {
-    const v = localStorage.getItem(THEME_KEY)
-    if (v === 'light' || v === 'dark' || v === 'system') return v
-  } catch { /* ignore */ }
-  return 'system'
-}
-
-/** Applies the theme to document root, respecting localStorage override. */
-function applyThemeGlobal(tgScheme: string) {
-  const pref = getStoredTheme()
+/** Apply the resolved theme preference to the document root.
+ *  When pref is 'system', defer to the Telegram client's color scheme. */
+function applyThemeGlobal(pref: 'system' | 'light' | 'dark', tgScheme: string) {
   if (pref === 'light' || pref === 'dark') {
     document.documentElement.setAttribute('data-theme', pref)
   } else {
@@ -46,29 +36,10 @@ function applyThemeGlobal(tgScheme: string) {
   }
 }
 
-/** Write theme preference to localStorage and immediately apply it. */
-export function setThemePreference(pref: ThemePref, tgScheme = 'light') {
-  try {
-    localStorage.setItem(THEME_KEY, pref)
-  } catch { /* ignore */ }
-  applyThemeGlobal(tgScheme)
-}
-
-/** Reactive hook: returns [current pref, setter]. */
-export function useThemePreference(): [ThemePref, (p: ThemePref) => void] {
-  const [pref, setPref] = useState<ThemePref>(getStoredTheme)
-
-  const set = (p: ThemePref) => {
-    setPref(p)
-    setThemePreference(p)
-  }
-
-  return [pref, set]
-}
-
 /** Initialise Telegram Mini App: expand, sync theme CSS vars. */
 export function useTelegramApp() {
   const tpState = sdkLoaded ? sdkModules!.useSignal(sdkModules!.themeParams.state) : undefined
+  const [themePref] = useThemePreference()
 
   useEffect(() => {
     type TgWebApp = {
@@ -81,9 +52,9 @@ export function useTelegramApp() {
     const tg = (((window as unknown) as Record<string, unknown>).Telegram as Record<string, unknown>)
       ?.WebApp as TgWebApp | undefined
 
-    // Apply color scheme from Telegram, respecting localStorage override
+    // Apply color scheme: explicit user preference wins over the Telegram client's scheme.
     function applyTheme() {
-      applyThemeGlobal(tg?.colorScheme ?? 'light')
+      applyThemeGlobal(themePref, tg?.colorScheme ?? 'light')
     }
 
     // Re-apply safe area in case insets changed after initial render
@@ -106,7 +77,7 @@ export function useTelegramApp() {
       tg?.offEvent?.('safeAreaChanged', applySafeTop)
       tg?.offEvent?.('contentSafeAreaChanged', applySafeTop)
     }
-  }, [])
+  }, [themePref])
 
   useEffect(() => {
     if (!tpState) return

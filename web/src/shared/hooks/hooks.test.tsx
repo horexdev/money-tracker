@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import {
@@ -11,6 +11,10 @@ import {
 import { useHaptic } from './useHaptic'
 import { useTgMainButton } from './useMainButton'
 import { useFirstLaunchSetup, FIRST_LAUNCH_KEY } from './useFirstLaunchSetup'
+import { useThemePreference } from './useThemePreference'
+import { useHideAmounts } from './useHideAmounts'
+import { settingsApi } from '../api/settings'
+import type { UserSettings } from '../types'
 import i18n from 'i18next'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
 
@@ -149,5 +153,105 @@ describe('useFirstLaunchSetup', () => {
       { wrapper: Wrapper },
     )
     expect(localStorage.getItem(FIRST_LAUNCH_KEY)).toBe('previous-value')
+  })
+})
+
+const baseSettings: UserSettings = {
+  base_currency: 'USD',
+  display_currencies: [],
+  language: 'en',
+  is_admin: false,
+  notify_budget_alerts: false,
+  notify_recurring_reminders: false,
+  notify_weekly_summary: false,
+  notify_goal_milestones: false,
+  theme: 'system',
+  hide_amounts: false,
+}
+
+function buildHookHarness(initial?: Partial<UserSettings>) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0, staleTime: 0 }, mutations: { retry: false } },
+  })
+  if (initial) {
+    client.setQueryData<UserSettings>(['settings'], { ...baseSettings, ...initial })
+  }
+  function HookWrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  }
+  return { client, wrapper: HookWrapper }
+}
+
+describe('useThemePreference', () => {
+  it('defaults to "system" before settings load', () => {
+    const { wrapper } = buildHookHarness()
+    const { result } = renderHook(() => useThemePreference(), { wrapper })
+    expect(result.current[0]).toBe('system')
+  })
+
+  it('returns the cached theme when settings are present', () => {
+    const { wrapper } = buildHookHarness({ theme: 'dark' })
+    const { result } = renderHook(() => useThemePreference(), { wrapper })
+    expect(result.current[0]).toBe('dark')
+  })
+
+  it('setter calls settingsApi.update with the new theme', async () => {
+    const { wrapper } = buildHookHarness({ theme: 'system' })
+    const updateSpy = vi.spyOn(settingsApi, 'update').mockResolvedValue({ ...baseSettings, theme: 'light' })
+    const { result } = renderHook(() => useThemePreference(), { wrapper })
+    act(() => { result.current[1]('light') })
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith({ theme: 'light' })
+    })
+    updateSpy.mockRestore()
+  })
+
+  it('optimistically updates the cache before the request resolves', async () => {
+    const { client, wrapper } = buildHookHarness({ theme: 'system' })
+    const updateSpy = vi.spyOn(settingsApi, 'update').mockImplementation(
+      () => new Promise(() => { /* never resolves */ }),
+    )
+    const { result } = renderHook(() => useThemePreference(), { wrapper })
+    act(() => { result.current[1]('dark') })
+    await waitFor(() => {
+      expect(client.getQueryData<UserSettings>(['settings'])?.theme).toBe('dark')
+    })
+    updateSpy.mockRestore()
+  })
+})
+
+describe('useHideAmounts', () => {
+  it('defaults to hidden=true while settings are still loading', () => {
+    const { wrapper } = buildHookHarness()
+    const { result } = renderHook(() => useHideAmounts(), { wrapper })
+    expect(result.current.hidden).toBe(true)
+  })
+
+  it('reflects the cached value when loaded', () => {
+    const { wrapper } = buildHookHarness({ hide_amounts: false })
+    const { result } = renderHook(() => useHideAmounts(), { wrapper })
+    expect(result.current.hidden).toBe(false)
+  })
+
+  it('toggle inverts the current value via settingsApi.update', async () => {
+    const { wrapper } = buildHookHarness({ hide_amounts: true })
+    const updateSpy = vi.spyOn(settingsApi, 'update').mockResolvedValue({ ...baseSettings, hide_amounts: false })
+    const { result } = renderHook(() => useHideAmounts(), { wrapper })
+    act(() => { result.current.toggle() })
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith({ hide_amounts: false })
+    })
+    updateSpy.mockRestore()
+  })
+
+  it('setHidden writes the explicit value', async () => {
+    const { wrapper } = buildHookHarness({ hide_amounts: false })
+    const updateSpy = vi.spyOn(settingsApi, 'update').mockResolvedValue({ ...baseSettings, hide_amounts: true })
+    const { result } = renderHook(() => useHideAmounts(), { wrapper })
+    act(() => { result.current.setHidden(true) })
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith({ hide_amounts: true })
+    })
+    updateSpy.mockRestore()
   })
 })

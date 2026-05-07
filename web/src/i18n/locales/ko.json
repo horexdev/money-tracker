@@ -15,7 +15,8 @@
     "close": "닫기",
     "done": "완료",
     "coming_soon": "곧 출시",
-    "none": "없음"
+    "none": "없음",
+    "show_amounts": "금액 표시"
   },
   "tabs": {
     "home": "홈",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "목표의 25%, 50%, 75%, 100% 시 알림",
     "display": "표시",
     "animate_numbers": "숫자 애니메이션",
-    "animate_numbers_desc": "잔액과 합계가 변할 때 스프링 효과"
+    "animate_numbers_desc": "잔액과 합계가 변할 때 스프링 효과",
+    "privacy": "개인정보",
+    "hide_amounts": "금액 숨기기",
+    "hide_amounts_desc": "••••로 표시됩니다. 숨겨진 금액을 눌러 표시합니다."
   },
   "more": {
     "title": "더보기",

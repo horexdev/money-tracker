@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { UserSettings } from '../types'
+import type { UserSettings, ThemePref } from '../types'
 
 export const settingsApi = {
   get(): Promise<UserSettings> {
@@ -8,6 +8,8 @@ export const settingsApi = {
   update(patch: {
     display_currencies?: string[]
     language?: string
+    theme?: ThemePref
+    hide_amounts?: boolean
     notification_preferences?: {
       notify_budget_alerts?: boolean
       notify_recurring_reminders?: boolean

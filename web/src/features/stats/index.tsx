@@ -16,6 +16,8 @@ import { EmptyState, RangeDateModal } from '../../shared/ui'
 import { AccountDropdown } from '../../shared/ui/AccountDropdown'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
+import { useHideAmounts } from '../../shared/hooks/useHideAmounts'
+import { MoneyText } from '../../shared/ui/MoneyText'
 import type { TransactionType, CategoryStat } from '../../shared/types'
 
 type Period = 'month' | 'week' | 'today' | 'lastmonth'
@@ -25,11 +27,23 @@ interface CustomRange {
   to: string
 }
 
-type NumberProps = { value: number; formatter?: (v: number) => string }
+type NumberProps = { value: number; formatter?: (v: number) => string; isMoney?: boolean }
 
 /* ─── Animated Number Counter ─── */
 function AnimatedNumber(props: NumberProps) {
   const [animate] = useAnimateNumbers()
+  const { hidden, toggle } = useHideAmounts()
+  if (props.isMoney && hidden) {
+    return (
+      <span
+        role="button"
+        onClick={(e) => { e.stopPropagation(); toggle() }}
+        className="cursor-pointer"
+      >
+        ••••
+      </span>
+    )
+  }
   return animate ? <SpringNumber {...props} /> : <StaticNumber {...props} />
 }
 
@@ -142,6 +156,7 @@ function DonutChart({
           <p className="text-[9px] font-semibold text-muted uppercase tracking-wide">{currency}</p>
           <p className="text-[11px] font-bold tabular-nums text-text leading-tight">
             <AnimatedNumber
+              isMoney
               value={total}
               formatter={(v) =>
                 new Intl.NumberFormat('en-US', {
@@ -192,9 +207,11 @@ function CategoryRow({
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center">
           <span className="text-sm font-semibold text-text truncate">{tCategory(entry.category_name)}</span>
-          <span className="text-sm font-bold tabular-nums text-text ml-2 shrink-0">
-            {formatCents(entry.total_cents, currency)}
-          </span>
+          <MoneyText
+            cents={entry.total_cents}
+            currency={currency}
+            className="text-sm font-bold tabular-nums text-text ml-2 shrink-0"
+          />
         </div>
         <div className="mt-1.5 h-1.5 rounded-full overflow-hidden bg-bg">
           <motion.div
@@ -371,7 +388,7 @@ export function StatsPage() {
             {/* Animated total + count */}
             <div className="mt-3 flex items-end gap-3">
               <p className="text-white text-3xl font-extrabold tabular-nums leading-none tracking-tight">
-                <AnimatedNumber value={total} formatter={(v) => formatCents(v, displayCurrency)} />
+                <AnimatedNumber isMoney value={total} formatter={(v) => formatCents(v, displayCurrency)} />
               </p>
               <p className="text-white/40 text-xs font-medium pb-0.5">
                 <AnimatedNumber value={txCount} /> {t('stats.transactions_count_other', { count: txCount }).replace(/^\d+\s*/, '')}
@@ -490,7 +507,7 @@ export function StatsPage() {
                           <div>
                             <p className="text-[10px] font-semibold text-muted uppercase tracking-wide">{t('stats.avg_per_tx')}</p>
                             <p className="text-sm font-bold text-text tabular-nums">
-                              <AnimatedNumber value={avgPerTx} formatter={(v) => formatCents(v, displayCurrency)} />
+                              <AnimatedNumber isMoney value={avgPerTx} formatter={(v) => formatCents(v, displayCurrency)} />
                             </p>
                           </div>
                         </div>

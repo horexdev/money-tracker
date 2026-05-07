@@ -130,7 +130,9 @@ type Querier interface {
 	UpdateRecurringNextRun(ctx context.Context, arg UpdateRecurringNextRunParams) error
 	UpdateSavingsGoal(ctx context.Context, arg UpdateSavingsGoalParams) (SavingsGoal, error)
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
+	UpdateUserHideAmounts(ctx context.Context, arg UpdateUserHideAmountsParams) (User, error)
 	UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguageParams) (User, error)
+	UpdateUserTheme(ctx context.Context, arg UpdateUserThemeParams) (User, error)
 	UpsertExchangeRate(ctx context.Context, arg UpsertExchangeRateParams) error
 	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)
 	WithdrawFromGoal(ctx context.Context, arg WithdrawFromGoalParams) (SavingsGoal, error)
