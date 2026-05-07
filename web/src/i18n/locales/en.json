@@ -15,7 +15,8 @@
     "close": "Close",
     "done": "Done",
     "coming_soon": "Coming soon",
-    "none": "None"
+    "none": "None",
+    "show_amounts": "Show amounts"
   },
   "tabs": {
     "home": "Home",
@@ -99,7 +100,15 @@
     "avg_per_tx": "Avg per tx",
     "date_from": "From",
     "date_to": "To",
-    "apply": "Apply"
+    "apply": "Apply",
+    "prev_month": "Previous month",
+    "next_month": "Next month",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Categories",
@@ -231,7 +240,13 @@
     "notify_weekly_summary": "Weekly Summary",
     "notify_weekly_summary_desc": "Monday recap of last week spending",
     "notify_goal_milestones": "Goal Milestones",
-    "notify_goal_milestones_desc": "Alert at 25%, 50%, 75%, 100% of a goal"
+    "notify_goal_milestones_desc": "Alert at 25%, 50%, 75%, 100% of a goal",
+    "display": "Display",
+    "animate_numbers": "Animate numbers",
+    "animate_numbers_desc": "Spring effect when balance and totals change",
+    "privacy": "Privacy",
+    "hide_amounts": "Hide amounts",
+    "hide_amounts_desc": "Shown as ••••; tap any hidden amount to reveal."
   },
   "more": {
     "title": "More",
@@ -242,8 +257,8 @@
     "export": "Export",
     "settings": "Settings",
     "accounts": "Accounts",
-    "transfers": "Transfers",
-    "admin_panel": "Admin Panel"
+    "admin_panel": "Admin Panel",
+    "templates": "Quick Templates"
   },
   "admin": {
     "title": "Admin Panel",
@@ -265,7 +280,6 @@
   },
   "accounts": "Accounts",
   "accountsAll": "All accounts",
-  "transfers": "Transfers",
   "transfer_action": "Transfer",
   "transfer_need_two_accounts": "Add another account to make a transfer",
   "newAccount": "New Account",
@@ -314,5 +328,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Templates",
+    "no_templates": "No templates yet",
+    "create_first": "Create your first template to record frequent expenses with one tap",
+    "create_new": "New template",
+    "edit_title": "Edit template",
+    "from_template": "From template",
+    "save_as_template": "Save as template",
+    "amount_fixed": "Fixed amount",
+    "amount_fixed_hint": "Tap on the dashboard creates a transaction instantly",
+    "amount_variable_hint": "Tap on the dashboard prompts for the amount",
+    "amount_variable_hint_short": "ask amount",
+    "name": "Name",
+    "name_placeholder": "Coffee, lunch, transit…",
+    "quick": "Quick templates",
+    "apply": "Apply template"
   }
 }

@@ -7,9 +7,10 @@ import { Plus, X, CheckCircle, ArrowCircleDown, ArrowCircleUp, CalendarBlank, Cl
 import { fetchGoals, createGoal, updateGoal, depositGoal, withdrawGoal, deleteGoal, fetchGoalHistory } from '../../shared/api/goals'
 import type { GoalTransaction } from '../../shared/api/goals'
 import { accountsApi } from '../../shared/api/accounts'
-import { formatCents, parseCents, formatDate, sanitizeAmount } from '../../shared/lib/money'
-import { CurrencyBadge } from '../../shared/lib/currencyIcons'
+import { parseCents, formatDate } from '../../shared/lib/money'
+import { MoneyText } from '../../shared/ui/MoneyText'
 import { friendlyError } from '../../shared/lib/errors'
+import { AmountInput } from '../../shared/ui/AmountInput'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
@@ -60,11 +61,13 @@ function GoalRow({
 
         {/* Amounts */}
         <div className="flex items-baseline gap-1 mb-2.5">
-          <span className="text-[18px] font-bold tabular-nums" style={{ color: progressColor }}>
-            {formatCents(goal.current_cents, baseCurrency)}
-          </span>
+          <MoneyText
+            cents={goal.current_cents}
+            currency={baseCurrency}
+            className="text-[18px] font-bold tabular-nums"
+          />
           <span className="text-[13px] text-muted font-medium tabular-nums">
-            / {formatCents(goal.target_cents, baseCurrency)}
+            / <MoneyText cents={goal.target_cents} currency={baseCurrency} />
           </span>
           <span className="ml-auto text-[12px] font-bold tabular-nums" style={{ color: progressColor }}>
             {pct.toFixed(0)}%
@@ -192,16 +195,7 @@ function GoalFormSheet({ onClose, editGoal }: { onClose: () => void; editGoal?: 
             <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {t('savings.target')}
             </label>
-            <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-(--shadow-focus) transition-shadow">
-              <CurrencyBadge currency={currencyCode} className="text-muted/40" />
-              <input
-                inputMode="decimal"
-                placeholder="0.00"
-                value={targetStr}
-                onChange={e => setTargetStr(sanitizeAmount(e.target.value))}
-                className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/20 tabular-nums min-w-0"
-              />
-            </div>
+            <AmountInput value={targetStr} onChange={setTargetStr} currency={currencyCode} />
           </div>
 
           {/* Deadline */}
@@ -337,17 +331,7 @@ function AmountSheet({
           </button>
         </div>
 
-        <div className="flex items-baseline gap-2 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-(--shadow-focus) transition-shadow">
-          <CurrencyBadge currency={amountCurrency} className="text-muted/40" />
-          <input
-            inputMode="decimal"
-            placeholder="0.00"
-            value={amountStr}
-            onChange={e => setAmountStr(sanitizeAmount(e.target.value))}
-            autoFocus
-            className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/20 tabular-nums min-w-0"
-          />
-        </div>
+        <AmountInput value={amountStr} onChange={setAmountStr} currency={amountCurrency} autoFocus />
 
         <button
           onClick={() => onConfirm(cents)}
@@ -412,11 +396,13 @@ function GoalHistorySheet({ goalId, onClose }: { goalId: number; onClose: () => 
                   <span className="text-[12px] font-semibold text-muted capitalize">{tx.type === 'deposit' ? t('savings.deposit') : t('savings.withdraw')}</span>
                   <p className="text-[11px] text-muted/60">{formatDate(tx.created_at, i18n.language)}</p>
                 </div>
-                <span className={`text-sm font-bold tabular-nums shrink-0 ${
-                  tx.type === 'deposit' ? 'text-income' : 'text-expense'
-                }`}>
-                  {tx.type === 'deposit' ? '+' : '-'}{formatCents(tx.amount_cents, baseCurrency)}
-                </span>
+                <MoneyText
+                  cents={tx.type === 'deposit' ? tx.amount_cents : -tx.amount_cents}
+                  currency={baseCurrency}
+                  className={`text-sm font-bold tabular-nums shrink-0 ${
+                    tx.type === 'deposit' ? 'text-income' : 'text-expense'
+                  }`}
+                />
               </div>
             ))}
           </div>

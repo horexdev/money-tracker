@@ -81,6 +81,45 @@ func TestCategoriesHandler_GET_TypeFilter(t *testing.T) {
 	assert.Len(t, cats, 1)
 }
 
+func TestCategoriesHandler_GET_OrderFrequency(t *testing.T) {
+	repo := &mocks.MockCategoryStorer{}
+	repo.On("ListSorted", mock.Anything, int64(1), "", "frequency").Return([]*domain.Category{
+		{ID: 1, UserID: 1, Name: "Food"},
+		{ID: 2, UserID: 1, Name: "Transport"},
+	}, nil)
+
+	h := buildCatHandler(repo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/categories?order=frequency", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	cats := resp["categories"].([]any)
+	assert.Len(t, cats, 2)
+}
+
+func TestCategoriesHandler_GET_OrderFrequencyWithType(t *testing.T) {
+	repo := &mocks.MockCategoryStorer{}
+	repo.On("ListSorted", mock.Anything, int64(1), "expense", "frequency").Return([]*domain.Category{
+		{ID: 1, UserID: 1, Name: "Food", Type: domain.CategoryTypeExpense},
+	}, nil)
+
+	h := buildCatHandler(repo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/categories?order=frequency&type=expense", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+	h.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	cats := resp["categories"].([]any)
+	assert.Len(t, cats, 1)
+}
+
 func TestCategoriesHandler_GET_InvalidOrder(t *testing.T) {
 	h := buildCatHandler(&mocks.MockCategoryStorer{})
 	w := httptest.NewRecorder()

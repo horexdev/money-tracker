@@ -15,7 +15,8 @@
     "close": "Fermer",
     "done": "Terminé",
     "coming_soon": "Bientôt",
-    "none": "Aucun"
+    "none": "Aucun",
+    "show_amounts": "Afficher les montants"
   },
   "tabs": {
     "home": "Accueil",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Moy. par tx",
     "date_from": "Du",
     "date_to": "Au",
-    "apply": "Appliquer"
+    "apply": "Appliquer",
+    "prev_month": "Mois précédent",
+    "next_month": "Mois suivant",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Catégories",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Bilan hebdomadaire",
     "notify_weekly_summary_desc": "Récapitulatif du lundi sur les dépenses",
     "notify_goal_milestones": "Jalons d'objectifs",
-    "notify_goal_milestones_desc": "Alerte à 25%, 50%, 75%, 100% d'un objectif"
+    "notify_goal_milestones_desc": "Alerte à 25%, 50%, 75%, 100% d'un objectif",
+    "display": "Affichage",
+    "animate_numbers": "Animer les nombres",
+    "animate_numbers_desc": "Effet ressort lors des changements de solde et totaux",
+    "privacy": "Confidentialité",
+    "hide_amounts": "Masquer les montants",
+    "hide_amounts_desc": "Affiché comme ••••; touchez un montant masqué pour le révéler."
   },
   "more": {
     "title": "Plus",
@@ -236,7 +251,7 @@
     "settings": "Paramètres",
     "admin_panel": "Panneau Admin",
     "accounts": "Comptes",
-    "transfers": "Virements"
+    "templates": "Modèles rapides"
   },
   "admin": {
     "title": "Panneau Admin",
@@ -258,7 +273,6 @@
   },
   "accounts": "Comptes",
   "accountsAll": "Tous les comptes",
-  "transfers": "Virements",
   "transfer_action": "Virer",
   "transfer_need_two_accounts": "Ajoutez un autre compte pour effectuer un virement",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Modèles",
+    "no_templates": "Pas encore de modèles",
+    "create_first": "Créez votre premier modèle pour les dépenses fréquentes — un tap au lieu de cinq",
+    "create_new": "Nouveau modèle",
+    "edit_title": "Modifier le modèle",
+    "from_template": "Depuis un modèle",
+    "save_as_template": "Enregistrer comme modèle",
+    "amount_fixed": "Montant fixe",
+    "amount_fixed_hint": "Toucher sur le tableau de bord crée la transaction instantanément",
+    "amount_variable_hint": "Toucher sur le tableau de bord demande le montant",
+    "amount_variable_hint_short": "demander montant",
+    "name": "Nom",
+    "name_placeholder": "Café, déjeuner, transport…",
+    "quick": "Modèles rapides",
+    "apply": "Appliquer le modèle"
   }
 }

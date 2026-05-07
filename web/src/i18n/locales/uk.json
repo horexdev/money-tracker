@@ -15,7 +15,8 @@
     "close": "Закрити",
     "done": "Готово",
     "coming_soon": "Незабаром",
-    "none": "Немає"
+    "none": "Немає",
+    "show_amounts": "Показати суми"
   },
   "tabs": {
     "home": "Головна",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Середнє за операцію",
     "date_from": "Від",
     "date_to": "До",
-    "apply": "Застосувати"
+    "apply": "Застосувати",
+    "prev_month": "Попередній місяць",
+    "next_month": "Наступний місяць",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Категорії",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Підсумок тижня",
     "notify_weekly_summary_desc": "Понеділковий огляд витрат за тиждень",
     "notify_goal_milestones": "Досягнення цілей",
-    "notify_goal_milestones_desc": "Сповіщення при 25%, 50%, 75%, 100% цілі"
+    "notify_goal_milestones_desc": "Сповіщення при 25%, 50%, 75%, 100% цілі",
+    "display": "Відображення",
+    "animate_numbers": "Анімація чисел",
+    "animate_numbers_desc": "Плавна анімація при зміні балансу та сум",
+    "privacy": "Конфіденційність",
+    "hide_amounts": "Приховати суми",
+    "hide_amounts_desc": "Показується як ••••; натисніть будь-яку приховану суму, щоб розкрити."
   },
   "more": {
     "title": "Ще",
@@ -236,7 +251,7 @@
     "settings": "Налаштування",
     "admin_panel": "Адмін панель",
     "accounts": "Рахунки",
-    "transfers": "Перекази"
+    "templates": "Швидкі шаблони"
   },
   "admin": {
     "title": "Адмін панель",
@@ -258,7 +273,6 @@
   },
   "accounts": "Рахунки",
   "accountsAll": "Всі рахунки",
-  "transfers": "Перекази",
   "transfer_action": "Перевести",
   "transfer_need_two_accounts": "Додайте ще один рахунок для переказу",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Шаблони",
+    "no_templates": "Шаблонів поки немає",
+    "create_first": "Створіть перший шаблон для частих операцій — один тап замість п'яти",
+    "create_new": "Новий шаблон",
+    "edit_title": "Редагувати шаблон",
+    "from_template": "З шаблону",
+    "save_as_template": "Зберегти як шаблон",
+    "amount_fixed": "Фіксована сума",
+    "amount_fixed_hint": "Тап на головній створює операцію миттєво",
+    "amount_variable_hint": "Тап на головній запитає суму",
+    "amount_variable_hint_short": "запитати суму",
+    "name": "Назва",
+    "name_placeholder": "Кава, обід, проїзд…",
+    "quick": "Швидкі шаблони",
+    "apply": "Застосувати шаблон"
   }
 }

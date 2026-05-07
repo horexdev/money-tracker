@@ -35,6 +35,39 @@ WHERE user_id = $1
   AND (type = $2 OR type = 'both')
 ORDER BY name DESC;
 
+-- name: ListUserCategoriesByFrequency :many
+-- Sorts a user's categories by transaction count (descending), name as tiebreaker.
+-- The subquery aggregates without filtering by category type, so transactions
+-- referencing transfer/adjustment system categories simply do not match the
+-- outer JOIN and are discarded.
+SELECT c.id, c.user_id, c.name, c.icon, c.type, c.updated_at, c.deleted_at, c.color, c.is_protected
+FROM categories c
+LEFT JOIN (
+    SELECT category_id, COUNT(*) AS cnt
+    FROM transactions
+    WHERE transactions.user_id = $1 AND transactions.is_adjustment = false
+    GROUP BY category_id
+) t ON t.category_id = c.id
+WHERE c.user_id = $1
+  AND c.deleted_at IS NULL
+  AND c.type NOT IN ('transfer', 'adjustment')
+ORDER BY COALESCE(t.cnt, 0) DESC, c.name ASC;
+
+-- name: ListUserCategoriesByFrequencyAndType :many
+-- Same as ListUserCategoriesByFrequency, restricted to a single type plus 'both'.
+SELECT c.id, c.user_id, c.name, c.icon, c.type, c.updated_at, c.deleted_at, c.color, c.is_protected
+FROM categories c
+LEFT JOIN (
+    SELECT category_id, COUNT(*) AS cnt
+    FROM transactions
+    WHERE transactions.user_id = $1 AND transactions.is_adjustment = false
+    GROUP BY category_id
+) t ON t.category_id = c.id
+WHERE c.user_id = $1
+  AND c.deleted_at IS NULL
+  AND (c.type = $2 OR c.type = 'both')
+ORDER BY COALESCE(t.cnt, 0) DESC, c.name ASC;
+
 -- name: GetCategoryByID :one
 SELECT * FROM categories WHERE id = $1;
 

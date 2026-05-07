@@ -15,7 +15,8 @@
     "close": "Cerrar",
     "done": "Listo",
     "coming_soon": "Próximamente",
-    "none": "Ninguno"
+    "none": "Ninguno",
+    "show_amounts": "Mostrar montos"
   },
   "tabs": {
     "home": "Inicio",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Promedio por tx",
     "date_from": "Desde",
     "date_to": "Hasta",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "prev_month": "Mes anterior",
+    "next_month": "Mes siguiente",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Categorías",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Resumen semanal",
     "notify_weekly_summary_desc": "Resumen del lunes sobre el gasto semanal",
     "notify_goal_milestones": "Hitos de objetivos",
-    "notify_goal_milestones_desc": "Alerta al 25%, 50%, 75%, 100% de un objetivo"
+    "notify_goal_milestones_desc": "Alerta al 25%, 50%, 75%, 100% de un objetivo",
+    "display": "Visualización",
+    "animate_numbers": "Animar números",
+    "animate_numbers_desc": "Efecto de resorte al cambiar el saldo y los totales",
+    "privacy": "Privacidad",
+    "hide_amounts": "Ocultar montos",
+    "hide_amounts_desc": "Se muestra como ••••; toca cualquier monto oculto para revelarlo."
   },
   "more": {
     "title": "Más",
@@ -236,7 +251,7 @@
     "settings": "Ajustes",
     "admin_panel": "Panel de Admin",
     "accounts": "Cuentas",
-    "transfers": "Transferencias"
+    "templates": "Plantillas rápidas"
   },
   "admin": {
     "title": "Panel de Admin",
@@ -258,7 +273,6 @@
   },
   "accounts": "Cuentas",
   "accountsAll": "Todas las cuentas",
-  "transfers": "Transferencias",
   "transfer_action": "Transferir",
   "transfer_need_two_accounts": "Añade otra cuenta para hacer una transferencia",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Plantillas",
+    "no_templates": "Aún no hay plantillas",
+    "create_first": "Crea tu primera plantilla para gastos frecuentes — un toque en lugar de cinco",
+    "create_new": "Nueva plantilla",
+    "edit_title": "Editar plantilla",
+    "from_template": "Desde plantilla",
+    "save_as_template": "Guardar como plantilla",
+    "amount_fixed": "Monto fijo",
+    "amount_fixed_hint": "Tocar en el panel crea la transacción al instante",
+    "amount_variable_hint": "Tocar en el panel pregunta el monto",
+    "amount_variable_hint_short": "pedir monto",
+    "name": "Nombre",
+    "name_placeholder": "Café, almuerzo, transporte…",
+    "quick": "Plantillas rápidas",
+    "apply": "Aplicar plantilla"
   }
 }

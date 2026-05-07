@@ -88,6 +88,11 @@ func RecurringHandlerForTest(recurringSvc *service.RecurringService, log *slog.L
 	return recurringHandler(recurringSvc, log)
 }
 
+// TemplateHandlerForTest exposes templateHandler for testing.
+func TemplateHandlerForTest(templateSvc *service.TransactionTemplateService, log *slog.Logger) http.HandlerFunc {
+	return templateHandler(templateSvc, log)
+}
+
 // TransfersHandlerForTest exposes transfersHandler for testing.
 func TransfersHandlerForTest(transferSvc *service.TransferService, log *slog.Logger) http.HandlerFunc {
 	return transfersHandler(transferSvc, log)
@@ -97,6 +102,38 @@ func TransfersHandlerForTest(transferSvc *service.TransferService, log *slog.Log
 func AdminUsersHandlerForTest(adminSvc *service.AdminService, log *slog.Logger) http.HandlerFunc {
 	return adminUsersHandler(adminSvc, log)
 }
+
+// BalanceFetcher is the exported alias for the unexported balanceFetcher
+// interface, allowing api_test handlers to inject mock implementations.
+type BalanceFetcher = balanceFetcher
+
+// BalanceHandlerForTest exposes balanceHandler for testing. exchangeSvc may be
+// nil if the user's DisplayCurrencies is empty.
+func BalanceHandlerForTest(txSvc BalanceFetcher, userSvc *service.UserService, accountSvc *service.AccountService, exchangeSvc *service.ExchangeService, log *slog.Logger) http.HandlerFunc {
+	return balanceHandler(txSvc, userSvc, accountSvc, exchangeSvc, log)
+}
+
+// StatsHandlerForTest exposes statsHandler for testing.
+func StatsHandlerForTest(statsSvc *service.StatsService, log *slog.Logger) http.HandlerFunc {
+	return statsHandler(statsSvc, log)
+}
+
+// AdjustmentApplier is the exported alias for the unexported adjustmentApplier
+// interface used by adjustAccountHandler.
+type AdjustmentApplier = adjustmentApplier
+
+// AdjustAccountHandlerForTest exposes adjustAccountHandler for testing.
+func AdjustAccountHandlerForTest(svc AdjustmentApplier, log *slog.Logger, accountID int64) http.HandlerFunc {
+	return adjustAccountHandler(svc, log, accountID)
+}
+
+// UserDataHandlerForTest exposes userDataHandler for testing.
+func UserDataHandlerForTest(userSvc *service.UserService, log *slog.Logger) http.HandlerFunc {
+	return userDataHandler(userSvc, log)
+}
+
+// DefaultCategoriesFor exposes defaultCategoriesFor for tests.
+var DefaultCategoriesFor = defaultCategoriesFor
 
 // TelegramUserForTest constructs a TelegramUser for use in tests.
 func TelegramUserForTest(id int64, firstName, langCode string) TelegramUser {

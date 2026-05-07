@@ -15,7 +15,8 @@
     "close": "Tutup",
     "done": "Selesai",
     "coming_soon": "Segera hadir",
-    "none": "Tidak ada"
+    "none": "Tidak ada",
+    "show_amounts": "Tampilkan jumlah"
   },
   "tabs": {
     "home": "Beranda",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Rata-rata per tx",
     "date_from": "Dari",
     "date_to": "Sampai",
-    "apply": "Terapkan"
+    "apply": "Terapkan",
+    "prev_month": "Bulan sebelumnya",
+    "next_month": "Bulan berikutnya",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Kategori",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Ringkasan Mingguan",
     "notify_weekly_summary_desc": "Rekap hari Senin tentang pengeluaran minggu lalu",
     "notify_goal_milestones": "Pencapaian Tujuan",
-    "notify_goal_milestones_desc": "Peringatan di 25%, 50%, 75%, 100% tujuan"
+    "notify_goal_milestones_desc": "Peringatan di 25%, 50%, 75%, 100% tujuan",
+    "display": "Tampilan",
+    "animate_numbers": "Animasikan angka",
+    "animate_numbers_desc": "Efek pegas saat saldo dan total berubah",
+    "privacy": "Privasi",
+    "hide_amounts": "Sembunyikan jumlah",
+    "hide_amounts_desc": "Ditampilkan sebagai ••••; ketuk jumlah tersembunyi untuk menampilkannya."
   },
   "more": {
     "title": "Lainnya",
@@ -236,7 +251,7 @@
     "settings": "Pengaturan",
     "admin_panel": "Panel Admin",
     "accounts": "Akun",
-    "transfers": "Transfer"
+    "templates": "Template cepat"
   },
   "admin": {
     "title": "Panel Admin",
@@ -258,7 +273,6 @@
   },
   "accounts": "Akun",
   "accountsAll": "Semua akun",
-  "transfers": "Transfer",
   "transfer_action": "Transfer",
   "transfer_need_two_accounts": "Tambahkan akun lain untuk melakukan transfer",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Template",
+    "no_templates": "Belum ada template",
+    "create_first": "Buat template pertama untuk pengeluaran yang sering — satu ketuk daripada lima",
+    "create_new": "Template baru",
+    "edit_title": "Ubah template",
+    "from_template": "Dari template",
+    "save_as_template": "Simpan sebagai template",
+    "amount_fixed": "Jumlah tetap",
+    "amount_fixed_hint": "Sentuh di dasbor membuat transaksi seketika",
+    "amount_variable_hint": "Sentuh di dasbor meminta jumlah",
+    "amount_variable_hint_short": "minta jumlah",
+    "name": "Nama",
+    "name_placeholder": "Kopi, makan siang, transportasi…",
+    "quick": "Template cepat",
+    "apply": "Terapkan template"
   }
 }

@@ -15,7 +15,8 @@
     "close": "Fechar",
     "done": "Pronto",
     "coming_soon": "Em breve",
-    "none": "Nenhum"
+    "none": "Nenhum",
+    "show_amounts": "Mostrar valores"
   },
   "tabs": {
     "home": "Início",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Média por tx",
     "date_from": "De",
     "date_to": "Até",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "prev_month": "Mês anterior",
+    "next_month": "Próximo mês",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Categorias",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Resumo semanal",
     "notify_weekly_summary_desc": "Resumo de segunda-feira sobre os gastos semanais",
     "notify_goal_milestones": "Marcos de objetivos",
-    "notify_goal_milestones_desc": "Alerta a 25%, 50%, 75%, 100% de um objetivo"
+    "notify_goal_milestones_desc": "Alerta a 25%, 50%, 75%, 100% de um objetivo",
+    "display": "Exibição",
+    "animate_numbers": "Animar números",
+    "animate_numbers_desc": "Efeito de mola ao alterar o saldo e os totais",
+    "privacy": "Privacidade",
+    "hide_amounts": "Ocultar valores",
+    "hide_amounts_desc": "Exibido como ••••; toque em qualquer valor oculto para revelá-lo."
   },
   "more": {
     "title": "Mais",
@@ -236,7 +251,7 @@
     "settings": "Configurações",
     "admin_panel": "Painel Admin",
     "accounts": "Contas",
-    "transfers": "Transferências"
+    "templates": "Modelos rápidos"
   },
   "admin": {
     "title": "Painel Admin",
@@ -258,7 +273,6 @@
   },
   "accounts": "Contas",
   "accountsAll": "Todas as contas",
-  "transfers": "Transferências",
   "transfer_action": "Transferir",
   "transfer_need_two_accounts": "Adicione outra conta para fazer uma transferência",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Modelos",
+    "no_templates": "Ainda sem modelos",
+    "create_first": "Crie o primeiro modelo para despesas frequentes — um toque em vez de cinco",
+    "create_new": "Novo modelo",
+    "edit_title": "Editar modelo",
+    "from_template": "Do modelo",
+    "save_as_template": "Salvar como modelo",
+    "amount_fixed": "Valor fixo",
+    "amount_fixed_hint": "Tocar no painel cria a transação instantaneamente",
+    "amount_variable_hint": "Tocar no painel pergunta o valor",
+    "amount_variable_hint_short": "pedir valor",
+    "name": "Nome",
+    "name_placeholder": "Café, almoço, transporte…",
+    "quick": "Modelos rápidos",
+    "apply": "Aplicar modelo"
   }
 }

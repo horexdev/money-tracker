@@ -15,7 +15,8 @@
     "close": "Жабу",
     "done": "Дайын",
     "coming_soon": "Жақында",
-    "none": "Жоқ"
+    "none": "Жоқ",
+    "show_amounts": "Сомаларды көрсету"
   },
   "tabs": {
     "home": "Басты бет",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Орташа",
     "date_from": "Бастап",
     "date_to": "Дейін",
-    "apply": "Қолдану"
+    "apply": "Қолдану",
+    "prev_month": "Алдыңғы ай",
+    "next_month": "Келесі ай",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Санаттар",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Апталық қорытынды",
     "notify_weekly_summary_desc": "Дүйсенбідегі апталық шығыс шолуы",
     "notify_goal_milestones": "Мақсат жетістіктері",
-    "notify_goal_milestones_desc": "25%, 50%, 75%, 100% кезінде хабарландыру"
+    "notify_goal_milestones_desc": "25%, 50%, 75%, 100% кезінде хабарландыру",
+    "display": "Көрсету",
+    "animate_numbers": "Сандар анимациясы",
+    "animate_numbers_desc": "Баланс пен жиынтықтар өзгергендегі серіппе әсері",
+    "privacy": "Құпиялылық",
+    "hide_amounts": "Сомаларды жасыру",
+    "hide_amounts_desc": "•••• түрінде көрсетіледі; кез келген жасырын соманы басыңыз."
   },
   "more": {
     "title": "Тағы",
@@ -236,7 +251,7 @@
     "settings": "Баптаулар",
     "admin_panel": "Админ панель",
     "accounts": "Шоттар",
-    "transfers": "Аударымдар"
+    "templates": "Жылдам үлгілер"
   },
   "admin": {
     "title": "Админ панель",
@@ -258,7 +273,6 @@
   },
   "accounts": "Шоттар",
   "accountsAll": "Барлық шоттар",
-  "transfers": "Аударымдар",
   "transfer_action": "Аудару",
   "transfer_need_two_accounts": "Аударым жасау үшін басқа шот қосыңыз",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Үлгілер",
+    "no_templates": "Үлгілер әзірге жоқ",
+    "create_first": "Жиі операциялар үшін бірінші үлгіні жасаңыз — бес тап орнына біреуі",
+    "create_new": "Жаңа үлгі",
+    "edit_title": "Үлгіні өңдеу",
+    "from_template": "Үлгіден",
+    "save_as_template": "Үлгі ретінде сақтау",
+    "amount_fixed": "Бекітілген сома",
+    "amount_fixed_hint": "Басты беттегі тап операцияны бірден жасайды",
+    "amount_variable_hint": "Басты беттегі тап соманы сұрайды",
+    "amount_variable_hint_short": "соманы сұрау",
+    "name": "Атауы",
+    "name_placeholder": "Кофе, түскі ас, жол ақы…",
+    "quick": "Жылдам үлгілер",
+    "apply": "Үлгіні қолдану"
   }
 }

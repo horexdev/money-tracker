@@ -90,6 +90,31 @@ func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, id i
 	return rowToUser(row), nil
 }
 
+// UpdateUIPreferences persists every user-controlled UI preference in one go:
+// stats chart style, number-animation toggle (nil means "no explicit choice"),
+// theme, and the hide-amounts privacy flag.
+func (r *UserRepository) UpdateUIPreferences(ctx context.Context, id int64, prefs domain.UIPreferences) (*domain.User, error) {
+	an := pgtype.Bool{}
+	if prefs.AnimateNumbers != nil {
+		an = pgtype.Bool{Bool: *prefs.AnimateNumbers, Valid: true}
+	}
+	theme := string(prefs.Theme)
+	if theme == "" {
+		theme = string(domain.ThemeSystem)
+	}
+	row, err := r.q.UpdateUIPreferences(ctx, sqlcgen.UpdateUIPreferencesParams{
+		ID:              id,
+		StatsChartStyle: prefs.StatsChartStyle,
+		AnimateNumbers:  an,
+		Theme:           theme,
+		HideAmounts:     prefs.HideAmounts,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
 // ResetData deletes all user-owned data atomically. Deletion order respects FK constraints:
 // transfers → transactions → budgets → recurring → savings_goals → categories → accounts.
 func (r *UserRepository) ResetData(ctx context.Context, userID int64) error {
@@ -137,6 +162,11 @@ func rowToUser(row sqlcgen.User) *domain.User {
 	if row.DisplayCurrencies != "" {
 		dc = strings.Split(row.DisplayCurrencies, ",")
 	}
+	var animate *bool
+	if row.AnimateNumbers.Valid {
+		v := row.AnimateNumbers.Bool
+		animate = &v
+	}
 	return &domain.User{
 		ID:                       row.ID,
 		Username:                 row.Username,
@@ -150,5 +180,9 @@ func rowToUser(row sqlcgen.User) *domain.User {
 		NotifyRecurringReminders: row.NotifyRecurringReminders,
 		NotifyWeeklySummary:      row.NotifyWeeklySummary,
 		NotifyGoalMilestones:     row.NotifyGoalMilestones,
+		StatsChartStyle:          row.StatsChartStyle,
+		AnimateNumbers:           animate,
+		Theme:                    domain.ThemePref(row.Theme),
+		HideAmounts:              row.HideAmounts,
 	}
 }

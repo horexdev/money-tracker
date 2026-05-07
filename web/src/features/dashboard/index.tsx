@@ -9,20 +9,49 @@ import { balanceApi } from '../../shared/api/balance'
 import { transactionsApi } from '../../shared/api/transactions'
 import { accountsApi } from '../../shared/api/accounts'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
+import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
+import { useHideAmounts } from '../../shared/hooks/useHideAmounts'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
-import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState } from '../../shared/ui'
+import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState, MoneyText } from '../../shared/ui'
+import { QuickTemplates } from './QuickTemplates'
 import type { Transaction } from '../../shared/types'
 
+type MoneyProps = { cents: number; currency: string; className?: string }
+
+/** Picks between spring-animated, static, or masked rendering based on user preferences. */
+function AnimatedMoney(props: MoneyProps) {
+  const [animate] = useAnimateNumbers()
+  const { hidden, toggle } = useHideAmounts()
+  if (hidden) {
+    return (
+      <span
+        role="button"
+        onClick={(e) => { e.stopPropagation(); toggle() }}
+        className={`cursor-pointer ${props.className ?? ''}`}
+      >
+        ••••
+      </span>
+    )
+  }
+  return animate ? <SpringMoney {...props} /> : <StaticMoney {...props} />
+}
+
+function StaticMoney({ cents, currency, className }: MoneyProps) {
+  return <span className={className}>{formatCents(cents, currency)}</span>
+}
+
 /** Animates a numeric cents value with a spring, formatted via formatCents */
-function AnimatedMoney({ cents, currency, className }: { cents: number; currency: string; className?: string }) {
+function SpringMoney({ cents, currency, className }: MoneyProps) {
   const spring = useSpring(cents, { stiffness: 70, damping: 18 })
   const formatterRef = useRef((v: number) => formatCents(Math.round(v), currency))
   const [display, setDisplay] = useState(() => formatCents(cents, currency))
 
-  // Update formatter ref when currency changes
-  formatterRef.current = (v: number) => formatCents(Math.round(v), currency)
+  // Keep the formatter ref in sync without writing during render.
+  useEffect(() => {
+    formatterRef.current = (v: number) => formatCents(Math.round(v), currency)
+  }, [currency])
 
   useEffect(() => {
     spring.set(cents)
@@ -31,7 +60,7 @@ function AnimatedMoney({ cents, currency, className }: { cents: number; currency
   // When currency changes, snap immediately (avoid showing wrong currency symbol during animation)
   useEffect(() => {
     setDisplay(formatCents(Math.round(spring.get()), currency))
-  }, [currency]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currency, spring])
 
   useMotionValueEvent(spring, 'change', (v) => {
     setDisplay(formatterRef.current(v))
@@ -52,10 +81,14 @@ export function DashboardPage() {
     queryFn: accountsApi.list,
   })
 
-  // Pre-select the default account once accounts load
+  // Pre-select the default account once accounts load. The setState call
+  // inside an effect is intentional — there is no place to derive
+  // selectedAccountId from at render time without breaking the user's manual
+  // selection later.
   useEffect(() => {
     if (selectedAccountId === null && accounts.length > 0) {
       const def = accounts.find(a => a.is_default) ?? accounts[0]
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedAccountId(def.id)
     }
   }, [accounts, selectedAccountId])
@@ -87,12 +120,16 @@ export function DashboardPage() {
   const incomeCents = baseEntry?.income_cents ?? 0
   const expenseCents = baseEntry?.expense_cents ?? 0
 
+  const { hidden: amountsHidden } = useHideAmounts()
   const heroDisplay = useMemo(() => formatCents(heroCents, heroCurrency), [heroCents, heroCurrency])
-  const heroFontSize =
-    heroDisplay.length > 14 ? 'text-[22px]' :
-    heroDisplay.length > 11 ? 'text-[28px]' :
-    heroDisplay.length > 8  ? 'text-[34px]' :
-    'text-[42px]'
+  // When privacy mode is on, use a fixed size so the displayed mask does not
+  // leak the magnitude of the underlying balance through font-size heuristics.
+  const heroFontSize = amountsHidden
+    ? 'text-[34px]'
+    : heroDisplay.length > 14 ? 'text-[22px]' :
+      heroDisplay.length > 11 ? 'text-[28px]' :
+      heroDisplay.length > 8  ? 'text-[34px]' :
+      'text-[42px]'
 
   if (balanceQ.isPending) return (
     <div className="flex justify-center items-center pt-24"><Spinner /></div>
@@ -159,9 +196,11 @@ export function DashboardPage() {
                   {balance!.by_currency.map((b) => (
                     <div key={b.currency_code} className="flex justify-between text-xs">
                       <span className="text-white/50 font-semibold">{b.currency_code}</span>
-                      <span className={`font-bold tabular-nums ${b.net_cents >= 0 ? 'text-white/80' : 'text-expense/80'}`}>
-                        {formatCents(b.net_cents, b.currency_code)}
-                      </span>
+                      <MoneyText
+                        cents={b.net_cents}
+                        currency={b.currency_code}
+                        className={`font-bold tabular-nums ${b.net_cents >= 0 ? 'text-white/80' : 'text-expense/80'}`}
+                      />
                     </div>
                   ))}
                 </div>
@@ -224,6 +263,9 @@ export function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Quick templates — horizontal carousel between bento and recent */}
+        <QuickTemplates />
 
         {/* Recent transactions — fade/slide when account changes */}
         <div className="px-4 pt-3 pb-2 flex flex-col">

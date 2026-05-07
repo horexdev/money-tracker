@@ -15,7 +15,8 @@
     "close": "Schließen",
     "done": "Fertig",
     "coming_soon": "Demnächst",
-    "none": "Keine"
+    "none": "Keine",
+    "show_amounts": "Beträge anzeigen"
   },
   "tabs": {
     "home": "Start",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Durchschnitt pro Tx",
     "date_from": "Von",
     "date_to": "Bis",
-    "apply": "Anwenden"
+    "apply": "Anwenden",
+    "prev_month": "Vorheriger Monat",
+    "next_month": "Nächster Monat",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Kategorien",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Wochenzusammenfassung",
     "notify_weekly_summary_desc": "Montags-Rückblick auf die Wochenausgaben",
     "notify_goal_milestones": "Zielerreichungen",
-    "notify_goal_milestones_desc": "Benachrichtigung bei 25%, 50%, 75%, 100%"
+    "notify_goal_milestones_desc": "Benachrichtigung bei 25%, 50%, 75%, 100%",
+    "display": "Anzeige",
+    "animate_numbers": "Zahlen animieren",
+    "animate_numbers_desc": "Federeffekt bei Änderung von Saldo und Summen",
+    "privacy": "Datenschutz",
+    "hide_amounts": "Beträge ausblenden",
+    "hide_amounts_desc": "Wird als •••• angezeigt; tippe einen ausgeblendeten Betrag an, um ihn anzuzeigen."
   },
   "more": {
     "title": "Mehr",
@@ -236,7 +251,7 @@
     "settings": "Einstellungen",
     "admin_panel": "Admin-Panel",
     "accounts": "Konten",
-    "transfers": "Überweisungen"
+    "templates": "Schnellvorlagen"
   },
   "admin": {
     "title": "Admin-Panel",
@@ -258,7 +273,6 @@
   },
   "accounts": "Konten",
   "accountsAll": "Alle Konten",
-  "transfers": "Überweisungen",
   "transfer_action": "Überweisen",
   "transfer_need_two_accounts": "Füge ein weiteres Konto hinzu, um eine Überweisung zu machen",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Vorlagen",
+    "no_templates": "Noch keine Vorlagen",
+    "create_first": "Erstelle deine erste Vorlage für häufige Ausgaben — ein Tipp statt fünf",
+    "create_new": "Neue Vorlage",
+    "edit_title": "Vorlage bearbeiten",
+    "from_template": "Aus Vorlage",
+    "save_as_template": "Als Vorlage speichern",
+    "amount_fixed": "Fester Betrag",
+    "amount_fixed_hint": "Tipp im Dashboard erstellt die Transaktion sofort",
+    "amount_variable_hint": "Tipp im Dashboard fragt den Betrag ab",
+    "amount_variable_hint_short": "Betrag abfragen",
+    "name": "Name",
+    "name_placeholder": "Kaffee, Mittag, Verkehr…",
+    "quick": "Schnellvorlagen",
+    "apply": "Vorlage anwenden"
   }
 }

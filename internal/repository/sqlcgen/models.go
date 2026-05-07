@@ -201,6 +201,22 @@ type Transaction struct {
 	SnapshotDate pgtype.Date            `json:"snapshot_date"`
 }
 
+type TransactionTemplate struct {
+	ID           int64                  `json:"id"`
+	UserID       int64                  `json:"user_id"`
+	Name         string                 `json:"name"`
+	Type         domain.TransactionType `json:"type"`
+	AmountCents  int64                  `json:"amount_cents"`
+	AmountFixed  bool                   `json:"amount_fixed"`
+	CategoryID   int64                  `json:"category_id"`
+	AccountID    int64                  `json:"account_id"`
+	CurrencyCode string                 `json:"currency_code"`
+	Note         string                 `json:"note"`
+	SortOrder    int32                  `json:"sort_order"`
+	CreatedAt    pgtype.Timestamptz     `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz     `json:"updated_at"`
+}
+
 type Transfer struct {
 	ID               int64              `json:"id"`
 	UserID           int64              `json:"user_id"`
@@ -229,4 +245,8 @@ type User struct {
 	NotifyRecurringReminders bool               `json:"notify_recurring_reminders"`
 	NotifyWeeklySummary      bool               `json:"notify_weekly_summary"`
 	NotifyGoalMilestones     bool               `json:"notify_goal_milestones"`
+	StatsChartStyle          string             `json:"stats_chart_style"`
+	AnimateNumbers           pgtype.Bool        `json:"animate_numbers"`
+	Theme                    string             `json:"theme"`
+	HideAmounts              bool               `json:"hide_amounts"`
 }

@@ -15,7 +15,8 @@
     "close": "Закрыць",
     "done": "Гатова",
     "coming_soon": "Хутка",
-    "none": "Няма"
+    "none": "Няма",
+    "show_amounts": "Паказаць сумы"
   },
   "tabs": {
     "home": "Галоўная",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Сярэдняе за аперацыю",
     "date_from": "Ад",
     "date_to": "Да",
-    "apply": "Ужыць"
+    "apply": "Ужыць",
+    "prev_month": "Папярэдні месяц",
+    "next_month": "Наступны месяц",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Катэгорыі",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Вынік тыдня",
     "notify_weekly_summary_desc": "Панядзелкавы агляд расходаў за тыдзень",
     "notify_goal_milestones": "Дасягненні мэт",
-    "notify_goal_milestones_desc": "Апавяшчэнне пры 25%, 50%, 75%, 100% мэты"
+    "notify_goal_milestones_desc": "Апавяшчэнне пры 25%, 50%, 75%, 100% мэты",
+    "display": "Адлюстраванне",
+    "animate_numbers": "Анімацыя лікаў",
+    "animate_numbers_desc": "Плыўная анімацыя пры змене балансу і сум",
+    "privacy": "Прыватнасць",
+    "hide_amounts": "Хаваць сумы",
+    "hide_amounts_desc": "Паказваецца як ••••; націсніце на любую прыхаваную суму, каб раскрыць."
   },
   "more": {
     "title": "Яшчэ",
@@ -236,7 +251,7 @@
     "settings": "Налады",
     "admin_panel": "Адмін панэль",
     "accounts": "Рахункі",
-    "transfers": "Пераводы"
+    "templates": "Хуткія шаблоны"
   },
   "admin": {
     "title": "Адмін панэль",
@@ -258,7 +273,6 @@
   },
   "accounts": "Рахункі",
   "accountsAll": "Усе рахункі",
-  "transfers": "Пераводы",
   "transfer_action": "Перавесці",
   "transfer_need_two_accounts": "Дадайце яшчэ адзін рахунак для пераводу",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Шаблоны",
+    "no_templates": "Шаблонаў пакуль няма",
+    "create_first": "Стварыце першы шаблон для частых аперацый — адзін тап замест пяці",
+    "create_new": "Новы шаблон",
+    "edit_title": "Рэдагаваць шаблон",
+    "from_template": "З шаблона",
+    "save_as_template": "Захаваць як шаблон",
+    "amount_fixed": "Фіксаваная сума",
+    "amount_fixed_hint": "Тап на галоўнай ствараe аперацыю імгненна",
+    "amount_variable_hint": "Тап на галоўнай запытае суму",
+    "amount_variable_hint_short": "запытаць суму",
+    "name": "Назва",
+    "name_placeholder": "Кава, абед, праезд…",
+    "quick": "Хуткія шаблоны",
+    "apply": "Прымяніць шаблон"
   }
 }

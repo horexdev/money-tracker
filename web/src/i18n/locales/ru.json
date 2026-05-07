@@ -15,7 +15,8 @@
     "close": "Закрыть",
     "done": "Готово",
     "coming_soon": "Скоро",
-    "none": "Нет"
+    "none": "Нет",
+    "show_amounts": "Показать суммы"
   },
   "tabs": {
     "home": "Главная",
@@ -99,7 +100,15 @@
     "avg_per_tx": "Средн. за тр.",
     "date_from": "С",
     "date_to": "По",
-    "apply": "Применить"
+    "apply": "Применить",
+    "prev_month": "Предыдущий месяц",
+    "next_month": "Следующий месяц",
+    "chart_style": "Тип графика",
+    "chart_donut": "Пирог",
+    "chart_stacked_bar": "Полоска",
+    "chart_dual_bar": "Две полоски",
+    "chart_profit_bars": "Прибыль",
+    "profit": "Прибыль"
   },
   "categories": {
     "title": "Категории",
@@ -231,7 +240,13 @@
     "notify_weekly_summary": "Итог недели",
     "notify_weekly_summary_desc": "Понедельничный обзор расходов за неделю",
     "notify_goal_milestones": "Достижения целей",
-    "notify_goal_milestones_desc": "Оповещение при 25%, 50%, 75%, 100% цели"
+    "notify_goal_milestones_desc": "Оповещение при 25%, 50%, 75%, 100% цели",
+    "display": "Отображение",
+    "animate_numbers": "Анимация чисел",
+    "animate_numbers_desc": "Плавная анимация при изменении баланса и сумм",
+    "privacy": "Приватность",
+    "hide_amounts": "Скрывать суммы",
+    "hide_amounts_desc": "Показывается как ••••; нажмите любую скрытую сумму, чтобы раскрыть."
   },
   "more": {
     "title": "Ещё",
@@ -242,8 +257,8 @@
     "export": "Экспорт",
     "settings": "Настройки",
     "accounts": "Счета",
-    "transfers": "Переводы",
-    "admin_panel": "Админ панель"
+    "admin_panel": "Админ панель",
+    "templates": "Быстрые шаблоны"
   },
   "admin": {
     "title": "Админ панель",
@@ -265,7 +280,6 @@
   },
   "accounts": "Счета",
   "accountsAll": "Все счета",
-  "transfers": "Переводы",
   "transfer_action": "Перевести",
   "transfer_need_two_accounts": "Добавьте ещё один счёт для перевода",
   "newAccount": "Новый счёт",
@@ -314,5 +328,22 @@
     "delta_hint_increase": "+{{amount}} будет зачислено",
     "delta_hint_decrease": "{{amount}} будет списано",
     "no_change": "Введите другую сумму для корректировки"
+  },
+  "templates": {
+    "title": "Шаблоны",
+    "no_templates": "Шаблонов пока нет",
+    "create_first": "Создайте первый шаблон для частых операций — один тап вместо пяти",
+    "create_new": "Новый шаблон",
+    "edit_title": "Редактировать шаблон",
+    "from_template": "Из шаблона",
+    "save_as_template": "Сохранить как шаблон",
+    "amount_fixed": "Фиксированная сумма",
+    "amount_fixed_hint": "Тап на главной создаёт операцию мгновенно",
+    "amount_variable_hint": "Тап на главной запросит сумму",
+    "amount_variable_hint_short": "спросить сумму",
+    "name": "Название",
+    "name_placeholder": "Кофе, обед, проезд…",
+    "quick": "Быстрые шаблоны",
+    "apply": "Применить шаблон"
   }
 }

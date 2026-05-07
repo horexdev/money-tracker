@@ -37,14 +37,15 @@ func (s *CategoryService) ListForUserByType(ctx context.Context, userID int64, c
 	return cats, nil
 }
 
-// ListSorted returns categories optionally filtered by type and sorted by name.
+// ListSorted returns categories optionally filtered by type and sorted.
 // catType filters by category type when non-empty ("expense", "income", "both").
-// order controls sort direction: "asc" (default) or "desc".
+// order controls sort: "asc"/"desc" by name, or "frequency" by transaction count
+// descending with name-asc tiebreaker.
 func (s *CategoryService) ListSorted(ctx context.Context, userID int64, catType, order string) ([]*domain.Category, error) {
 	switch order {
 	case "", "asc":
 		order = "asc"
-	case "desc":
+	case "desc", "frequency":
 		// valid
 	default:
 		return nil, fmt.Errorf("order %q: %w", order, domain.ErrInvalidSortParam)

@@ -15,7 +15,8 @@
     "close": "Yopish",
     "done": "Tayyor",
     "coming_soon": "Tez kunda",
-    "none": "Yo'q"
+    "none": "Yo'q",
+    "show_amounts": "Summalarni koʻrsatish"
   },
   "tabs": {
     "home": "Bosh sahifa",
@@ -95,7 +96,15 @@
     "avg_per_tx": "O'rtacha",
     "date_from": "Dan",
     "date_to": "Gacha",
-    "apply": "Qo'llash"
+    "apply": "Qo'llash",
+    "prev_month": "Oldingi oy",
+    "next_month": "Keyingi oy",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Kategoriyalar",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Haftalik xulosa",
     "notify_weekly_summary_desc": "Dushanba kuni haftalik xarajatlar sharhi",
     "notify_goal_milestones": "Maqsad yutuklar",
-    "notify_goal_milestones_desc": "Maqsadning 25%, 50%, 75%, 100%'ida ogohlantirish"
+    "notify_goal_milestones_desc": "Maqsadning 25%, 50%, 75%, 100%'ida ogohlantirish",
+    "display": "Koʻrsatish",
+    "animate_numbers": "Raqamlar animatsiyasi",
+    "animate_numbers_desc": "Balans va jamilar oʻzgargandagi prujina effekti",
+    "privacy": "Maxfiylik",
+    "hide_amounts": "Summalarni yashirish",
+    "hide_amounts_desc": "•••• koʻrinishida koʻrsatiladi; har qanday yashirin summani bosing."
   },
   "more": {
     "title": "Ko'proq",
@@ -236,7 +251,7 @@
     "settings": "Sozlamalar",
     "admin_panel": "Admin panel",
     "accounts": "Hisoblar",
-    "transfers": "O'tkazmalar"
+    "templates": "Tezkor shablonlar"
   },
   "admin": {
     "title": "Admin panel",
@@ -258,7 +273,6 @@
   },
   "accounts": "Hisoblar",
   "accountsAll": "Barcha hisoblar",
-  "transfers": "O'tkazmalar",
   "transfer_action": "O'tkazish",
   "transfer_need_two_accounts": "O'tkazma uchun boshqa hisob qo'shing",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Shablonlar",
+    "no_templates": "Hozircha shablonlar yo'q",
+    "create_first": "Tez-tez operatsiyalar uchun birinchi shablon yarating — besh tap o'rniga bittasi",
+    "create_new": "Yangi shablon",
+    "edit_title": "Shablonni tahrirlash",
+    "from_template": "Shablondan",
+    "save_as_template": "Shablon sifatida saqlash",
+    "amount_fixed": "Qat'iy summa",
+    "amount_fixed_hint": "Bosh sahifadagi tap operatsiyani bir zumda yaratadi",
+    "amount_variable_hint": "Bosh sahifadagi tap summani so'raydi",
+    "amount_variable_hint_short": "summa so'rash",
+    "name": "Nomi",
+    "name_placeholder": "Kofe, tushlik, yo'lkira…",
+    "quick": "Tezkor shablonlar",
+    "apply": "Shablonni qo'llash"
   }
 }

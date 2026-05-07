@@ -15,7 +15,8 @@
     "close": "Kapat",
     "done": "Tamam",
     "coming_soon": "Yakında",
-    "none": "Hiçbiri"
+    "none": "Hiçbiri",
+    "show_amounts": "Tutarları göster"
   },
   "tabs": {
     "home": "Ana Sayfa",
@@ -95,7 +96,15 @@
     "avg_per_tx": "İşlem başına ort.",
     "date_from": "Başlangıç",
     "date_to": "Bitiş",
-    "apply": "Uygula"
+    "apply": "Uygula",
+    "prev_month": "Önceki ay",
+    "next_month": "Sonraki ay",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Kategoriler",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Haftalık Özet",
     "notify_weekly_summary_desc": "Pazartesi haftalık harcama özeti",
     "notify_goal_milestones": "Hedef Dönüm Noktaları",
-    "notify_goal_milestones_desc": "%25, %50, %75, %100'de uyarı"
+    "notify_goal_milestones_desc": "%25, %50, %75, %100'de uyarı",
+    "display": "Görünüm",
+    "animate_numbers": "Sayıları canlandır",
+    "animate_numbers_desc": "Bakiye ve toplamlar değiştiğinde yay efekti",
+    "privacy": "Gizlilik",
+    "hide_amounts": "Tutarları gizle",
+    "hide_amounts_desc": "•••• olarak gösterilir; gizli bir tutara dokunarak gösterin."
   },
   "more": {
     "title": "Daha Fazla",
@@ -236,7 +251,7 @@
     "settings": "Ayarlar",
     "admin_panel": "Yönetim Paneli",
     "accounts": "Hesaplar",
-    "transfers": "Transferler"
+    "templates": "Hızlı şablonlar"
   },
   "admin": {
     "title": "Yönetim Paneli",
@@ -258,7 +273,6 @@
   },
   "accounts": "Hesaplar",
   "accountsAll": "Tüm hesaplar",
-  "transfers": "Transferler",
   "transfer_action": "Transfer Et",
   "transfer_need_two_accounts": "Transfer yapmak için başka bir hesap ekleyin",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Şablonlar",
+    "no_templates": "Henüz şablon yok",
+    "create_first": "Sık işlemler için ilk şablonunu oluştur — beş yerine bir tek dokunuş",
+    "create_new": "Yeni şablon",
+    "edit_title": "Şablonu düzenle",
+    "from_template": "Şablondan",
+    "save_as_template": "Şablon olarak kaydet",
+    "amount_fixed": "Sabit tutar",
+    "amount_fixed_hint": "Panele dokunmak işlemi anında oluşturur",
+    "amount_variable_hint": "Panele dokunmak tutarı sorar",
+    "amount_variable_hint_short": "tutar sor",
+    "name": "Ad",
+    "name_placeholder": "Kahve, öğle yemeği, ulaşım…",
+    "quick": "Hızlı şablonlar",
+    "apply": "Şablonu uygula"
   }
 }

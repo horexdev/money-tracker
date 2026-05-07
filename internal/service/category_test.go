@@ -153,6 +153,35 @@ func TestCategoryService_ListSorted_InvalidOrder(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrInvalidSortParam)
 }
 
+func TestCategoryService_ListSorted_Frequency(t *testing.T) {
+	repo := &mocks.MockCategoryStorer{}
+	svc := newCatService(repo)
+
+	cats := []*domain.Category{
+		{ID: 1, UserID: 99, Name: "Food"},
+		{ID: 2, UserID: 99, Name: "Transport"},
+	}
+	repo.On("ListSorted", mock.Anything, int64(99), "", "frequency").Return(cats, nil)
+
+	got, err := svc.ListSorted(context.Background(), 99, "", "frequency")
+	require.NoError(t, err)
+	assert.Len(t, got, 2)
+	repo.AssertExpectations(t)
+}
+
+func TestCategoryService_ListSorted_FrequencyWithType(t *testing.T) {
+	repo := &mocks.MockCategoryStorer{}
+	svc := newCatService(repo)
+
+	cats := []*domain.Category{{ID: 1, UserID: 99, Name: "Food", Type: domain.CategoryTypeExpense}}
+	repo.On("ListSorted", mock.Anything, int64(99), "expense", "frequency").Return(cats, nil)
+
+	got, err := svc.ListSorted(context.Background(), 99, "expense", "frequency")
+	require.NoError(t, err)
+	assert.Len(t, got, 1)
+	repo.AssertExpectations(t)
+}
+
 func TestCategoryService_ListSorted_InvalidType(t *testing.T) {
 	repo := &mocks.MockCategoryStorer{}
 	svc := newCatService(repo)

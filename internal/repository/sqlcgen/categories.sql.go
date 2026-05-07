@@ -214,6 +214,106 @@ func (q *Queries) ListUserCategories(ctx context.Context, userID pgtype.Int8) ([
 	return items, nil
 }
 
+const listUserCategoriesByFrequency = `-- name: ListUserCategoriesByFrequency :many
+SELECT c.id, c.user_id, c.name, c.icon, c.type, c.updated_at, c.deleted_at, c.color, c.is_protected
+FROM categories c
+LEFT JOIN (
+    SELECT category_id, COUNT(*) AS cnt
+    FROM transactions
+    WHERE transactions.user_id = $1 AND transactions.is_adjustment = false
+    GROUP BY category_id
+) t ON t.category_id = c.id
+WHERE c.user_id = $1
+  AND c.deleted_at IS NULL
+  AND c.type NOT IN ('transfer', 'adjustment')
+ORDER BY COALESCE(t.cnt, 0) DESC, c.name ASC
+`
+
+// Sorts a user's categories by transaction count (descending), name as tiebreaker.
+// The subquery aggregates without filtering by category type, so transactions
+// referencing transfer/adjustment system categories simply do not match the
+// outer JOIN and are discarded.
+func (q *Queries) ListUserCategoriesByFrequency(ctx context.Context, userID int64) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listUserCategoriesByFrequency, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Icon,
+			&i.Type,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Color,
+			&i.IsProtected,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserCategoriesByFrequencyAndType = `-- name: ListUserCategoriesByFrequencyAndType :many
+SELECT c.id, c.user_id, c.name, c.icon, c.type, c.updated_at, c.deleted_at, c.color, c.is_protected
+FROM categories c
+LEFT JOIN (
+    SELECT category_id, COUNT(*) AS cnt
+    FROM transactions
+    WHERE transactions.user_id = $1 AND transactions.is_adjustment = false
+    GROUP BY category_id
+) t ON t.category_id = c.id
+WHERE c.user_id = $1
+  AND c.deleted_at IS NULL
+  AND (c.type = $2 OR c.type = 'both')
+ORDER BY COALESCE(t.cnt, 0) DESC, c.name ASC
+`
+
+type ListUserCategoriesByFrequencyAndTypeParams struct {
+	UserID int64  `json:"user_id"`
+	Type   string `json:"type"`
+}
+
+// Same as ListUserCategoriesByFrequency, restricted to a single type plus 'both'.
+func (q *Queries) ListUserCategoriesByFrequencyAndType(ctx context.Context, arg ListUserCategoriesByFrequencyAndTypeParams) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listUserCategoriesByFrequencyAndType, arg.UserID, arg.Type)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Icon,
+			&i.Type,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Color,
+			&i.IsProtected,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserCategoriesByNameAsc = `-- name: ListUserCategoriesByNameAsc :many
 SELECT id, user_id, name, icon, type, updated_at, deleted_at, color, is_protected FROM categories
 WHERE user_id = $1 AND deleted_at IS NULL AND type NOT IN ('transfer', 'adjustment')

@@ -15,7 +15,8 @@
     "close": "닫기",
     "done": "완료",
     "coming_soon": "곧 출시",
-    "none": "없음"
+    "none": "없음",
+    "show_amounts": "금액 표시"
   },
   "tabs": {
     "home": "홈",
@@ -95,7 +96,15 @@
     "avg_per_tx": "거래당 평균",
     "date_from": "시작일",
     "date_to": "종료일",
-    "apply": "적용"
+    "apply": "적용",
+    "prev_month": "이전 달",
+    "next_month": "다음 달",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "카테고리",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "주간 요약",
     "notify_weekly_summary_desc": "월요일 주간 지출 요약",
     "notify_goal_milestones": "목표 달성",
-    "notify_goal_milestones_desc": "목표의 25%, 50%, 75%, 100% 시 알림"
+    "notify_goal_milestones_desc": "목표의 25%, 50%, 75%, 100% 시 알림",
+    "display": "표시",
+    "animate_numbers": "숫자 애니메이션",
+    "animate_numbers_desc": "잔액과 합계가 변할 때 스프링 효과",
+    "privacy": "개인정보",
+    "hide_amounts": "금액 숨기기",
+    "hide_amounts_desc": "••••로 표시됩니다. 숨겨진 금액을 눌러 표시합니다."
   },
   "more": {
     "title": "더보기",
@@ -236,7 +251,7 @@
     "settings": "설정",
     "admin_panel": "관리자 패널",
     "accounts": "계좌",
-    "transfers": "이체 내역"
+    "templates": "빠른 템플릿"
   },
   "admin": {
     "title": "관리자 패널",
@@ -258,7 +273,6 @@
   },
   "accounts": "계좌",
   "accountsAll": "모든 계좌",
-  "transfers": "이체 내역",
   "transfer_action": "이체",
   "transfer_need_two_accounts": "이체하려면 다른 계좌를 추가하세요",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "템플릿",
+    "no_templates": "아직 템플릿이 없습니다",
+    "create_first": "자주 쓰는 거래를 위한 첫 템플릿을 만들어보세요 — 다섯 번 탭 대신 한 번",
+    "create_new": "새 템플릿",
+    "edit_title": "템플릿 편집",
+    "from_template": "템플릿에서",
+    "save_as_template": "템플릿으로 저장",
+    "amount_fixed": "고정 금액",
+    "amount_fixed_hint": "대시보드에서 탭하면 거래가 즉시 생성됩니다",
+    "amount_variable_hint": "대시보드에서 탭하면 금액을 묻습니다",
+    "amount_variable_hint_short": "금액 묻기",
+    "name": "이름",
+    "name_placeholder": "커피, 점심, 교통…",
+    "quick": "빠른 템플릿",
+    "apply": "템플릿 적용"
   }
 }

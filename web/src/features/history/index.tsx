@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -8,12 +9,12 @@ import {
 } from '@phosphor-icons/react'
 import { transactionsApi } from '../../shared/api/transactions'
 import { accountsApi } from '../../shared/api/accounts'
-import { formatCents, formatDate } from '../../shared/lib/money'
+import { formatDate } from '../../shared/lib/money'
 import { CategoryIcon } from '../../shared/lib/categoryIcons'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
-import { AmountDisplay, EmptyState, EditTransactionSheet, ActionRow, AccountDropdown, BottomSheet, RangeDateModal, fmtDisplay } from '../../shared/ui'
+import { AmountDisplay, MoneyText, EmptyState, EditTransactionSheet, ActionRow, AccountDropdown, BottomSheet, RangeDateModal, fmtDisplay } from '../../shared/ui'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
 import type { Transaction, TransactionType } from '../../shared/types'
@@ -96,9 +97,11 @@ function DateGroup({
     <div>
       <div className="flex items-center justify-between px-5 mb-1.5">
         <span className="text-[11px] font-bold text-muted uppercase tracking-wider">{label}</span>
-        <span className={`text-[11px] font-bold tabular-nums ${total >= 0 ? 'text-income' : 'text-expense'}`}>
-          {total >= 0 ? '+' : '−'}{formatCents(Math.abs(total), baseCurrency)}
-        </span>
+        <MoneyText
+          cents={total}
+          currency={baseCurrency}
+          className={`text-[11px] font-bold tabular-nums ${total >= 0 ? 'text-income' : 'text-expense'}`}
+        />
       </div>
       <div className="mx-4 card-elevated divide-y divide-border">
         {transactions.map((tx) => (
@@ -162,16 +165,24 @@ export function HistoryPage() {
   const { code: baseCurrency } = useBaseCurrency()
   const tCategory = useCategoryName()
   const qc = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [editingTx, setEditingTx] = useState<Transaction | null>(null)
   const [typeFilter, setTypeFilter] = useState<'all' | TransactionType>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [accountFilter, setAccountFilter] = useState<number | null>(null)
-  const [dateFrom, setDateFrom] = useState<string | null>(null)
-  const [dateTo, setDateTo] = useState<string | null>(null)
+  // URL params seed the filter state once on mount; later edits flow back to
+  // the URL via the sync effect below so deep-linking and Back-button both work.
+  const [dateFrom, setDateFrom] = useState<string | null>(() => searchParams.get('from'))
+  const [dateTo, setDateTo] = useState<string | null>(() => searchParams.get('to'))
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
-  const [categoryFilter, setCategoryFilter] = useState<number | null>(null)
+  const [categoryFilter, setCategoryFilter] = useState<number | null>(() => {
+    const raw = searchParams.get('category_id')
+    if (!raw) return null
+    const id = Number(raw)
+    return Number.isFinite(id) && id > 0 ? id : null
+  })
   const [showDateSheet, setShowDateSheet] = useState(false)
   const [showSortSheet, setShowSortSheet] = useState(false)
   const [showCategorySheet, setShowCategorySheet] = useState(false)
@@ -193,12 +204,13 @@ export function HistoryPage() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['transactions', accountFilter, dateFrom, dateTo],
+    queryKey: ['transactions', accountFilter, dateFrom, dateTo, categoryFilter],
     queryFn: ({ pageParam }) =>
       transactionsApi.list(pageParam, PAGE_SIZE, {
         accountId: accountFilter,
         from: dateFrom,
         to: dateTo,
+        categoryId: categoryFilter,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
@@ -210,7 +222,18 @@ export function HistoryPage() {
   // Scroll to top when backend filters change
   useEffect(() => {
     listRef.current?.scrollTo(0, 0)
-  }, [accountFilter, dateFrom, dateTo])
+  }, [accountFilter, dateFrom, dateTo, categoryFilter])
+
+  // Mirror the deep-linkable filters back into the URL so refresh and Back work.
+  useEffect(() => {
+    const next = new URLSearchParams()
+    if (categoryFilter !== null) next.set('category_id', String(categoryFilter))
+    if (dateFrom) next.set('from', dateFrom)
+    if (dateTo) next.set('to', dateTo)
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true })
+    }
+  }, [categoryFilter, dateFrom, dateTo, searchParams, setSearchParams])
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -237,6 +260,7 @@ export function HistoryPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['balance'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
     },
   })
 
@@ -264,14 +288,12 @@ export function HistoryPage() {
     return [...seen.values()]
   }, [allItems])
 
-  // Client-side filtering
+  // Client-side filtering. Category is filtered server-side via the
+  // categoryId query param, so it is intentionally absent from this pipeline.
   const filtered = useMemo(() => {
     let result = allItems
     if (typeFilter !== 'all') {
       result = result.filter(tx => tx.type === typeFilter)
-    }
-    if (categoryFilter !== null) {
-      result = result.filter(tx => tx.category_id === categoryFilter)
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
@@ -291,7 +313,7 @@ export function HistoryPage() {
       }
     })
     return result
-  }, [allItems, typeFilter, categoryFilter, searchQuery, sortOrder])
+  }, [allItems, typeFilter, searchQuery, sortOrder])
 
   const grouped = useMemo(() => groupByDate(filtered, t, i18n.language), [filtered, t, i18n.language])
 

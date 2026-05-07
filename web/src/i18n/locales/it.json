@@ -15,7 +15,8 @@
     "close": "Chiudi",
     "done": "Fatto",
     "coming_soon": "Prossimamente",
-    "none": "Nessuno"
+    "none": "Nessuno",
+    "show_amounts": "Mostra importi"
   },
   "tabs": {
     "home": "Home",
@@ -95,7 +96,15 @@
     "avg_per_tx": "Media per tx",
     "date_from": "Da",
     "date_to": "A",
-    "apply": "Applica"
+    "apply": "Applica",
+    "prev_month": "Mese precedente",
+    "next_month": "Mese successivo",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Categorie",
@@ -224,7 +233,13 @@
     "notify_weekly_summary": "Riepilogo settimanale",
     "notify_weekly_summary_desc": "Riepilogo del lunedì sulle spese settimanali",
     "notify_goal_milestones": "Traguardi degli obiettivi",
-    "notify_goal_milestones_desc": "Avviso al 25%, 50%, 75%, 100% di un obiettivo"
+    "notify_goal_milestones_desc": "Avviso al 25%, 50%, 75%, 100% di un obiettivo",
+    "display": "Visualizzazione",
+    "animate_numbers": "Anima i numeri",
+    "animate_numbers_desc": "Effetto molla quando saldo e totali cambiano",
+    "privacy": "Privacy",
+    "hide_amounts": "Nascondi importi",
+    "hide_amounts_desc": "Mostrato come ••••; tocca un importo nascosto per rivelarlo."
   },
   "more": {
     "title": "Altro",
@@ -236,7 +251,7 @@
     "settings": "Impostazioni",
     "admin_panel": "Pannello Admin",
     "accounts": "Conti",
-    "transfers": "Trasferimenti"
+    "templates": "Modelli rapidi"
   },
   "admin": {
     "title": "Pannello Admin",
@@ -258,7 +273,6 @@
   },
   "accounts": "Conti",
   "accountsAll": "Tutti i conti",
-  "transfers": "Trasferimenti",
   "transfer_action": "Trasferisci",
   "transfer_need_two_accounts": "Aggiungi un altro conto per effettuare un trasferimento",
   "errors": {
@@ -307,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Modelli",
+    "no_templates": "Nessun modello ancora",
+    "create_first": "Crea il primo modello per spese frequenti — un tap invece di cinque",
+    "create_new": "Nuovo modello",
+    "edit_title": "Modifica modello",
+    "from_template": "Da modello",
+    "save_as_template": "Salva come modello",
+    "amount_fixed": "Importo fisso",
+    "amount_fixed_hint": "Toccare sulla dashboard crea la transazione all'istante",
+    "amount_variable_hint": "Toccare sulla dashboard chiede l'importo",
+    "amount_variable_hint_short": "chiedi importo",
+    "name": "Nome",
+    "name_placeholder": "Caffè, pranzo, trasporto…",
+    "quick": "Modelli rapidi",
+    "apply": "Applica modello"
   }
 }

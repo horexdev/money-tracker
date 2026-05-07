@@ -5,12 +5,12 @@ import { AnimatePresence } from 'framer-motion'
 import { CalendarBlank, Check, CaretDown } from '@phosphor-icons/react'
 import { transactionsApi } from '../api/transactions'
 import { categoriesApi } from '../api/categories'
-import { parseCents, sanitizeAmount } from '../lib/money'
+import { parseCents } from '../lib/money'
 import { CategoryIcon } from '../lib/categoryIcons'
-import { CurrencyBadge } from '../lib/currencyIcons'
 import { useCategoryName } from '../hooks/useCategoryName'
 import { useBaseCurrency } from '../hooks/useBaseCurrency'
 import { useHaptic } from '../hooks/useHaptic'
+import { AmountInput } from './AmountInput'
 import { BottomSheet } from './BottomSheet'
 import { SingleDateModal, fmtDisplay } from './DatePicker'
 import type { Transaction } from '../types'
@@ -35,7 +35,7 @@ export function EditTransactionSheet({
   const [txDate, setTxDate] = useState(tx.created_at.split('T')[0])
   const [showDatePicker, setShowDatePicker] = useState(false)
 
-  const catsQ = useQuery({ queryKey: ['categories'], queryFn: () => categoriesApi.list() })
+  const catsQ = useQuery({ queryKey: ['categories', { order: 'frequency' }], queryFn: () => categoriesApi.list(undefined, 'frequency') })
   const categories = catsQ.data?.categories ?? []
   const filtered = categories.filter(c => c.type === tx.type || c.type === 'both')
 
@@ -59,6 +59,7 @@ export function EditTransactionSheet({
       qc.invalidateQueries({ queryKey: ['balance'] })
       qc.invalidateQueries({ queryKey: ['accounts'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
       notification('success')
       onClose()
     },
@@ -80,16 +81,7 @@ export function EditTransactionSheet({
           <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">
             {t('transactions.amount')}
           </label>
-          <div className="flex items-baseline gap-1.5 bg-bg rounded-2xl px-4 py-3 focus-within:shadow-(--shadow-focus) transition-shadow">
-            <CurrencyBadge currency={txCurrency} className="text-muted/40" />
-            <input
-              inputMode="decimal"
-              placeholder="0.00"
-              value={amount}
-              onChange={e => setAmount(sanitizeAmount(e.target.value))}
-              className="flex-1 bg-transparent text-3xl font-bold outline-none text-text placeholder:text-muted/30 tabular-nums min-w-0"
-            />
-          </div>
+          <AmountInput value={amount} onChange={setAmount} currency={txCurrency} />
         </div>
 
         {/* Date */}
