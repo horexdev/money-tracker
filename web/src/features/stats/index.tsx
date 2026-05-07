@@ -17,7 +17,7 @@ import { AccountDropdown } from '../../shared/ui/AccountDropdown'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
 import { useChartStyle } from '../../shared/hooks/useChartStyle'
-import type { TransactionType, CategoryStat } from '../../shared/types'
+import { STATS_CHART_STYLES, type StatsChartStyle, type TransactionType, type CategoryStat } from '../../shared/types'
 
 type Period = 'month' | 'week' | 'today' | 'lastmonth'
 
@@ -426,7 +426,7 @@ export function StatsPage() {
   const [monthOffset, setMonthOffset] = useState(0)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
-  const [chartStyle] = useChartStyle()
+  const [chartStyle, setChartStyle] = useChartStyle()
   const showTypeToggle = chartStyle === 'donut' || chartStyle === 'stacked_bar'
   const showAggregateBar = chartStyle === 'dual_bar' || chartStyle === 'profit_bars'
 
@@ -613,8 +613,40 @@ export function StatsPage() {
           </div>
         </div>
 
+        {/* Chart style switcher */}
+        <div className="shrink-0 px-4 pt-3 pb-1" data-testid="chart-style-switcher">
+          <div className="flex flex-wrap gap-1.5">
+            {STATS_CHART_STYLES.map((s) => {
+              const labelKey: Record<StatsChartStyle, string> = {
+                donut: 'stats.chart_donut',
+                stacked_bar: 'stats.chart_stacked_bar',
+                dual_bar: 'stats.chart_dual_bar',
+                profit_bars: 'stats.chart_profit_bars',
+              }
+              const isActive = chartStyle === s
+              return (
+                <button
+                  key={s}
+                  onClick={() => setChartStyle(s)}
+                  data-testid={`chart-style-${s}`}
+                  aria-pressed={isActive}
+                  className={`
+                    shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all duration-200 select-none
+                    ${isActive
+                      ? 'bg-text/10 text-text shadow-sm'
+                      : 'bg-surface text-muted active:bg-text/5'
+                    }
+                  `}
+                >
+                  {t(labelKey[s])}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Period pills */}
-        <div className="shrink-0 px-4 pt-3 pb-2">
+        <div className="shrink-0 px-4 pt-2 pb-2">
           {/* -my-1.5 / py-1.5 give the shadow vertical room without adding visible whitespace */}
           <div className="flex flex-wrap gap-2">
             {periodOptions.map((opt) => {
