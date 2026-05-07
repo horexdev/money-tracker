@@ -51,6 +51,8 @@ vi.mock('../shared/api/settings', () => ({
       notify_recurring_reminders: true,
       notify_weekly_summary: false,
       notify_goal_milestones: true,
+      stats_chart_style: 'donut',
+      animate_numbers: null,
     }),
     update: vi.fn(),
     resetData: vi.fn(),

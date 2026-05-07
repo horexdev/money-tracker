@@ -121,6 +121,8 @@ export const mockSettings: UserSettings = {
   notify_recurring_reminders: false,
   notify_weekly_summary: false,
   notify_goal_milestones: false,
+  stats_chart_style: 'donut',
+  animate_numbers: null,
 }
 
 export const mockAccounts: { accounts: Account[] } = {
