@@ -62,15 +62,20 @@ func TestExchangeSnapshotRepository_GetRateOrLatest_FallsBackToPriorDate(t *test
 }
 
 func TestExchangeSnapshotRepository_ListDistinctBaseCurrencies(t *testing.T) {
-	repo := newSnapshotRepoFixtures(t)
-	ctx := context.Background()
-	date := time.Now().UTC().Truncate(24 * time.Hour)
+	// ListDistinctBaseCurrencies returns distinct currencies from the accounts
+	// table (used by the daily cron to know which bases to fetch rates for),
+	// not from exchange_rate_snapshots — seed accounts to verify.
+	pool := testutil.OpenTestPool(t)
+	testutil.CleanupTables(t, pool)
+	t.Cleanup(func() { testutil.CleanupTables(t, pool) })
+	repo := repository.NewExchangeSnapshotRepository(pool)
 
-	require.NoError(t, repo.Upsert(ctx, date, "USD", "EUR", 0.92))
-	require.NoError(t, repo.Upsert(ctx, date, "EUR", "USD", 1.08))
-	require.NoError(t, repo.Upsert(ctx, date, "USD", "GBP", 0.79))
+	userID := testutil.SeedUser(t, pool, 7777001)
+	testutil.SeedAccount(t, pool, userID, "USD")
+	testutil.SeedAccount(t, pool, userID, "EUR")
+	testutil.SeedAccount(t, pool, userID, "USD") // duplicate currency, should be deduped
 
-	bases, err := repo.ListDistinctBaseCurrencies(ctx)
+	bases, err := repo.ListDistinctBaseCurrencies(context.Background())
 	require.NoError(t, err)
 	assert.Contains(t, bases, "USD")
 	assert.Contains(t, bases, "EUR")
