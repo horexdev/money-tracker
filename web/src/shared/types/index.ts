@@ -127,6 +127,50 @@ export interface RecurringListResponse {
   recurring: RecurringTransaction[]
 }
 
+// Transaction templates
+export interface TransactionTemplate {
+  id: number
+  name: string
+  type: TransactionType
+  amount_cents: number
+  amount_fixed: boolean
+  currency_code: string
+  category_id: number
+  category_name: string
+  category_icon: string
+  category_color: string
+  account_id: number
+  note: string
+  sort_order: number
+  created_at: string
+}
+
+export interface TemplatesListResponse {
+  templates: TransactionTemplate[]
+}
+
+export interface CreateTemplatePayload {
+  name?: string
+  type: TransactionType
+  amount_cents: number
+  amount_fixed: boolean
+  currency_code?: string
+  category_id: number
+  account_id: number
+  note?: string
+}
+
+export interface UpdateTemplatePayload {
+  name?: string
+  type?: TransactionType
+  amount_cents?: number
+  amount_fixed?: boolean
+  currency_code?: string
+  category_id?: number
+  account_id?: number
+  note?: string
+}
+
 // Savings goals
 export interface SavingsGoal {
   id: number
