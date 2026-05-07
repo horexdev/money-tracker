@@ -229,4 +229,6 @@ type User struct {
 	NotifyRecurringReminders bool               `json:"notify_recurring_reminders"`
 	NotifyWeeklySummary      bool               `json:"notify_weekly_summary"`
 	NotifyGoalMilestones     bool               `json:"notify_goal_milestones"`
+	StatsChartStyle          string             `json:"stats_chart_style"`
+	AnimateNumbers           pgtype.Bool        `json:"animate_numbers"`
 }

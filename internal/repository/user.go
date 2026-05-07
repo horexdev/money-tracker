@@ -90,6 +90,25 @@ func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, id i
 	return rowToUser(row), nil
 }
 
+// UpdateUIPreferences persists the user's UI preferences (stats chart style and
+// number-animation toggle). animateNumbers nil means "no explicit choice" — the
+// client falls back to OS prefers-reduced-motion.
+func (r *UserRepository) UpdateUIPreferences(ctx context.Context, id int64, style string, animateNumbers *bool) (*domain.User, error) {
+	an := pgtype.Bool{}
+	if animateNumbers != nil {
+		an = pgtype.Bool{Bool: *animateNumbers, Valid: true}
+	}
+	row, err := r.q.UpdateUIPreferences(ctx, sqlcgen.UpdateUIPreferencesParams{
+		ID:              id,
+		StatsChartStyle: style,
+		AnimateNumbers:  an,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return rowToUser(row), nil
+}
+
 // ResetData deletes all user-owned data atomically. Deletion order respects FK constraints:
 // transfers → transactions → budgets → recurring → savings_goals → categories → accounts.
 func (r *UserRepository) ResetData(ctx context.Context, userID int64) error {
@@ -137,6 +156,11 @@ func rowToUser(row sqlcgen.User) *domain.User {
 	if row.DisplayCurrencies != "" {
 		dc = strings.Split(row.DisplayCurrencies, ",")
 	}
+	var animate *bool
+	if row.AnimateNumbers.Valid {
+		v := row.AnimateNumbers.Bool
+		animate = &v
+	}
 	return &domain.User{
 		ID:                       row.ID,
 		Username:                 row.Username,
@@ -150,5 +174,7 @@ func rowToUser(row sqlcgen.User) *domain.User {
 		NotifyRecurringReminders: row.NotifyRecurringReminders,
 		NotifyWeeklySummary:      row.NotifyWeeklySummary,
 		NotifyGoalMilestones:     row.NotifyGoalMilestones,
+		StatsChartStyle:          row.StatsChartStyle,
+		AnimateNumbers:           animate,
 	}
 }
