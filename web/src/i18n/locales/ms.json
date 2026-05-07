@@ -240,7 +240,8 @@
     "export": "Eksport",
     "settings": "Tetapan",
     "admin_panel": "Panel Admin",
-    "accounts": "Akaun"
+    "accounts": "Akaun",
+    "templates": "Templat pantas"
   },
   "admin": {
     "title": "Panel Admin",
@@ -310,5 +311,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Templat",
+    "no_templates": "Belum ada templat",
+    "create_first": "Cipta templat pertama untuk perbelanjaan kerap — satu ketukan ganti lima",
+    "create_new": "Templat baharu",
+    "edit_title": "Edit templat",
+    "from_template": "Dari templat",
+    "save_as_template": "Simpan sebagai templat",
+    "amount_fixed": "Jumlah tetap",
+    "amount_fixed_hint": "Ketuk di papan pemuka mencipta transaksi segera",
+    "amount_variable_hint": "Ketuk di papan pemuka meminta jumlah",
+    "amount_variable_hint_short": "minta jumlah",
+    "name": "Nama",
+    "name_placeholder": "Kopi, makan tengah hari, pengangkutan…",
+    "quick": "Templat pantas",
+    "apply": "Guna templat"
   }
 }

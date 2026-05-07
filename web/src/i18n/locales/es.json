@@ -240,7 +240,8 @@
     "export": "Exportar",
     "settings": "Ajustes",
     "admin_panel": "Panel de Admin",
-    "accounts": "Cuentas"
+    "accounts": "Cuentas",
+    "templates": "Plantillas rápidas"
   },
   "admin": {
     "title": "Panel de Admin",
@@ -310,5 +311,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Plantillas",
+    "no_templates": "Aún no hay plantillas",
+    "create_first": "Crea tu primera plantilla para gastos frecuentes — un toque en lugar de cinco",
+    "create_new": "Nueva plantilla",
+    "edit_title": "Editar plantilla",
+    "from_template": "Desde plantilla",
+    "save_as_template": "Guardar como plantilla",
+    "amount_fixed": "Monto fijo",
+    "amount_fixed_hint": "Tocar en el panel crea la transacción al instante",
+    "amount_variable_hint": "Tocar en el panel pregunta el monto",
+    "amount_variable_hint_short": "pedir monto",
+    "name": "Nombre",
+    "name_placeholder": "Café, almuerzo, transporte…",
+    "quick": "Plantillas rápidas",
+    "apply": "Aplicar plantilla"
   }
 }

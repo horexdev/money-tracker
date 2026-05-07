@@ -240,7 +240,8 @@
     "export": "Dışa Aktar",
     "settings": "Ayarlar",
     "admin_panel": "Yönetim Paneli",
-    "accounts": "Hesaplar"
+    "accounts": "Hesaplar",
+    "templates": "Hızlı şablonlar"
   },
   "admin": {
     "title": "Yönetim Paneli",
@@ -310,5 +311,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Şablonlar",
+    "no_templates": "Henüz şablon yok",
+    "create_first": "Sık işlemler için ilk şablonunu oluştur — beş yerine bir tek dokunuş",
+    "create_new": "Yeni şablon",
+    "edit_title": "Şablonu düzenle",
+    "from_template": "Şablondan",
+    "save_as_template": "Şablon olarak kaydet",
+    "amount_fixed": "Sabit tutar",
+    "amount_fixed_hint": "Panele dokunmak işlemi anında oluşturur",
+    "amount_variable_hint": "Panele dokunmak tutarı sorar",
+    "amount_variable_hint_short": "tutar sor",
+    "name": "Ad",
+    "name_placeholder": "Kahve, öğle yemeği, ulaşım…",
+    "quick": "Hızlı şablonlar",
+    "apply": "Şablonu uygula"
   }
 }
