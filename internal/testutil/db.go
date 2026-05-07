@@ -46,6 +46,7 @@ func CleanupTables(t *testing.T, pool *pgxpool.Pool) {
 		`DELETE FROM budgets`,
 		`DELETE FROM recurring_transactions`,
 		`DELETE FROM transfers`,
+		`DELETE FROM transaction_templates`,
 		`DELETE FROM transactions`,
 		`DELETE FROM accounts`,
 		`DELETE FROM exchange_rate_snapshots`,
