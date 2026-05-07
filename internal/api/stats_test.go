@@ -107,6 +107,29 @@ func TestStatsHandler_GET_RoutesToAccountVariantWhenAccountIDProvided(t *testing
 		mock.AnythingOfType("time.Time"), mock.AnythingOfType("time.Time"))
 }
 
+func TestStatsHandler_GET_PayloadIncludesCategoryID(t *testing.T) {
+	txRepo := &mocks.MockTransactionStorer{}
+	txRepo.On("StatsByCategory", mock.Anything, int64(1), mock.AnythingOfType("time.Time"), mock.AnythingOfType("time.Time")).
+		Return([]domain.CategoryStat{
+			{CategoryID: 42, CategoryName: "Food", Type: domain.TransactionTypeExpense, TotalCents: 1500, TxCount: 3, CurrencyCode: "USD"},
+		}, nil)
+
+	h := buildStatsHandler(txRepo)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/stats", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusOK, w.Code)
+
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	items := resp["items"].([]any)
+	require.Len(t, items, 1)
+	first := items[0].(map[string]any)
+	assert.Equal(t, float64(42), first["category_id"])
+}
+
 func TestStatsHandler_NonGET_Returns405(t *testing.T) {
 	h := buildStatsHandler(&mocks.MockTransactionStorer{})
 	w := httptest.NewRecorder()

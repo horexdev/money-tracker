@@ -231,6 +231,34 @@ func (s *TransactionService) ListPagedByAccountWithDateRange(ctx context.Context
 	return txs, totalPages, nil
 }
 
+// ListPagedByCategoryWithDateRange returns a page of transactions for a category filtered by an optional date range.
+func (s *TransactionService) ListPagedByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error) {
+	total, err := s.txRepo.CountByCategoryWithDateRange(ctx, userID, categoryID, from, to)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count transactions with date range for category %d: %w", categoryID, err)
+	}
+	totalPages, offset := calcPage(total, page, pageSize)
+	txs, err := s.txRepo.ListByCategoryWithDateRange(ctx, userID, categoryID, from, to, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list transactions with date range for category %d: %w", categoryID, err)
+	}
+	return txs, totalPages, nil
+}
+
+// ListPagedByAccountAndCategoryWithDateRange returns a page of transactions for a specific account+category filtered by an optional date range.
+func (s *TransactionService) ListPagedByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error) {
+	total, err := s.txRepo.CountByAccountAndCategoryWithDateRange(ctx, userID, accountID, categoryID, from, to)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count transactions with date range for account %d category %d: %w", accountID, categoryID, err)
+	}
+	totalPages, offset := calcPage(total, page, pageSize)
+	txs, err := s.txRepo.ListByAccountAndCategoryWithDateRange(ctx, userID, accountID, categoryID, from, to, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list transactions with date range for account %d category %d: %w", accountID, categoryID, err)
+	}
+	return txs, totalPages, nil
+}
+
 // calcPage computes totalPages and the query offset from a total record count.
 // Returns (totalPages, offset).
 func calcPage(total int64, page, pageSize int) (totalPages, offset int) {

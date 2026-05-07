@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/horexdev/money-tracker/internal/api"
 	"github.com/horexdev/money-tracker/internal/domain"
@@ -218,6 +219,85 @@ func TestTransactionHandler_GET_InvalidDateParam(t *testing.T) {
 	h := buildTxHandler(&mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{}, &mocks.MockAccountStorer{})
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/api/v1/transactions?from=not-a-date", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestTransactionHandler_GET_CategoryFilter_Routes(t *testing.T) {
+	txRepo := &mocks.MockTransactionStorer{}
+	txRepo.On("CountByCategoryWithDateRange", mock.Anything, int64(1), int64(7),
+		mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time")).Return(int64(1), nil)
+	txRepo.On("ListByCategoryWithDateRange", mock.Anything, int64(1), int64(7),
+		mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time"), 20, 0).
+		Return([]*domain.Transaction{
+			{ID: 11, AmountCents: 1200, Type: domain.TransactionTypeExpense, CategoryID: 7, AccountID: 1},
+		}, nil)
+
+	h := buildTxHandler(txRepo, &mocks.MockCategoryStorer{}, &mocks.MockAccountStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/transactions?category_id=7", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp map[string]any
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&resp))
+	txs := resp["transactions"].([]any)
+	assert.Len(t, txs, 1)
+	txRepo.AssertExpectations(t)
+}
+
+func TestTransactionHandler_GET_CategoryAndDateRange(t *testing.T) {
+	txRepo := &mocks.MockTransactionStorer{}
+	txRepo.On("CountByCategoryWithDateRange", mock.Anything, int64(1), int64(9),
+		mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time")).Return(int64(0), nil).
+		Run(func(args mock.Arguments) {
+			from := args.Get(3).(*time.Time)
+			to := args.Get(4).(*time.Time)
+			require.NotNil(t, from)
+			require.NotNil(t, to)
+			require.Equal(t, "2026-04-01", from.Format("2006-01-02"))
+			require.Equal(t, "2026-04-30", to.Format("2006-01-02"))
+		})
+	txRepo.On("ListByCategoryWithDateRange", mock.Anything, int64(1), int64(9),
+		mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time"), 20, 0).
+		Return([]*domain.Transaction{}, nil)
+
+	h := buildTxHandler(txRepo, &mocks.MockCategoryStorer{}, &mocks.MockAccountStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/transactions?category_id=9&from=2026-04-01&to=2026-04-30", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
+	txRepo.AssertExpectations(t)
+}
+
+func TestTransactionHandler_GET_CategoryAndAccount(t *testing.T) {
+	txRepo := &mocks.MockTransactionStorer{}
+	txRepo.On("CountByAccountAndCategoryWithDateRange", mock.Anything, int64(1), int64(3), int64(7),
+		mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time")).Return(int64(0), nil)
+	txRepo.On("ListByAccountAndCategoryWithDateRange", mock.Anything, int64(1), int64(3), int64(7),
+		mock.AnythingOfType("*time.Time"), mock.AnythingOfType("*time.Time"), 20, 0).
+		Return([]*domain.Transaction{}, nil)
+
+	h := buildTxHandler(txRepo, &mocks.MockCategoryStorer{}, &mocks.MockAccountStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/transactions?category_id=7&account_id=3", nil)
+	r = r.WithContext(api.WithUserID(r.Context(), 1))
+
+	h.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
+	txRepo.AssertExpectations(t)
+}
+
+func TestTransactionHandler_GET_InvalidCategoryParam(t *testing.T) {
+	h := buildTxHandler(&mocks.MockTransactionStorer{}, &mocks.MockCategoryStorer{}, &mocks.MockAccountStorer{})
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/v1/transactions?category_id=abc", nil)
 	r = r.WithContext(api.WithUserID(r.Context(), 1))
 
 	h.ServeHTTP(w, r)

@@ -138,6 +138,109 @@ func TestTransactionRepository_GetBalance_SumsByType(t *testing.T) {
 	assert.Equal(t, int64(500), expense)
 }
 
+func TestTransactionRepository_ListByCategoryWithDateRange_FiltersByCategory(t *testing.T) {
+	repo, userID, accountID, foodCat := newTransactionFixtures(t)
+	pool := testutil.OpenTestPool(t)
+	otherCat := testutil.SeedCategory(t, pool, userID, "Travel", "expense")
+
+	ctx := context.Background()
+	_, err := repo.Create(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 100,
+		CategoryID: foodCat, AccountID: accountID, CurrencyCode: "USD",
+	})
+	require.NoError(t, err)
+	_, err = repo.Create(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 200,
+		CategoryID: foodCat, AccountID: accountID, CurrencyCode: "USD",
+	})
+	require.NoError(t, err)
+	_, err = repo.Create(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 999,
+		CategoryID: otherCat, AccountID: accountID, CurrencyCode: "USD",
+	})
+	require.NoError(t, err)
+
+	list, err := repo.ListByCategoryWithDateRange(ctx, userID, foodCat, nil, nil, 10, 0)
+	require.NoError(t, err)
+	assert.Len(t, list, 2)
+	for _, tx := range list {
+		assert.Equal(t, foodCat, tx.CategoryID)
+	}
+
+	count, err := repo.CountByCategoryWithDateRange(ctx, userID, foodCat, nil, nil)
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), count)
+}
+
+func TestTransactionRepository_ListByCategoryWithDateRange_RespectsDateRange(t *testing.T) {
+	repo, userID, accountID, categoryID := newTransactionFixtures(t)
+	ctx := context.Background()
+
+	older := time.Date(2026, 1, 15, 10, 0, 0, 0, time.UTC)
+	newer := time.Date(2026, 4, 15, 10, 0, 0, 0, time.UTC)
+
+	_, err := repo.CreateWithDate(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 100,
+		CategoryID: categoryID, AccountID: accountID, CurrencyCode: "USD",
+		CreatedAt: older, SnapshotDate: older.Truncate(24 * time.Hour),
+	})
+	require.NoError(t, err)
+	_, err = repo.CreateWithDate(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 200,
+		CategoryID: categoryID, AccountID: accountID, CurrencyCode: "USD",
+		CreatedAt: newer, SnapshotDate: newer.Truncate(24 * time.Hour),
+	})
+	require.NoError(t, err)
+
+	from := time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 4, 30, 23, 59, 59, 0, time.UTC)
+	list, err := repo.ListByCategoryWithDateRange(ctx, userID, categoryID, &from, &to, 10, 0)
+	require.NoError(t, err)
+	assert.Len(t, list, 1)
+	assert.Equal(t, int64(200), list[0].AmountCents)
+}
+
+func TestTransactionRepository_ListByAccountAndCategoryWithDateRange_FiltersByBoth(t *testing.T) {
+	repo, userID, account1, categoryID := newTransactionFixtures(t)
+	pool := testutil.OpenTestPool(t)
+	account2 := testutil.SeedAccount(t, pool, userID, "USD")
+
+	ctx := context.Background()
+	_, err := repo.Create(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 100,
+		CategoryID: categoryID, AccountID: account1, CurrencyCode: "USD",
+	})
+	require.NoError(t, err)
+	_, err = repo.Create(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 200,
+		CategoryID: categoryID, AccountID: account2, CurrencyCode: "USD",
+	})
+	require.NoError(t, err)
+
+	list, err := repo.ListByAccountAndCategoryWithDateRange(ctx, userID, account1, categoryID, nil, nil, 10, 0)
+	require.NoError(t, err)
+	assert.Len(t, list, 1)
+	assert.Equal(t, account1, list[0].AccountID)
+	assert.Equal(t, int64(100), list[0].AmountCents)
+}
+
+func TestTransactionRepository_StatsByCategory_IncludesCategoryID(t *testing.T) {
+	repo, userID, accountID, categoryID := newTransactionFixtures(t)
+	ctx := context.Background()
+
+	_, err := repo.Create(ctx, &domain.Transaction{
+		UserID: userID, Type: domain.TransactionTypeExpense, AmountCents: 1500,
+		CategoryID: categoryID, AccountID: accountID, CurrencyCode: "USD",
+	})
+	require.NoError(t, err)
+
+	stats, err := repo.StatsByCategory(ctx, userID, time.Now().Add(-24*time.Hour), time.Now().Add(24*time.Hour))
+	require.NoError(t, err)
+	require.Len(t, stats, 1)
+	assert.Equal(t, categoryID, stats[0].CategoryID)
+	assert.Equal(t, "Food", stats[0].CategoryName)
+}
+
 func TestTransactionRepository_Update_ChangesMutableFields(t *testing.T) {
 	repo, userID, accountID, categoryID := newTransactionFixtures(t)
 	ctx := context.Background()
