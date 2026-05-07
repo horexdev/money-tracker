@@ -75,6 +75,23 @@ type BudgetStorer interface {
 	ListDistinctUserIDs(ctx context.Context) ([]int64, error)
 }
 
+// TransactionTemplateStorer is the repository interface for transaction template operations.
+type TransactionTemplateStorer interface {
+	Create(ctx context.Context, t *domain.TransactionTemplate) (*domain.TransactionTemplate, error)
+	GetByID(ctx context.Context, id, userID int64) (*domain.TransactionTemplate, error)
+	ListByUser(ctx context.Context, userID int64) ([]*domain.TransactionTemplate, error)
+	Update(ctx context.Context, t *domain.TransactionTemplate) (*domain.TransactionTemplate, error)
+	Delete(ctx context.Context, id, userID int64) error
+	Reorder(ctx context.Context, userID int64, orderedIDs []int64) error
+}
+
+// TransactionAdder is the narrow interface used by TransactionTemplateService to
+// create a transaction from a template. *TransactionService satisfies it.
+type TransactionAdder interface {
+	AddExpense(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error)
+	AddIncome(ctx context.Context, userID, amountCents, categoryID int64, note, currencyCode string, accountID int64, createdAt *time.Time) (*domain.Transaction, error)
+}
+
 // RecurringStorer is the repository interface for recurring transaction operations.
 type RecurringStorer interface {
 	Create(ctx context.Context, rt *domain.RecurringTransaction) (*domain.RecurringTransaction, error)

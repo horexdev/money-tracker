@@ -240,7 +240,8 @@
     "export": "Exporter",
     "settings": "Paramètres",
     "admin_panel": "Panneau Admin",
-    "accounts": "Comptes"
+    "accounts": "Comptes",
+    "templates": "Modèles rapides"
   },
   "admin": {
     "title": "Panneau Admin",
@@ -310,5 +311,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Modèles",
+    "no_templates": "Pas encore de modèles",
+    "create_first": "Créez votre premier modèle pour les dépenses fréquentes — un tap au lieu de cinq",
+    "create_new": "Nouveau modèle",
+    "edit_title": "Modifier le modèle",
+    "from_template": "Depuis un modèle",
+    "save_as_template": "Enregistrer comme modèle",
+    "amount_fixed": "Montant fixe",
+    "amount_fixed_hint": "Toucher sur le tableau de bord crée la transaction instantanément",
+    "amount_variable_hint": "Toucher sur le tableau de bord demande le montant",
+    "amount_variable_hint_short": "demander montant",
+    "name": "Nom",
+    "name_placeholder": "Café, déjeuner, transport…",
+    "quick": "Modèles rapides",
+    "apply": "Appliquer le modèle"
   }
 }

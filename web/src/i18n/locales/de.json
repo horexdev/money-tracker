@@ -240,7 +240,8 @@
     "export": "Exportieren",
     "settings": "Einstellungen",
     "admin_panel": "Admin-Panel",
-    "accounts": "Konten"
+    "accounts": "Konten",
+    "templates": "Schnellvorlagen"
   },
   "admin": {
     "title": "Admin-Panel",
@@ -310,5 +311,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Vorlagen",
+    "no_templates": "Noch keine Vorlagen",
+    "create_first": "Erstelle deine erste Vorlage für häufige Ausgaben — ein Tipp statt fünf",
+    "create_new": "Neue Vorlage",
+    "edit_title": "Vorlage bearbeiten",
+    "from_template": "Aus Vorlage",
+    "save_as_template": "Als Vorlage speichern",
+    "amount_fixed": "Fester Betrag",
+    "amount_fixed_hint": "Tipp im Dashboard erstellt die Transaktion sofort",
+    "amount_variable_hint": "Tipp im Dashboard fragt den Betrag ab",
+    "amount_variable_hint_short": "Betrag abfragen",
+    "name": "Name",
+    "name_placeholder": "Kaffee, Mittag, Verkehr…",
+    "quick": "Schnellvorlagen",
+    "apply": "Vorlage anwenden"
   }
 }

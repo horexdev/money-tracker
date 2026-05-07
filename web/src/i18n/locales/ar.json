@@ -240,7 +240,8 @@
     "export": "تصدير",
     "settings": "الإعدادات",
     "admin_panel": "لوحة الإدارة",
-    "accounts": "الحسابات"
+    "accounts": "الحسابات",
+    "templates": "قوالب سريعة"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -310,5 +311,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "القوالب",
+    "no_templates": "لا توجد قوالب بعد",
+    "create_first": "أنشئ أول قالب للنفقات المتكررة — نقرة واحدة بدلاً من خمس",
+    "create_new": "قالب جديد",
+    "edit_title": "تعديل القالب",
+    "from_template": "من قالب",
+    "save_as_template": "حفظ كقالب",
+    "amount_fixed": "مبلغ ثابت",
+    "amount_fixed_hint": "النقر في لوحة التحكم ينشئ المعاملة فوراً",
+    "amount_variable_hint": "النقر في لوحة التحكم يطلب المبلغ",
+    "amount_variable_hint_short": "اطلب المبلغ",
+    "name": "الاسم",
+    "name_placeholder": "قهوة، غداء، مواصلات…",
+    "quick": "قوالب سريعة",
+    "apply": "تطبيق القالب"
   }
 }

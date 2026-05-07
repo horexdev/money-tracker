@@ -247,7 +247,8 @@
     "export": "Экспорт",
     "settings": "Настройки",
     "accounts": "Счета",
-    "admin_panel": "Админ панель"
+    "admin_panel": "Админ панель",
+    "templates": "Быстрые шаблоны"
   },
   "admin": {
     "title": "Админ панель",
@@ -317,5 +318,22 @@
     "delta_hint_increase": "+{{amount}} будет зачислено",
     "delta_hint_decrease": "{{amount}} будет списано",
     "no_change": "Введите другую сумму для корректировки"
+  },
+  "templates": {
+    "title": "Шаблоны",
+    "no_templates": "Шаблонов пока нет",
+    "create_first": "Создайте первый шаблон для частых операций — один тап вместо пяти",
+    "create_new": "Новый шаблон",
+    "edit_title": "Редактировать шаблон",
+    "from_template": "Из шаблона",
+    "save_as_template": "Сохранить как шаблон",
+    "amount_fixed": "Фиксированная сумма",
+    "amount_fixed_hint": "Тап на главной создаёт операцию мгновенно",
+    "amount_variable_hint": "Тап на главной запросит сумму",
+    "amount_variable_hint_short": "спросить сумму",
+    "name": "Название",
+    "name_placeholder": "Кофе, обед, проезд…",
+    "quick": "Быстрые шаблоны",
+    "apply": "Применить шаблон"
   }
 }

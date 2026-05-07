@@ -68,6 +68,7 @@ func main() {
 	catRepo := repository.NewCategoryRepository(pool)
 	budgetRepo := repository.NewBudgetRepository(pool)
 	recurringRepo := repository.NewRecurringRepository(pool)
+	templateRepo := repository.NewTransactionTemplateRepository(pool)
 	goalRepo := repository.NewSavingsGoalRepository(pool)
 	accountRepo := repository.NewAccountRepository(pool)
 	transferRepo := repository.NewTransferRepository(pool)
@@ -82,6 +83,7 @@ func main() {
 	categorySvc := service.NewCategoryService(catRepo, log)
 	budgetSvc := service.NewBudgetService(budgetRepo, txRepo, userRepo, log)
 	recurringSvc := service.NewRecurringService(recurringRepo, txRepo, accountRepo, log)
+	templateSvc := service.NewTransactionTemplateService(templateRepo, txSvc, accountRepo, log)
 	goalSvc := service.NewSavingsGoalService(goalRepo, txRepo, catRepo, accountRepo, log)
 	exportSvc := service.NewExportService(txRepo, log)
 	accountSvc := service.NewAccountService(accountRepo, goalRepo, log)
@@ -108,6 +110,7 @@ func main() {
 		CategorySvc:    categorySvc,
 		BudgetSvc:      budgetSvc,
 		RecurringSvc:   recurringSvc,
+		TemplateSvc:    templateSvc,
 		GoalSvc:        goalSvc,
 		ExportSvc:      exportSvc,
 		AccountSvc:     accountSvc,
