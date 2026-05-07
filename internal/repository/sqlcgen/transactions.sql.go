@@ -39,6 +39,34 @@ func (q *Queries) CountUserTransactionsByAccount(ctx context.Context, arg CountU
 	return column_1, err
 }
 
+const countUserTransactionsByAccountAndCategoryWithDateRange = `-- name: CountUserTransactionsByAccountAndCategoryWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND account_id = $2 AND category_id = $3 AND is_adjustment = false
+  AND ($4::TIMESTAMPTZ IS NULL OR created_at >= $4)
+  AND ($5::TIMESTAMPTZ IS NULL OR created_at <= $5)
+`
+
+type CountUserTransactionsByAccountAndCategoryWithDateRangeParams struct {
+	UserID     int64              `json:"user_id"`
+	AccountID  int64              `json:"account_id"`
+	CategoryID int64              `json:"category_id"`
+	Column4    pgtype.Timestamptz `json:"column_4"`
+	Column5    pgtype.Timestamptz `json:"column_5"`
+}
+
+func (q *Queries) CountUserTransactionsByAccountAndCategoryWithDateRange(ctx context.Context, arg CountUserTransactionsByAccountAndCategoryWithDateRangeParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserTransactionsByAccountAndCategoryWithDateRange,
+		arg.UserID,
+		arg.AccountID,
+		arg.CategoryID,
+		arg.Column4,
+		arg.Column5,
+	)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const countUserTransactionsByAccountWithDateRange = `-- name: CountUserTransactionsByAccountWithDateRange :one
 SELECT count(*)::BIGINT FROM transactions
 WHERE user_id = $1 AND account_id = $2 AND is_adjustment = false
@@ -57,6 +85,32 @@ func (q *Queries) CountUserTransactionsByAccountWithDateRange(ctx context.Contex
 	row := q.db.QueryRow(ctx, countUserTransactionsByAccountWithDateRange,
 		arg.UserID,
 		arg.AccountID,
+		arg.Column3,
+		arg.Column4,
+	)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const countUserTransactionsByCategoryWithDateRange = `-- name: CountUserTransactionsByCategoryWithDateRange :one
+SELECT count(*)::BIGINT FROM transactions
+WHERE user_id = $1 AND category_id = $2 AND is_adjustment = false
+  AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3)
+  AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4)
+`
+
+type CountUserTransactionsByCategoryWithDateRangeParams struct {
+	UserID     int64              `json:"user_id"`
+	CategoryID int64              `json:"category_id"`
+	Column3    pgtype.Timestamptz `json:"column_3"`
+	Column4    pgtype.Timestamptz `json:"column_4"`
+}
+
+func (q *Queries) CountUserTransactionsByCategoryWithDateRange(ctx context.Context, arg CountUserTransactionsByCategoryWithDateRangeParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserTransactionsByCategoryWithDateRange,
+		arg.UserID,
+		arg.CategoryID,
 		arg.Column3,
 		arg.Column4,
 	)
@@ -338,6 +392,7 @@ func (q *Queries) GetBalanceByCurrencyAndAccount(ctx context.Context, arg GetBal
 
 const getStatsByCategory = `-- name: GetStatsByCategory :many
 SELECT
+    c.id                AS category_id,
     c.name              AS category_name,
     c.icon             AS category_icon,
     c.color             AS category_color,
@@ -351,7 +406,7 @@ WHERE t.user_id   = $1
   AND t.created_at >= $2
   AND t.created_at <  $3
   AND t.is_adjustment = false
-GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
+GROUP BY c.id, c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC
 `
 
@@ -362,6 +417,7 @@ type GetStatsByCategoryParams struct {
 }
 
 type GetStatsByCategoryRow struct {
+	CategoryID    int64                  `json:"category_id"`
 	CategoryName  string                 `json:"category_name"`
 	CategoryIcon  string                 `json:"category_icon"`
 	CategoryColor string                 `json:"category_color"`
@@ -381,6 +437,7 @@ func (q *Queries) GetStatsByCategory(ctx context.Context, arg GetStatsByCategory
 	for rows.Next() {
 		var i GetStatsByCategoryRow
 		if err := rows.Scan(
+			&i.CategoryID,
 			&i.CategoryName,
 			&i.CategoryIcon,
 			&i.CategoryColor,
@@ -401,6 +458,7 @@ func (q *Queries) GetStatsByCategory(ctx context.Context, arg GetStatsByCategory
 
 const getStatsByCategoryAndAccount = `-- name: GetStatsByCategoryAndAccount :many
 SELECT
+    c.id                AS category_id,
     c.name              AS category_name,
     c.icon             AS category_icon,
     c.color             AS category_color,
@@ -415,7 +473,7 @@ WHERE t.user_id    = $1
   AND t.created_at >= $3
   AND t.created_at <  $4
   AND t.is_adjustment = false
-GROUP BY c.name, c.icon, c.color, t.type, t.currency_code
+GROUP BY c.id, c.name, c.icon, c.color, t.type, t.currency_code
 ORDER BY total_cents DESC
 `
 
@@ -427,6 +485,7 @@ type GetStatsByCategoryAndAccountParams struct {
 }
 
 type GetStatsByCategoryAndAccountRow struct {
+	CategoryID    int64                  `json:"category_id"`
 	CategoryName  string                 `json:"category_name"`
 	CategoryIcon  string                 `json:"category_icon"`
 	CategoryColor string                 `json:"category_color"`
@@ -451,6 +510,7 @@ func (q *Queries) GetStatsByCategoryAndAccount(ctx context.Context, arg GetStats
 	for rows.Next() {
 		var i GetStatsByCategoryAndAccountRow
 		if err := rows.Scan(
+			&i.CategoryID,
 			&i.CategoryName,
 			&i.CategoryIcon,
 			&i.CategoryColor,
@@ -650,6 +710,100 @@ func (q *Queries) ListTransactionsByAccount(ctx context.Context, arg ListTransac
 	return items, nil
 }
 
+const listTransactionsByAccountAndCategoryWithDateRange = `-- name: ListTransactionsByAccountAndCategoryWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.account_id,
+    c.name  AS category_name,
+    c.icon AS category_icon,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1 AND t.account_id = $2 AND t.category_id = $3
+  AND t.is_adjustment = false
+  AND ($6::TIMESTAMPTZ IS NULL OR t.created_at >= $6)
+  AND ($7::TIMESTAMPTZ IS NULL OR t.created_at <= $7)
+ORDER BY t.created_at DESC
+LIMIT $4 OFFSET $5
+`
+
+type ListTransactionsByAccountAndCategoryWithDateRangeParams struct {
+	UserID     int64              `json:"user_id"`
+	AccountID  int64              `json:"account_id"`
+	CategoryID int64              `json:"category_id"`
+	Limit      int32              `json:"limit"`
+	Offset     int32              `json:"offset"`
+	Column6    pgtype.Timestamptz `json:"column_6"`
+	Column7    pgtype.Timestamptz `json:"column_7"`
+}
+
+type ListTransactionsByAccountAndCategoryWithDateRangeRow struct {
+	ID            int64                  `json:"id"`
+	UserID        int64                  `json:"user_id"`
+	Type          domain.TransactionType `json:"type"`
+	AmountCents   int64                  `json:"amount_cents"`
+	CategoryID    int64                  `json:"category_id"`
+	Note          string                 `json:"note"`
+	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
+	AccountID     int64                  `json:"account_id"`
+	CategoryName  string                 `json:"category_name"`
+	CategoryIcon  string                 `json:"category_icon"`
+	CategoryColor string                 `json:"category_color"`
+	AccountName   pgtype.Text            `json:"account_name"`
+}
+
+func (q *Queries) ListTransactionsByAccountAndCategoryWithDateRange(ctx context.Context, arg ListTransactionsByAccountAndCategoryWithDateRangeParams) ([]ListTransactionsByAccountAndCategoryWithDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, listTransactionsByAccountAndCategoryWithDateRange,
+		arg.UserID,
+		arg.AccountID,
+		arg.CategoryID,
+		arg.Limit,
+		arg.Offset,
+		arg.Column6,
+		arg.Column7,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTransactionsByAccountAndCategoryWithDateRangeRow{}
+	for rows.Next() {
+		var i ListTransactionsByAccountAndCategoryWithDateRangeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Type,
+			&i.AmountCents,
+			&i.CategoryID,
+			&i.Note,
+			&i.CreatedAt,
+			&i.CurrencyCode,
+			&i.AccountID,
+			&i.CategoryName,
+			&i.CategoryIcon,
+			&i.CategoryColor,
+			&i.AccountName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactionsByAccountWithDateRange = `-- name: ListTransactionsByAccountWithDateRange :many
 SELECT
     t.id,
@@ -813,6 +967,98 @@ func (q *Queries) ListTransactionsByCategoryPeriod(ctx context.Context, arg List
 			&i.CategoryName,
 			&i.CategoryIcon,
 			&i.CategoryColor,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTransactionsByCategoryWithDateRange = `-- name: ListTransactionsByCategoryWithDateRange :many
+SELECT
+    t.id,
+    t.user_id,
+    t.type,
+    t.amount_cents,
+    t.category_id,
+    t.note,
+    t.created_at,
+    t.currency_code,
+    t.account_id,
+    c.name  AS category_name,
+    c.icon AS category_icon,
+    c.color AS category_color,
+    a.name  AS account_name
+FROM transactions t
+JOIN categories c ON c.id = t.category_id
+LEFT JOIN accounts a ON a.id = t.account_id
+WHERE t.user_id = $1 AND t.category_id = $2
+  AND t.is_adjustment = false
+  AND ($5::TIMESTAMPTZ IS NULL OR t.created_at >= $5)
+  AND ($6::TIMESTAMPTZ IS NULL OR t.created_at <= $6)
+ORDER BY t.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type ListTransactionsByCategoryWithDateRangeParams struct {
+	UserID     int64              `json:"user_id"`
+	CategoryID int64              `json:"category_id"`
+	Limit      int32              `json:"limit"`
+	Offset     int32              `json:"offset"`
+	Column5    pgtype.Timestamptz `json:"column_5"`
+	Column6    pgtype.Timestamptz `json:"column_6"`
+}
+
+type ListTransactionsByCategoryWithDateRangeRow struct {
+	ID            int64                  `json:"id"`
+	UserID        int64                  `json:"user_id"`
+	Type          domain.TransactionType `json:"type"`
+	AmountCents   int64                  `json:"amount_cents"`
+	CategoryID    int64                  `json:"category_id"`
+	Note          string                 `json:"note"`
+	CreatedAt     pgtype.Timestamptz     `json:"created_at"`
+	CurrencyCode  string                 `json:"currency_code"`
+	AccountID     int64                  `json:"account_id"`
+	CategoryName  string                 `json:"category_name"`
+	CategoryIcon  string                 `json:"category_icon"`
+	CategoryColor string                 `json:"category_color"`
+	AccountName   pgtype.Text            `json:"account_name"`
+}
+
+func (q *Queries) ListTransactionsByCategoryWithDateRange(ctx context.Context, arg ListTransactionsByCategoryWithDateRangeParams) ([]ListTransactionsByCategoryWithDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, listTransactionsByCategoryWithDateRange,
+		arg.UserID,
+		arg.CategoryID,
+		arg.Limit,
+		arg.Offset,
+		arg.Column5,
+		arg.Column6,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTransactionsByCategoryWithDateRangeRow{}
+	for rows.Next() {
+		var i ListTransactionsByCategoryWithDateRangeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Type,
+			&i.AmountCents,
+			&i.CategoryID,
+			&i.Note,
+			&i.CreatedAt,
+			&i.CurrencyCode,
+			&i.AccountID,
+			&i.CategoryName,
+			&i.CategoryIcon,
+			&i.CategoryColor,
+			&i.AccountName,
 		); err != nil {
 			return nil, err
 		}
