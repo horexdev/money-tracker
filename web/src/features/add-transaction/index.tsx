@@ -60,10 +60,13 @@ export function AddTransactionPage() {
   useEffect(() => {
     if (accounts.length === 0) return
     const def = accounts.find(a => a.is_default) ?? accounts[0]
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (selectedAccountId === null) setSelectedAccountId(def.id)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (fromAccountId === null) setFromAccountId(def.id)
     if (toAccountId === null) {
       const second = accounts.find(a => a.id !== def.id)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (second) setToAccountId(second.id)
     }
   }, [accounts]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -77,6 +80,7 @@ export function AddTransactionPage() {
 
   useEffect(() => {
     if (!needsExchangeRate || !fromAccount || !toAccount) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setExchangeRate(null)
       return
     }
@@ -153,7 +157,7 @@ export function AddTransactionPage() {
         account_id: selectedAccountId!,
       })
     }
-  }, [canSubmit, isTransfer, fromAccountId, toAccountId, amount, note, categoryID, mode, txDate, selectedAccountId, txMutation, transferMutation])
+  }, [canSubmit, isTransfer, fromAccountId, toAccountId, amount, note, exchangeRate, categoryID, mode, txDate, selectedAccountId, txMutation, transferMutation])
 
   const handleModeChange = (m: Mode) => {
     setMode(m)

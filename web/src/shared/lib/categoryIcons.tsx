@@ -48,6 +48,7 @@ import type { ReactNode } from 'react'
 type IconComponent = React.ComponentType<{ size?: number; weight?: IconWeight; className?: string }>
 
 /** All available icons for the icon picker, keyed by a stable string ID */
+// eslint-disable-next-line react-refresh/only-export-components
 export const ICON_CHOICES: { id: string; Icon: IconComponent; label: string }[] = [
   { id: 'fork-knife', Icon: ForkKnife, label: 'Food' },
   { id: 'coffee', Icon: Coffee, label: 'Coffee' },
