@@ -18,6 +18,8 @@ type settingsResponse struct {
 	NotifyRecurringReminders bool     `json:"notify_recurring_reminders"`
 	NotifyWeeklySummary      bool     `json:"notify_weekly_summary"`
 	NotifyGoalMilestones     bool     `json:"notify_goal_milestones"`
+	Theme                    string   `json:"theme"`
+	HideAmounts              bool     `json:"hide_amounts"`
 }
 
 type notificationPrefsRequest struct {
@@ -31,6 +33,8 @@ type patchSettingsRequest struct {
 	DisplayCurrencies []string                  `json:"display_currencies"`
 	Language          *string                   `json:"language"`
 	NotificationPrefs *notificationPrefsRequest `json:"notification_preferences"`
+	Theme             *string                   `json:"theme"`
+	HideAmounts       *bool                     `json:"hide_amounts"`
 }
 
 // settingsHandler handles GET and PATCH /api/v1/settings
@@ -103,6 +107,22 @@ func settingsHandler(userSvc *service.UserService, accountSvc *service.AccountSe
 				}
 			}
 
+			if req.Theme != nil {
+				user, err = userSvc.UpdateTheme(ctx, userID, *req.Theme)
+				if err != nil {
+					writeError(w, log, err)
+					return
+				}
+			}
+
+			if req.HideAmounts != nil {
+				user, err = userSvc.UpdateHideAmounts(ctx, userID, *req.HideAmounts)
+				if err != nil {
+					writeError(w, log, err)
+					return
+				}
+			}
+
 			baseCurrency := "USD"
 			if defaultAcc, accErr := accountSvc.GetDefault(ctx, userID); accErr == nil {
 				baseCurrency = defaultAcc.CurrencyCode
@@ -116,6 +136,10 @@ func settingsHandler(userSvc *service.UserService, accountSvc *service.AccountSe
 }
 
 func settingsToResponse(user *domain.User, baseCurrency string, isAdmin bool) settingsResponse {
+	theme := string(user.Theme)
+	if theme == "" {
+		theme = string(domain.ThemeSystem)
+	}
 	return settingsResponse{
 		BaseCurrency:             baseCurrency,
 		DisplayCurrencies:        user.DisplayCurrencies,
@@ -125,6 +149,8 @@ func settingsToResponse(user *domain.User, baseCurrency string, isAdmin bool) se
 		NotifyRecurringReminders: user.NotifyRecurringReminders,
 		NotifyWeeklySummary:      user.NotifyWeeklySummary,
 		NotifyGoalMilestones:     user.NotifyGoalMilestones,
+		Theme:                    theme,
+		HideAmounts:              user.HideAmounts,
 	}
 }
 

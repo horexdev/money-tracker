@@ -14,6 +14,8 @@ type UserStorer interface {
 	UpdateDisplayCurrencies(ctx context.Context, id int64, codes string) (*domain.User, error)
 	UpdateLanguage(ctx context.Context, id int64, lang string) (*domain.User, error)
 	UpdateNotificationPreferences(ctx context.Context, id int64, prefs domain.NotificationPrefs) (*domain.User, error)
+	UpdateTheme(ctx context.Context, id int64, theme domain.ThemePref) (*domain.User, error)
+	UpdateHideAmounts(ctx context.Context, id int64, hide bool) (*domain.User, error)
 	ResetData(ctx context.Context, userID int64) error
 }
 

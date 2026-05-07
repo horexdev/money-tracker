@@ -84,7 +84,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones FROM users WHERE id = $1
+SELECT id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, theme, hide_amounts FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -103,6 +103,8 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.NotifyRecurringReminders,
 		&i.NotifyWeeklySummary,
 		&i.NotifyGoalMilestones,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -112,7 +114,7 @@ UPDATE users
 SET display_currencies = $2,
     updated_at         = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, theme, hide_amounts
 `
 
 type UpdateDisplayCurrenciesParams struct {
@@ -136,6 +138,8 @@ func (q *Queries) UpdateDisplayCurrencies(ctx context.Context, arg UpdateDisplay
 		&i.NotifyRecurringReminders,
 		&i.NotifyWeeklySummary,
 		&i.NotifyGoalMilestones,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -148,7 +152,7 @@ SET notify_budget_alerts       = $2,
     notify_goal_milestones     = $5,
     updated_at                 = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, theme, hide_amounts
 `
 
 type UpdateNotificationPreferencesParams struct {
@@ -181,6 +185,43 @@ func (q *Queries) UpdateNotificationPreferences(ctx context.Context, arg UpdateN
 		&i.NotifyRecurringReminders,
 		&i.NotifyWeeklySummary,
 		&i.NotifyGoalMilestones,
+		&i.Theme,
+		&i.HideAmounts,
+	)
+	return i, err
+}
+
+const updateUserHideAmounts = `-- name: UpdateUserHideAmounts :one
+UPDATE users
+SET hide_amounts = $2,
+    updated_at   = NOW()
+WHERE id = $1
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, theme, hide_amounts
+`
+
+type UpdateUserHideAmountsParams struct {
+	ID          int64 `json:"id"`
+	HideAmounts bool  `json:"hide_amounts"`
+}
+
+func (q *Queries) UpdateUserHideAmounts(ctx context.Context, arg UpdateUserHideAmountsParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserHideAmounts, arg.ID, arg.HideAmounts)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisplayCurrencies,
+		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -190,7 +231,7 @@ UPDATE users
 SET language   = $2,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, theme, hide_amounts
 `
 
 type UpdateUserLanguageParams struct {
@@ -214,6 +255,43 @@ func (q *Queries) UpdateUserLanguage(ctx context.Context, arg UpdateUserLanguage
 		&i.NotifyRecurringReminders,
 		&i.NotifyWeeklySummary,
 		&i.NotifyGoalMilestones,
+		&i.Theme,
+		&i.HideAmounts,
+	)
+	return i, err
+}
+
+const updateUserTheme = `-- name: UpdateUserTheme :one
+UPDATE users
+SET theme      = $2,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, theme, hide_amounts
+`
+
+type UpdateUserThemeParams struct {
+	ID    int64  `json:"id"`
+	Theme string `json:"theme"`
+}
+
+func (q *Queries) UpdateUserTheme(ctx context.Context, arg UpdateUserThemeParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserTheme, arg.ID, arg.Theme)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisplayCurrencies,
+		&i.Language,
+		&i.NotifyBudgetAlerts,
+		&i.NotifyRecurringReminders,
+		&i.NotifyWeeklySummary,
+		&i.NotifyGoalMilestones,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }
@@ -227,7 +305,7 @@ ON CONFLICT (id) DO UPDATE
         last_name     = EXCLUDED.last_name,
         language      = CASE WHEN users.language = '' OR users.language IS NULL THEN EXCLUDED.language ELSE users.language END,
         updated_at    = NOW()
-RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones
+RETURNING id, username, first_name, last_name, created_at, updated_at, display_currencies, language, notify_budget_alerts, notify_recurring_reminders, notify_weekly_summary, notify_goal_milestones, theme, hide_amounts
 `
 
 type UpsertUserParams struct {
@@ -260,6 +338,8 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.NotifyRecurringReminders,
 		&i.NotifyWeeklySummary,
 		&i.NotifyGoalMilestones,
+		&i.Theme,
+		&i.HideAmounts,
 	)
 	return i, err
 }

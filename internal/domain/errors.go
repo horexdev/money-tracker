@@ -14,6 +14,7 @@ var (
 	ErrInvalidCurrency          = errors.New("invalid currency code")
 	ErrInvalidFrequency         = errors.New("invalid frequency")
 	ErrInvalidLanguage          = errors.New("invalid language: unsupported language code")
+	ErrInvalidTheme             = errors.New("invalid theme: must be one of system, light, dark")
 	ErrTooManyDisplayCurrencies = errors.New("maximum 3 display currencies allowed")
 	ErrExchangeRateUnavailable  = errors.New("exchange rate unavailable")
 	ErrCategoryNameEmpty        = errors.New("category name cannot be empty")
