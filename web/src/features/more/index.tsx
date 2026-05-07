@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ShieldStar } from '@phosphor-icons/react'
+import { Tag, Wallet, ArrowsClockwise, Target, DownloadSimple, GearSix, Bank, ShieldStar, Lightning } from '@phosphor-icons/react'
 import { PageTransition } from '../../shared/ui/PageTransition'
 import { settingsApi } from '../../shared/api/settings'
 import type { ReactNode } from 'react'
@@ -26,6 +26,7 @@ const FEATURED: MenuItem = {
 
 const GRID_ITEMS: MenuItem[] = [
   { to: '/savings',   icon: <Target size={22} weight="fill" />,            labelKey: 'more.savings',   gradient: 'from-emerald-400 to-teal-500' },
+  { to: '/templates', icon: <Lightning size={22} weight="fill" />,         labelKey: 'more.templates', gradient: 'from-rose-400 to-pink-500' },
   { to: '/recurring', icon: <ArrowsClockwise size={22} weight="bold" />,   labelKey: 'more.recurring', gradient: 'from-violet-400 to-purple-600' },
   { to: '/categories',icon: <Tag size={22} weight="fill" />,               labelKey: 'more.categories',gradient: 'from-blue-400 to-indigo-500' },
   { to: '/accounts',  icon: <Bank size={22} weight="fill" />,              labelKey: 'more.accounts',  gradient: 'from-amber-400 to-orange-500' },

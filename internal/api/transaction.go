@@ -51,6 +51,8 @@ type transactionManager interface {
 	ListPagedByAccount(ctx context.Context, userID, accountID int64, page, pageSize int) ([]*domain.Transaction, int, error)
 	ListPagedWithDateRange(ctx context.Context, userID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error)
 	ListPagedByAccountWithDateRange(ctx context.Context, userID, accountID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error)
+	ListPagedByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error)
+	ListPagedByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time, page, pageSize int) ([]*domain.Transaction, int, error)
 	Delete(ctx context.Context, id, userID int64) error
 	UpdateTransaction(ctx context.Context, userID, id, amountCents, categoryID int64, note string, createdAt time.Time) (*domain.Transaction, error)
 }
@@ -133,6 +135,20 @@ func listTransactions(w http.ResponseWriter, r *http.Request, userID int64, txSv
 
 	useDateRange := from != nil || to != nil
 
+	// Optional category filter — when set, every list path collapses into the
+	// category-aware service methods (which always treat the date range as
+	// optional, so the useDateRange branch is irrelevant once a category id is
+	// provided).
+	var categoryID int64
+	if categoryIDStr := q.Get("category_id"); categoryIDStr != "" {
+		parsed, parseErr := strconv.ParseInt(categoryIDStr, 10, 64)
+		if parseErr != nil || parsed <= 0 {
+			writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid category_id"})
+			return
+		}
+		categoryID = parsed
+	}
+
 	var txs []*domain.Transaction
 	var totalPages int
 	var err error
@@ -142,15 +158,21 @@ func listTransactions(w http.ResponseWriter, r *http.Request, userID int64, txSv
 			writeJSON(w, http.StatusBadRequest, errorResponse{Error: "invalid account_id"})
 			return
 		}
-		if useDateRange {
+		switch {
+		case categoryID > 0:
+			txs, totalPages, err = txSvc.ListPagedByAccountAndCategoryWithDateRange(r.Context(), userID, accountID, categoryID, from, to, page, pageSize)
+		case useDateRange:
 			txs, totalPages, err = txSvc.ListPagedByAccountWithDateRange(r.Context(), userID, accountID, from, to, page, pageSize)
-		} else {
+		default:
 			txs, totalPages, err = txSvc.ListPagedByAccount(r.Context(), userID, accountID, page, pageSize)
 		}
 	} else {
-		if useDateRange {
+		switch {
+		case categoryID > 0:
+			txs, totalPages, err = txSvc.ListPagedByCategoryWithDateRange(r.Context(), userID, categoryID, from, to, page, pageSize)
+		case useDateRange:
 			txs, totalPages, err = txSvc.ListPagedWithDateRange(r.Context(), userID, from, to, page, pageSize)
-		} else {
+		default:
 			txs, totalPages, err = txSvc.ListPaged(r.Context(), userID, page, pageSize)
 		}
 	}

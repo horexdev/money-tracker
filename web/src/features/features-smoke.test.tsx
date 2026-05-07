@@ -51,6 +51,8 @@ vi.mock('../shared/api/settings', () => ({
       notify_recurring_reminders: true,
       notify_weekly_summary: false,
       notify_goal_milestones: true,
+      stats_chart_style: 'donut',
+      animate_numbers: null,
     }),
     update: vi.fn(),
     resetData: vi.fn(),
@@ -63,6 +65,17 @@ vi.mock('../shared/api/categories', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+  },
+}))
+
+vi.mock('../shared/api/templates', () => ({
+  templatesApi: {
+    list: vi.fn().mockResolvedValue({ templates: [] }),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    apply: vi.fn(),
+    reorder: vi.fn(),
   },
 }))
 
@@ -116,7 +129,7 @@ describe('MorePage smoke', () => {
   it('renders the always-active grid items', () => {
     renderWithProviders(<MorePage />)
     // /export is marked comingSoon and may render as a non-link element.
-    for (const path of ['/savings', '/recurring', '/categories', '/accounts', '/settings']) {
+    for (const path of ['/savings', '/templates', '/recurring', '/categories', '/accounts', '/settings']) {
       const link = document.querySelector(`a[href="${path}"]`)
       expect(link, `expected link to ${path}`).not.toBeNull()
     }

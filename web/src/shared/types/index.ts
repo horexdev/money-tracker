@@ -53,6 +53,7 @@ export interface BalanceResponse {
 
 // GET /api/v1/stats
 export interface CategoryStat {
+  category_id: number
   category_name: string
   category_icon: string
   category_color: string
@@ -70,6 +71,15 @@ export interface StatsResponse {
 // GET /api/v1/settings
 export type ThemePref = 'system' | 'light' | 'dark'
 
+export type StatsChartStyle = 'donut' | 'stacked_bar' | 'dual_bar' | 'profit_bars'
+
+export const STATS_CHART_STYLES: readonly StatsChartStyle[] = [
+  'donut',
+  'stacked_bar',
+  'dual_bar',
+  'profit_bars',
+] as const
+
 export interface UserSettings {
   base_currency: string
   display_currencies: string[]
@@ -79,6 +89,9 @@ export interface UserSettings {
   notify_recurring_reminders: boolean
   notify_weekly_summary: boolean
   notify_goal_milestones: boolean
+  stats_chart_style: StatsChartStyle
+  // null means "no explicit choice" — UI should follow OS prefers-reduced-motion.
+  animate_numbers: boolean | null
   theme: ThemePref
   hide_amounts: boolean
 }
@@ -129,6 +142,50 @@ export interface RecurringTransaction {
 
 export interface RecurringListResponse {
   recurring: RecurringTransaction[]
+}
+
+// Transaction templates
+export interface TransactionTemplate {
+  id: number
+  name: string
+  type: TransactionType
+  amount_cents: number
+  amount_fixed: boolean
+  currency_code: string
+  category_id: number
+  category_name: string
+  category_icon: string
+  category_color: string
+  account_id: number
+  note: string
+  sort_order: number
+  created_at: string
+}
+
+export interface TemplatesListResponse {
+  templates: TransactionTemplate[]
+}
+
+export interface CreateTemplatePayload {
+  name?: string
+  type: TransactionType
+  amount_cents: number
+  amount_fixed: boolean
+  currency_code?: string
+  category_id: number
+  account_id: number
+  note?: string
+}
+
+export interface UpdateTemplatePayload {
+  name?: string
+  type?: TransactionType
+  amount_cents?: number
+  amount_fixed?: boolean
+  currency_code?: string
+  category_id?: number
+  account_id?: number
+  note?: string
 }
 
 // Savings goals

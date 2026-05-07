@@ -98,7 +98,13 @@
     "date_to": "Tot",
     "apply": "Toepassen",
     "prev_month": "Vorige maand",
-    "next_month": "Volgende maand"
+    "next_month": "Volgende maand",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Categorieën",
@@ -244,7 +250,8 @@
     "export": "Exporteren",
     "settings": "Instellingen",
     "admin_panel": "Beheerpaneel",
-    "accounts": "Rekeningen"
+    "accounts": "Rekeningen",
+    "templates": "Snelle sjablonen"
   },
   "admin": {
     "title": "Beheerpaneel",
@@ -314,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Sjablonen",
+    "no_templates": "Nog geen sjablonen",
+    "create_first": "Maak je eerste sjabloon voor vaak voorkomende uitgaven — één tik in plaats van vijf",
+    "create_new": "Nieuw sjabloon",
+    "edit_title": "Sjabloon bewerken",
+    "from_template": "Uit sjabloon",
+    "save_as_template": "Opslaan als sjabloon",
+    "amount_fixed": "Vast bedrag",
+    "amount_fixed_hint": "Tikken op het dashboard maakt de transactie meteen aan",
+    "amount_variable_hint": "Tikken op het dashboard vraagt om het bedrag",
+    "amount_variable_hint_short": "bedrag vragen",
+    "name": "Naam",
+    "name_placeholder": "Koffie, lunch, vervoer…",
+    "quick": "Snelle sjablonen",
+    "apply": "Sjabloon toepassen"
   }
 }

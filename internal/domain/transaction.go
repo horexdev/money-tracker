@@ -41,6 +41,7 @@ type BalanceByCurrency struct {
 
 // CategoryStat aggregates spending or income by category for a given period.
 type CategoryStat struct {
+	CategoryID    int64
 	CategoryName  string
 	CategoryIcon string
 	CategoryColor string

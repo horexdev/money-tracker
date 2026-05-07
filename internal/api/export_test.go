@@ -88,6 +88,11 @@ func RecurringHandlerForTest(recurringSvc *service.RecurringService, log *slog.L
 	return recurringHandler(recurringSvc, log)
 }
 
+// TemplateHandlerForTest exposes templateHandler for testing.
+func TemplateHandlerForTest(templateSvc *service.TransactionTemplateService, log *slog.Logger) http.HandlerFunc {
+	return templateHandler(templateSvc, log)
+}
+
 // TransfersHandlerForTest exposes transfersHandler for testing.
 func TransfersHandlerForTest(transferSvc *service.TransferService, log *slog.Logger) http.HandlerFunc {
 	return transfersHandler(transferSvc, log)

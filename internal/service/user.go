@@ -61,26 +61,30 @@ func (s *UserService) UpdateNotificationPreferences(ctx context.Context, id int6
 	return u, nil
 }
 
-// UpdateTheme changes the user's UI theme preference.
-func (s *UserService) UpdateTheme(ctx context.Context, id int64, theme string) (*domain.User, error) {
-	if !domain.ValidTheme(theme) {
+// UpdateUIPreferences saves all user-controlled UI preferences in one call.
+// AnimateNumbers stays nil when the user has not made an explicit choice — the
+// client falls back to OS prefers-reduced-motion in that case. Stats chart style
+// and theme values are validated; theme defaults to "system" when blank.
+func (s *UserService) UpdateUIPreferences(ctx context.Context, id int64, prefs domain.UIPreferences) (*domain.User, error) {
+	if !domain.IsValidStatsChartStyle(prefs.StatsChartStyle) {
+		return nil, domain.ErrInvalidStatsChartStyle
+	}
+	if prefs.Theme == "" {
+		prefs.Theme = domain.ThemeSystem
+	}
+	if !domain.ValidTheme(string(prefs.Theme)) {
 		return nil, domain.ErrInvalidTheme
 	}
-	u, err := s.repo.UpdateTheme(ctx, id, domain.ThemePref(theme))
+	u, err := s.repo.UpdateUIPreferences(ctx, id, prefs)
 	if err != nil {
-		return nil, fmt.Errorf("update theme for user %d: %w", id, err)
+		return nil, fmt.Errorf("update ui preferences for user %d: %w", id, err)
 	}
-	s.log.InfoContext(ctx, "theme updated", slog.Int64("user_id", id), slog.String("theme", theme))
-	return u, nil
-}
-
-// UpdateHideAmounts toggles the user's privacy mode for monetary amounts.
-func (s *UserService) UpdateHideAmounts(ctx context.Context, id int64, hide bool) (*domain.User, error) {
-	u, err := s.repo.UpdateHideAmounts(ctx, id, hide)
-	if err != nil {
-		return nil, fmt.Errorf("update hide_amounts for user %d: %w", id, err)
-	}
-	s.log.InfoContext(ctx, "hide_amounts updated", slog.Int64("user_id", id), slog.Bool("hide", hide))
+	s.log.InfoContext(ctx, "ui preferences updated",
+		slog.Int64("user_id", id),
+		slog.String("stats_chart_style", prefs.StatsChartStyle),
+		slog.String("theme", string(prefs.Theme)),
+		slog.Bool("hide_amounts", prefs.HideAmounts),
+	)
 	return u, nil
 }
 

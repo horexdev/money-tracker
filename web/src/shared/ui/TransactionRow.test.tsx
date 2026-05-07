@@ -18,6 +18,8 @@ const SETTINGS_VISIBLE: UserSettings = {
   notify_recurring_reminders: false,
   notify_weekly_summary: false,
   notify_goal_milestones: false,
+  stats_chart_style: 'donut',
+  animate_numbers: null,
   theme: 'system',
   hide_amounts: false,
 }

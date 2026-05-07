@@ -1,22 +1,15 @@
 import type { ReactNode } from 'react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import {
-  useAnimateNumbers,
-  setAnimateNumbersPreference,
-  ANIMATE_NUMBERS_KEY,
-} from './useAnimateNumbers'
-import { useHaptic } from './useHaptic'
-import { useTgMainButton } from './useMainButton'
-import { useFirstLaunchSetup, FIRST_LAUNCH_KEY } from './useFirstLaunchSetup'
-import { useThemePreference } from './useThemePreference'
-import { useHideAmounts } from './useHideAmounts'
-import { settingsApi } from '../api/settings'
-import type { UserSettings } from '../types'
-import i18n from 'i18next'
-import { I18nextProvider, initReactI18next } from 'react-i18next'
+vi.mock('../api/settings', () => ({
+  settingsApi: {
+    get: vi.fn(),
+    update: vi.fn(),
+    resetData: vi.fn(),
+  },
+}))
 
 vi.mock('framer-motion', async () => {
   const actual = await vi.importActual<Record<string, unknown>>('framer-motion')
@@ -26,48 +19,138 @@ vi.mock('framer-motion', async () => {
   }
 })
 
+import { useAnimateNumbers } from './useAnimateNumbers'
+import { useChartStyle } from './useChartStyle'
+import { useThemePreference } from './useThemePreference'
+import { useHideAmounts } from './useHideAmounts'
+import { SETTINGS_QUERY_KEY } from './useUserSettings'
+import { useHaptic } from './useHaptic'
+import { useTgMainButton } from './useMainButton'
+import { useFirstLaunchSetup, FIRST_LAUNCH_KEY } from './useFirstLaunchSetup'
+import { settingsApi } from '../api/settings'
 import { useReducedMotion } from 'framer-motion'
+import type { UserSettings } from '../types'
+import i18n from 'i18next'
+import { I18nextProvider, initReactI18next } from 'react-i18next'
 
-afterEach(() => {
-  localStorage.clear()
-})
+const baseSettings: UserSettings = {
+  base_currency: 'USD',
+  display_currencies: [],
+  language: 'en',
+  is_admin: false,
+  notify_budget_alerts: true,
+  notify_recurring_reminders: true,
+  notify_weekly_summary: false,
+  notify_goal_milestones: true,
+  stats_chart_style: 'donut',
+  animate_numbers: null,
+  theme: 'system',
+  hide_amounts: false,
+}
+
+function renderWithSettings<T>(
+  hook: () => T,
+  settings: UserSettings = baseSettings,
+): { result: { current: T }; client: QueryClient } {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  })
+  client.setQueryData(SETTINGS_QUERY_KEY, settings)
+  function Wrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  }
+  const { result } = renderHook(hook, { wrapper: Wrapper })
+  return { result, client }
+}
 
 describe('useAnimateNumbers', () => {
-  it('defaults to enabled when no system reduced-motion preference', () => {
+  beforeEach(() => {
+    vi.mocked(settingsApi.get).mockResolvedValue(baseSettings)
+    vi.mocked(settingsApi.update).mockReset()
+  })
+
+  it('defaults to enabled when settings is unset and no system reduced-motion', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false)
-    const { result } = renderHook(() => useAnimateNumbers())
+    const { result } = renderWithSettings(() => useAnimateNumbers())
     expect(result.current[0]).toBe(true)
   })
 
-  it('honours system reduced-motion when no explicit choice stored', () => {
+  it('honours system reduced-motion when settings.animate_numbers is null', () => {
     vi.mocked(useReducedMotion).mockReturnValue(true)
-    const { result } = renderHook(() => useAnimateNumbers())
+    const { result } = renderWithSettings(() => useAnimateNumbers())
     expect(result.current[0]).toBe(false)
   })
 
-  it('explicit user choice wins over system preference', () => {
+  it('explicit settings value wins over system preference', () => {
     vi.mocked(useReducedMotion).mockReturnValue(true)
-    setAnimateNumbersPreference(true)
-    const { result } = renderHook(() => useAnimateNumbers())
+    const { result } = renderWithSettings(
+      () => useAnimateNumbers(),
+      { ...baseSettings, animate_numbers: true },
+    )
     expect(result.current[0]).toBe(true)
   })
 
-  it('setter persists preference and updates state', () => {
-    const { result } = renderHook(() => useAnimateNumbers())
+  it('setter calls settingsApi.update with ui_preferences.animate_numbers', async () => {
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, animate_numbers: false })
+    const { result } = renderWithSettings(() => useAnimateNumbers())
+
     act(() => {
       result.current[1](false)
     })
-    expect(result.current[0]).toBe(false)
-    expect(localStorage.getItem(ANIMATE_NUMBERS_KEY)).toBe('false')
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { animate_numbers: false } })
+    })
   })
 })
 
-describe('setAnimateNumbersPreference', () => {
-  it('stores boolean as string', () => {
-    setAnimateNumbersPreference(true)
-    expect(localStorage.getItem(ANIMATE_NUMBERS_KEY)).toBe('true')
-    setAnimateNumbersPreference(false)
-    expect(localStorage.getItem(ANIMATE_NUMBERS_KEY)).toBe('false')
+describe('useChartStyle', () => {
+  beforeEach(() => {
+    vi.mocked(settingsApi.get).mockResolvedValue(baseSettings)
+    vi.mocked(settingsApi.update).mockReset()
+  })
+
+  it('returns the style stored in settings', () => {
+    const { result } = renderWithSettings(
+      () => useChartStyle(),
+      { ...baseSettings, stats_chart_style: 'dual_bar' },
+    )
+    expect(result.current[0]).toBe('dual_bar')
+  })
+
+  it('falls back to donut when settings is not yet loaded', () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    function Wrapper({ children }: { children: ReactNode }) {
+      return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(() => useChartStyle(), { wrapper: Wrapper })
+    expect(result.current[0]).toBe('donut')
+  })
+
+  it('setter dispatches PATCH with the new style', async () => {
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, stats_chart_style: 'profit_bars' })
+    const { result } = renderWithSettings(() => useChartStyle())
+
+    act(() => {
+      result.current[1]('profit_bars')
+    })
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { stats_chart_style: 'profit_bars' } })
+    })
+  })
+
+  it('setter is a no-op when style is unchanged', () => {
+    const { result } = renderWithSettings(
+      () => useChartStyle(),
+      { ...baseSettings, stats_chart_style: 'donut' },
+    )
+    act(() => {
+      result.current[1]('donut')
+    })
+    expect(settingsApi.update).not.toHaveBeenCalled()
   })
 })
 
@@ -156,102 +239,107 @@ describe('useFirstLaunchSetup', () => {
   })
 })
 
-const baseSettings: UserSettings = {
-  base_currency: 'USD',
-  display_currencies: [],
-  language: 'en',
-  is_admin: false,
-  notify_budget_alerts: false,
-  notify_recurring_reminders: false,
-  notify_weekly_summary: false,
-  notify_goal_milestones: false,
-  theme: 'system',
-  hide_amounts: false,
-}
-
-function buildHookHarness(initial?: Partial<UserSettings>) {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0, staleTime: 0 }, mutations: { retry: false } },
-  })
-  if (initial) {
-    client.setQueryData<UserSettings>(['settings'], { ...baseSettings, ...initial })
-  }
-  function HookWrapper({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  }
-  return { client, wrapper: HookWrapper }
-}
-
 describe('useThemePreference', () => {
+  beforeEach(() => {
+    vi.mocked(settingsApi.get).mockResolvedValue(baseSettings)
+    vi.mocked(settingsApi.update).mockReset()
+  })
+
   it('defaults to "system" before settings load', () => {
-    const { wrapper } = buildHookHarness()
-    const { result } = renderHook(() => useThemePreference(), { wrapper })
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    function Wrapper({ children }: { children: ReactNode }) {
+      return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(() => useThemePreference(), { wrapper: Wrapper })
     expect(result.current[0]).toBe('system')
   })
 
   it('returns the cached theme when settings are present', () => {
-    const { wrapper } = buildHookHarness({ theme: 'dark' })
-    const { result } = renderHook(() => useThemePreference(), { wrapper })
+    const { result } = renderWithSettings(
+      () => useThemePreference(),
+      { ...baseSettings, theme: 'dark' },
+    )
     expect(result.current[0]).toBe('dark')
   })
 
-  it('setter calls settingsApi.update with the new theme', async () => {
-    const { wrapper } = buildHookHarness({ theme: 'system' })
-    const updateSpy = vi.spyOn(settingsApi, 'update').mockResolvedValue({ ...baseSettings, theme: 'light' })
-    const { result } = renderHook(() => useThemePreference(), { wrapper })
-    act(() => { result.current[1]('light') })
-    await waitFor(() => {
-      expect(updateSpy).toHaveBeenCalledWith({ theme: 'light' })
+  it('setter calls settingsApi.update with ui_preferences.theme', async () => {
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, theme: 'light' })
+    const { result } = renderWithSettings(() => useThemePreference())
+
+    act(() => {
+      result.current[1]('light')
     })
-    updateSpy.mockRestore()
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { theme: 'light' } })
+    })
   })
 
-  it('optimistically updates the cache before the request resolves', async () => {
-    const { client, wrapper } = buildHookHarness({ theme: 'system' })
-    const updateSpy = vi.spyOn(settingsApi, 'update').mockImplementation(
-      () => new Promise(() => { /* never resolves */ }),
+  it('setter is a no-op when theme is unchanged', () => {
+    const { result } = renderWithSettings(
+      () => useThemePreference(),
+      { ...baseSettings, theme: 'dark' },
     )
-    const { result } = renderHook(() => useThemePreference(), { wrapper })
-    act(() => { result.current[1]('dark') })
-    await waitFor(() => {
-      expect(client.getQueryData<UserSettings>(['settings'])?.theme).toBe('dark')
+    act(() => {
+      result.current[1]('dark')
     })
-    updateSpy.mockRestore()
+    expect(settingsApi.update).not.toHaveBeenCalled()
   })
 })
 
 describe('useHideAmounts', () => {
+  beforeEach(() => {
+    vi.mocked(settingsApi.get).mockResolvedValue(baseSettings)
+    vi.mocked(settingsApi.update).mockReset()
+  })
+
   it('defaults to hidden=true while settings are still loading', () => {
-    const { wrapper } = buildHookHarness()
-    const { result } = renderHook(() => useHideAmounts(), { wrapper })
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    function Wrapper({ children }: { children: ReactNode }) {
+      return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(() => useHideAmounts(), { wrapper: Wrapper })
     expect(result.current.hidden).toBe(true)
   })
 
   it('reflects the cached value when loaded', () => {
-    const { wrapper } = buildHookHarness({ hide_amounts: false })
-    const { result } = renderHook(() => useHideAmounts(), { wrapper })
+    const { result } = renderWithSettings(
+      () => useHideAmounts(),
+      { ...baseSettings, hide_amounts: false },
+    )
     expect(result.current.hidden).toBe(false)
   })
 
   it('toggle inverts the current value via settingsApi.update', async () => {
-    const { wrapper } = buildHookHarness({ hide_amounts: true })
-    const updateSpy = vi.spyOn(settingsApi, 'update').mockResolvedValue({ ...baseSettings, hide_amounts: false })
-    const { result } = renderHook(() => useHideAmounts(), { wrapper })
-    act(() => { result.current.toggle() })
-    await waitFor(() => {
-      expect(updateSpy).toHaveBeenCalledWith({ hide_amounts: false })
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, hide_amounts: false })
+    const { result } = renderWithSettings(
+      () => useHideAmounts(),
+      { ...baseSettings, hide_amounts: true },
+    )
+
+    act(() => {
+      result.current.toggle()
     })
-    updateSpy.mockRestore()
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { hide_amounts: false } })
+    })
   })
 
   it('setHidden writes the explicit value', async () => {
-    const { wrapper } = buildHookHarness({ hide_amounts: false })
-    const updateSpy = vi.spyOn(settingsApi, 'update').mockResolvedValue({ ...baseSettings, hide_amounts: true })
-    const { result } = renderHook(() => useHideAmounts(), { wrapper })
-    act(() => { result.current.setHidden(true) })
-    await waitFor(() => {
-      expect(updateSpy).toHaveBeenCalledWith({ hide_amounts: true })
+    vi.mocked(settingsApi.update).mockResolvedValue({ ...baseSettings, hide_amounts: true })
+    const { result } = renderWithSettings(() => useHideAmounts())
+
+    act(() => {
+      result.current.setHidden(true)
     })
-    updateSpy.mockRestore()
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledWith({ ui_preferences: { hide_amounts: true } })
+    })
   })
 })

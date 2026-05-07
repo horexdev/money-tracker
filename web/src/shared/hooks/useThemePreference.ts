@@ -1,8 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { settingsApi } from '../api/settings'
-import type { UserSettings, ThemePref } from '../types'
-
-export type { ThemePref } from '../types'
+import type { ThemePref } from '../types'
+import { useUserSettings, useUpdateSettings } from './useUserSettings'
 
 const VALID: ReadonlySet<string> = new Set(['system', 'light', 'dark'])
 
@@ -12,29 +9,20 @@ function normalize(value: unknown): ThemePref {
 
 /**
  * Reactive hook reading and writing the user's UI theme preference.
- * Source of truth lives on the server in user_settings; updates use
- * react-query's optimistic-update pattern so the toggle feels instant.
+ * Source of truth lives on the server in user_settings; updates use the
+ * shared `ui_preferences` envelope.
  */
 export function useThemePreference(): [ThemePref, (p: ThemePref) => void] {
-  const qc = useQueryClient()
-  const { data } = useQuery({ queryKey: ['settings'], queryFn: settingsApi.get })
+  const { data } = useUserSettings()
+  const update = useUpdateSettings()
   const pref = normalize(data?.theme)
 
-  const mutation = useMutation({
-    mutationFn: (p: ThemePref) => settingsApi.update({ theme: p }),
-    onMutate: async (next) => {
-      await qc.cancelQueries({ queryKey: ['settings'] })
-      const previous = qc.getQueryData<UserSettings>(['settings'])
-      if (previous) {
-        qc.setQueryData<UserSettings>(['settings'], { ...previous, theme: next })
-      }
-      return { previous }
-    },
-    onError: (_err, _next, ctx) => {
-      if (ctx?.previous) qc.setQueryData<UserSettings>(['settings'], ctx.previous)
-    },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['settings'] }),
-  })
+  function set(next: ThemePref): void {
+    if (next === pref) return
+    update.mutate({ ui_preferences: { theme: next } })
+  }
 
-  return [pref, (p: ThemePref) => mutation.mutate(p)]
+  return [pref, set]
 }
+
+export type { ThemePref } from '../types'

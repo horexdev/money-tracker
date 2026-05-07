@@ -1,9 +1,12 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Check, CalendarBlank, ArrowsLeftRight } from '@phosphor-icons/react'
+import { Check, CalendarBlank, ArrowsLeftRight, Lightning, FloppyDisk } from '@phosphor-icons/react'
 import { AnimatePresence } from 'framer-motion'
+import { TemplatePicker } from '../templates/TemplatePicker'
+import { TemplateForm, type PrefillState } from '../templates/TemplateForm'
+import type { TransactionTemplate } from '../../shared/types'
 import { categoriesApi } from '../../shared/api/categories'
 import { transactionsApi } from '../../shared/api/transactions'
 import { transfersApi, exchangeApi } from '../../shared/api/transfers'
@@ -28,19 +31,24 @@ export function AddTransactionPage() {
   const { t } = useTranslation()
   const tCategory = useCategoryName()
   const navigate = useNavigate()
+  const location = useLocation()
   const qc = useQueryClient()
   const { selection, notification } = useHaptic()
 
-  const [mode, setMode] = useState<Mode>('expense')
-  const [amount, setAmount] = useState('')
-  const [categoryID, setCategoryID] = useState<number | null>(null)
-  const [note, setNote] = useState('')
+  const fromTemplate = (location.state as { fromTemplate?: TransactionTemplate } | null)?.fromTemplate ?? null
+
+  const [mode, setMode] = useState<Mode>(fromTemplate?.type ?? 'expense')
+  const [amount, setAmount] = useState(fromTemplate ? String(fromTemplate.amount_cents / 100) : '')
+  const [categoryID, setCategoryID] = useState<number | null>(fromTemplate?.category_id ?? null)
+  const [note, setNote] = useState(fromTemplate?.note ?? '')
   const [txDate, setTxDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [showDatePicker, setShowDatePicker] = useState(false)
-  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(fromTemplate?.account_id ?? null)
   const [fromAccountId, setFromAccountId] = useState<number | null>(null)
   const [toAccountId, setToAccountId] = useState<number | null>(null)
   const [exchangeRate, setExchangeRate] = useState<number | null>(null)
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
+  const [showSaveAsTemplate, setShowSaveAsTemplate] = useState(false)
 
   const { data: catData, isLoading } = useQuery({
     queryKey: ['categories', { order: 'frequency' }],
@@ -198,6 +206,19 @@ export function AddTransactionPage() {
           <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
           <div className="relative z-10">
+            {/* From-template button — expense/income only */}
+            {!isTransfer && (
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => setShowTemplatePicker(true)}
+                  className="inline-flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-bold text-white border border-white/[0.08] active:scale-[0.96] transition-transform"
+                >
+                  <Lightning size={12} weight="fill" />
+                  {t('templates.from_template')}
+                </button>
+              </div>
+            )}
+
             {/* Mode toggle + account selector row */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 gap-1 border border-white/[0.08] shrink-0">
@@ -398,6 +419,15 @@ export function AddTransactionPage() {
               >
                 {isPending ? t('common.loading') : t('common.save')}
               </button>
+              {canSubmit && (
+                <button
+                  onClick={() => setShowSaveAsTemplate(true)}
+                  className="w-full mt-2 py-2.5 rounded-2xl text-[13px] font-semibold text-accent bg-accent-subtle active:scale-[0.98] transition-transform inline-flex items-center justify-center gap-1.5"
+                >
+                  <FloppyDisk size={14} weight="bold" />
+                  {t('templates.save_as_template')}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -429,6 +459,31 @@ export function AddTransactionPage() {
             onApply={(iso) => setTxDate(iso)}
             onClose={() => setShowDatePicker(false)}
             applyLabel={t('common.done')}
+          />
+        )}
+        {showTemplatePicker && (
+          <TemplatePicker
+            onClose={() => setShowTemplatePicker(false)}
+            onSelect={(tpl) => {
+              setMode(tpl.type)
+              setAmount(String(tpl.amount_cents / 100))
+              setCategoryID(tpl.category_id)
+              setNote(tpl.note ?? '')
+              setSelectedAccountId(tpl.account_id)
+            }}
+          />
+        )}
+        {showSaveAsTemplate && (
+          <TemplateForm
+            editItem={null}
+            initialState={{
+              type: mode === 'transfer' ? 'expense' : (mode as PrefillState['type']),
+              amountCents: parseCents(amount),
+              categoryID,
+              accountID: selectedAccountId,
+              note,
+            }}
+            onClose={() => setShowSaveAsTemplate(false)}
           />
         )}
       </AnimatePresence>

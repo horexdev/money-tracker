@@ -21,12 +21,18 @@ export const transactionsApi = {
   list(
     page = 1,
     pageSize = 20,
-    params?: { accountId?: number | null; from?: string | null; to?: string | null },
+    params?: {
+      accountId?: number | null
+      from?: string | null
+      to?: string | null
+      categoryId?: number | null
+    },
   ): Promise<ListTransactionsResponse> {
     const qs = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
     if (params?.accountId) qs.set('account_id', String(params.accountId))
     if (params?.from) qs.set('from', params.from)
     if (params?.to) qs.set('to', params.to)
+    if (params?.categoryId) qs.set('category_id', String(params.categoryId))
     return api.get(`/v1/transactions?${qs.toString()}`)
   },
 

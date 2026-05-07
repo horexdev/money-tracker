@@ -235,6 +235,7 @@ func (r *TransactionRepository) StatsByCategory(ctx context.Context, userID int6
 	stats := make([]domain.CategoryStat, 0, len(rows))
 	for _, row := range rows {
 		stats = append(stats, domain.CategoryStat{
+			CategoryID:    row.CategoryID,
 			CategoryName:  row.CategoryName,
 			CategoryIcon:  row.CategoryIcon,
 			CategoryColor: row.CategoryColor,
@@ -299,6 +300,7 @@ func (r *TransactionRepository) StatsByCategoryAndAccount(ctx context.Context, u
 	stats := make([]domain.CategoryStat, 0, len(rows))
 	for _, row := range rows {
 		stats = append(stats, domain.CategoryStat{
+			CategoryID:    row.CategoryID,
 			CategoryName:  row.CategoryName,
 			CategoryIcon:  row.CategoryIcon,
 			CategoryColor: row.CategoryColor,
@@ -402,6 +404,104 @@ func (r *TransactionRepository) CountByAccountWithDateRange(ctx context.Context,
 		AccountID: accountID,
 		Column3:   pgOptionalTimestamptz(from),
 		Column4:   pgOptionalTimestamptz(to),
+	})
+}
+
+// ListByCategoryWithDateRange returns paginated transactions for a specific category filtered by an optional date range.
+func (r *TransactionRepository) ListByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	rows, err := r.q.ListTransactionsByCategoryWithDateRange(ctx, sqlcgen.ListTransactionsByCategoryWithDateRangeParams{
+		UserID:     userID,
+		CategoryID: categoryID,
+		Limit:      int32(limit),
+		Offset:     int32(offset),
+		Column5:    pgOptionalTimestamptz(from),
+		Column6:    pgOptionalTimestamptz(to),
+	})
+	if err != nil {
+		return nil, err
+	}
+	txs := make([]*domain.Transaction, 0, len(rows))
+	for _, row := range rows {
+		var accountName string
+		if row.AccountName.Valid {
+			accountName = row.AccountName.String
+		}
+		txs = append(txs, &domain.Transaction{
+			ID:            row.ID,
+			UserID:        row.UserID,
+			Type:          row.Type,
+			AmountCents:   row.AmountCents,
+			CategoryID:    row.CategoryID,
+			CategoryName:  row.CategoryName,
+			CategoryIcon:  row.CategoryIcon,
+			CategoryColor: row.CategoryColor,
+			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
+			CreatedAt:     goTime(row.CreatedAt),
+			AccountID:     row.AccountID,
+			AccountName:   accountName,
+		})
+	}
+	return txs, nil
+}
+
+// CountByCategoryWithDateRange counts transactions for a category within an optional date range.
+func (r *TransactionRepository) CountByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time) (int64, error) {
+	return r.q.CountUserTransactionsByCategoryWithDateRange(ctx, sqlcgen.CountUserTransactionsByCategoryWithDateRangeParams{
+		UserID:     userID,
+		CategoryID: categoryID,
+		Column3:    pgOptionalTimestamptz(from),
+		Column4:    pgOptionalTimestamptz(to),
+	})
+}
+
+// ListByAccountAndCategoryWithDateRange returns paginated transactions for a specific account+category filtered by an optional date range.
+func (r *TransactionRepository) ListByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	rows, err := r.q.ListTransactionsByAccountAndCategoryWithDateRange(ctx, sqlcgen.ListTransactionsByAccountAndCategoryWithDateRangeParams{
+		UserID:     userID,
+		AccountID:  accountID,
+		CategoryID: categoryID,
+		Limit:      int32(limit),
+		Offset:     int32(offset),
+		Column6:    pgOptionalTimestamptz(from),
+		Column7:    pgOptionalTimestamptz(to),
+	})
+	if err != nil {
+		return nil, err
+	}
+	txs := make([]*domain.Transaction, 0, len(rows))
+	for _, row := range rows {
+		var accountName string
+		if row.AccountName.Valid {
+			accountName = row.AccountName.String
+		}
+		txs = append(txs, &domain.Transaction{
+			ID:            row.ID,
+			UserID:        row.UserID,
+			Type:          row.Type,
+			AmountCents:   row.AmountCents,
+			CategoryID:    row.CategoryID,
+			CategoryName:  row.CategoryName,
+			CategoryIcon:  row.CategoryIcon,
+			CategoryColor: row.CategoryColor,
+			Note:          row.Note,
+			CurrencyCode:  row.CurrencyCode,
+			CreatedAt:     goTime(row.CreatedAt),
+			AccountID:     row.AccountID,
+			AccountName:   accountName,
+		})
+	}
+	return txs, nil
+}
+
+// CountByAccountAndCategoryWithDateRange counts transactions for an account+category within an optional date range.
+func (r *TransactionRepository) CountByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time) (int64, error) {
+	return r.q.CountUserTransactionsByAccountAndCategoryWithDateRange(ctx, sqlcgen.CountUserTransactionsByAccountAndCategoryWithDateRangeParams{
+		UserID:     userID,
+		AccountID:  accountID,
+		CategoryID: categoryID,
+		Column4:    pgOptionalTimestamptz(from),
+		Column5:    pgOptionalTimestamptz(to),
 	})
 }
 

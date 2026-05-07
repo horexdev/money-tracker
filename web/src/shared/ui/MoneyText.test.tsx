@@ -16,6 +16,8 @@ const baseSettings: UserSettings = {
   notify_recurring_reminders: false,
   notify_weekly_summary: false,
   notify_goal_milestones: false,
+  stats_chart_style: 'donut',
+  animate_numbers: null,
   theme: 'system',
   hide_amounts: false,
 }
@@ -50,7 +52,7 @@ describe('MoneyText', () => {
     )
     fireEvent.click(screen.getByRole('button'))
     await waitFor(() => {
-      expect(updateSpy).toHaveBeenCalledWith({ hide_amounts: false })
+      expect(updateSpy).toHaveBeenCalledWith({ ui_preferences: { hide_amounts: false } })
     })
     expect(parentClick).not.toHaveBeenCalled()
     updateSpy.mockRestore()

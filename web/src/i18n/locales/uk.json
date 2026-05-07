@@ -98,7 +98,13 @@
     "date_to": "До",
     "apply": "Застосувати",
     "prev_month": "Попередній місяць",
-    "next_month": "Наступний місяць"
+    "next_month": "Наступний місяць",
+    "chart_style": "Chart style",
+    "chart_donut": "Donut",
+    "chart_stacked_bar": "Bar",
+    "chart_dual_bar": "Dual bars",
+    "chart_profit_bars": "Profit",
+    "profit": "Profit"
   },
   "categories": {
     "title": "Категорії",
@@ -244,7 +250,8 @@
     "export": "Експорт",
     "settings": "Налаштування",
     "admin_panel": "Адмін панель",
-    "accounts": "Рахунки"
+    "accounts": "Рахунки",
+    "templates": "Швидкі шаблони"
   },
   "admin": {
     "title": "Адмін панель",
@@ -314,5 +321,22 @@
     "delta_hint_increase": "+{{amount}} will be added",
     "delta_hint_decrease": "{{amount}} will be deducted",
     "no_change": "Enter a different amount to adjust"
+  },
+  "templates": {
+    "title": "Шаблони",
+    "no_templates": "Шаблонів поки немає",
+    "create_first": "Створіть перший шаблон для частих операцій — один тап замість п'яти",
+    "create_new": "Новий шаблон",
+    "edit_title": "Редагувати шаблон",
+    "from_template": "З шаблону",
+    "save_as_template": "Зберегти як шаблон",
+    "amount_fixed": "Фіксована сума",
+    "amount_fixed_hint": "Тап на головній створює операцію миттєво",
+    "amount_variable_hint": "Тап на головній запитає суму",
+    "amount_variable_hint_short": "запитати суму",
+    "name": "Назва",
+    "name_placeholder": "Кава, обід, проїзд…",
+    "quick": "Швидкі шаблони",
+    "apply": "Застосувати шаблон"
   }
 }

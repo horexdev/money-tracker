@@ -17,6 +17,7 @@ const SettingsPage       = lazy(() => import('../features/settings').then(m => (
 const CategoriesPage     = lazy(() => import('../features/categories').then(m => ({ default: m.CategoriesPage })))
 const BudgetsPage        = lazy(() => import('../features/budgets').then(m => ({ default: m.BudgetsPage })))
 const RecurringPage      = lazy(() => import('../features/recurring').then(m => ({ default: m.RecurringPage })))
+const TemplatesPage      = lazy(() => import('../features/templates').then(m => ({ default: m.TemplatesPage })))
 const SavingsPage        = lazy(() => import('../features/savings').then(m => ({ default: m.SavingsPage })))
 const ExportPage         = lazy(() => import('../features/export').then(m => ({ default: m.ExportPage })))
 const AccountsPage       = lazy(() => import('../features/accounts').then(m => ({ default: m.AccountsPage })))
@@ -43,6 +44,7 @@ function AnimatedRoutes() {
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="budgets" element={<BudgetsPage />} />
             <Route path="recurring" element={<RecurringPage />} />
+            <Route path="templates" element={<TemplatesPage />} />
             <Route path="savings" element={<SavingsPage />} />
             <Route path="export" element={<ExportPage />} />
             <Route path="accounts" element={<AccountsPage />} />

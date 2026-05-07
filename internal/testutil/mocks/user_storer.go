@@ -52,16 +52,8 @@ func (m *MockUserStorer) UpdateNotificationPreferences(ctx context.Context, id i
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *MockUserStorer) UpdateTheme(ctx context.Context, id int64, theme domain.ThemePref) (*domain.User, error) {
-	args := m.Called(ctx, id, theme)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*domain.User), args.Error(1)
-}
-
-func (m *MockUserStorer) UpdateHideAmounts(ctx context.Context, id int64, hide bool) (*domain.User, error) {
-	args := m.Called(ctx, id, hide)
+func (m *MockUserStorer) UpdateUIPreferences(ctx context.Context, id int64, prefs domain.UIPreferences) (*domain.User, error) {
+	args := m.Called(ctx, id, prefs)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

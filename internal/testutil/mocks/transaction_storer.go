@@ -151,3 +151,29 @@ func (m *MockTransactionStorer) CountByAccountWithDateRange(ctx context.Context,
 	args := m.Called(ctx, userID, accountID, from, to)
 	return args.Get(0).(int64), args.Error(1)
 }
+
+func (m *MockTransactionStorer) ListByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	args := m.Called(ctx, userID, categoryID, from, to, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*domain.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionStorer) ListByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time, limit, offset int) ([]*domain.Transaction, error) {
+	args := m.Called(ctx, userID, accountID, categoryID, from, to, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*domain.Transaction), args.Error(1)
+}
+
+func (m *MockTransactionStorer) CountByCategoryWithDateRange(ctx context.Context, userID, categoryID int64, from, to *time.Time) (int64, error) {
+	args := m.Called(ctx, userID, categoryID, from, to)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockTransactionStorer) CountByAccountAndCategoryWithDateRange(ctx context.Context, userID, accountID, categoryID int64, from, to *time.Time) (int64, error) {
+	args := m.Called(ctx, userID, accountID, categoryID, from, to)
+	return args.Get(0).(int64), args.Error(1)
+}

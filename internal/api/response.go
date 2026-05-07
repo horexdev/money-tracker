@@ -39,7 +39,8 @@ func httpStatus(err error) int {
 		errors.Is(err, domain.ErrBudgetNotFound),
 		errors.Is(err, domain.ErrRecurringNotFound),
 		errors.Is(err, domain.ErrGoalNotFound),
-		errors.Is(err, domain.ErrAccountNotFound):
+		errors.Is(err, domain.ErrAccountNotFound),
+		errors.Is(err, domain.ErrTemplateNotFound):
 		return http.StatusNotFound
 	case errors.Is(err, domain.ErrInvalidAmount),
 		errors.Is(err, domain.ErrCategoryNameEmpty),
@@ -48,6 +49,7 @@ func httpStatus(err error) int {
 		errors.Is(err, domain.ErrInvalidFrequency),
 		errors.Is(err, domain.ErrInvalidLanguage),
 		errors.Is(err, domain.ErrInvalidTheme),
+		errors.Is(err, domain.ErrInvalidStatsChartStyle),
 		errors.Is(err, domain.ErrTooManyDisplayCurrencies),
 		errors.Is(err, domain.ErrTransferSameAccount):
 		return http.StatusBadRequest
@@ -56,6 +58,8 @@ func httpStatus(err error) int {
 		errors.Is(err, domain.ErrAccountHasTransactions),
 		errors.Is(err, domain.ErrAccountHasTransfers),
 		errors.Is(err, domain.ErrAccountHasRecurring),
+		errors.Is(err, domain.ErrAccountHasTemplates),
+		errors.Is(err, domain.ErrCategoryHasTemplates),
 		errors.Is(err, domain.ErrCannotDeleteLastAccount),
 		errors.Is(err, domain.ErrMustSetNewDefault),
 		errors.Is(err, domain.ErrCurrencyImmutable):
@@ -103,6 +107,8 @@ func userMessage(err error) string {
 		return "invalid language: use en or ru"
 	case errors.Is(err, domain.ErrInvalidTheme):
 		return "invalid theme: must be one of system, light, dark"
+	case errors.Is(err, domain.ErrInvalidStatsChartStyle):
+		return "invalid stats_chart_style: use donut, stacked_bar, dual_bar, or profit_bars"
 	case errors.Is(err, domain.ErrTooManyDisplayCurrencies):
 		return "maximum 3 display currencies allowed"
 	case errors.Is(err, domain.ErrBudgetAlreadyExists):
@@ -122,6 +128,12 @@ func userMessage(err error) string {
 		return "account has transfers and cannot be deleted"
 	case errors.Is(err, domain.ErrAccountHasRecurring):
 		return "account has recurring transactions and cannot be deleted"
+	case errors.Is(err, domain.ErrAccountHasTemplates):
+		return "account has transaction templates and cannot be deleted"
+	case errors.Is(err, domain.ErrCategoryHasTemplates):
+		return "category has transaction templates and cannot be deleted"
+	case errors.Is(err, domain.ErrTemplateNotFound):
+		return "transaction template not found"
 	case errors.Is(err, domain.ErrCannotDeleteLastAccount):
 		return "cannot delete the only account"
 	case errors.Is(err, domain.ErrMustSetNewDefault):
