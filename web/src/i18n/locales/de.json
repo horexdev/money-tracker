@@ -15,7 +15,8 @@
     "close": "Schließen",
     "done": "Fertig",
     "coming_soon": "Demnächst",
-    "none": "Keine"
+    "none": "Keine",
+    "show_amounts": "Beträge anzeigen"
   },
   "tabs": {
     "home": "Start",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Benachrichtigung bei 25%, 50%, 75%, 100%",
     "display": "Anzeige",
     "animate_numbers": "Zahlen animieren",
-    "animate_numbers_desc": "Federeffekt bei Änderung von Saldo und Summen"
+    "animate_numbers_desc": "Federeffekt bei Änderung von Saldo und Summen",
+    "privacy": "Datenschutz",
+    "hide_amounts": "Beträge ausblenden",
+    "hide_amounts_desc": "Wird als •••• angezeigt; tippe einen ausgeblendeten Betrag an, um ihn anzuzeigen."
   },
   "more": {
     "title": "Mehr",

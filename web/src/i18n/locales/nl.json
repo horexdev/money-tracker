@@ -15,7 +15,8 @@
     "close": "Sluiten",
     "done": "Klaar",
     "coming_soon": "Binnenkort",
-    "none": "Geen"
+    "none": "Geen",
+    "show_amounts": "Bedragen tonen"
   },
   "tabs": {
     "home": "Home",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Melding bij 25%, 50%, 75%, 100% van een doel",
     "display": "Weergave",
     "animate_numbers": "Getallen animeren",
-    "animate_numbers_desc": "Veereffect bij wijziging van saldo en totalen"
+    "animate_numbers_desc": "Veereffect bij wijziging van saldo en totalen",
+    "privacy": "Privacy",
+    "hide_amounts": "Bedragen verbergen",
+    "hide_amounts_desc": "Getoond als ••••; tik op een verborgen bedrag om het te onthullen."
   },
   "more": {
     "title": "Meer",

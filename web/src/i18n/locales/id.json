@@ -15,7 +15,8 @@
     "close": "Tutup",
     "done": "Selesai",
     "coming_soon": "Segera hadir",
-    "none": "Tidak ada"
+    "none": "Tidak ada",
+    "show_amounts": "Tampilkan jumlah"
   },
   "tabs": {
     "home": "Beranda",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Peringatan di 25%, 50%, 75%, 100% tujuan",
     "display": "Tampilan",
     "animate_numbers": "Animasikan angka",
-    "animate_numbers_desc": "Efek pegas saat saldo dan total berubah"
+    "animate_numbers_desc": "Efek pegas saat saldo dan total berubah",
+    "privacy": "Privasi",
+    "hide_amounts": "Sembunyikan jumlah",
+    "hide_amounts_desc": "Ditampilkan sebagai ••••; ketuk jumlah tersembunyi untuk menampilkannya."
   },
   "more": {
     "title": "Lainnya",

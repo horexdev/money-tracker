@@ -4,9 +4,23 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
 import i18n from 'i18next'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { TransactionRow } from './TransactionRow'
-import type { Transaction } from '../types'
+import type { Transaction, UserSettings } from '../types'
+
+const SETTINGS_VISIBLE: UserSettings = {
+  base_currency: 'USD',
+  display_currencies: [],
+  language: 'en',
+  is_admin: false,
+  notify_budget_alerts: false,
+  notify_recurring_reminders: false,
+  notify_weekly_summary: false,
+  notify_goal_milestones: false,
+  theme: 'system',
+  hide_amounts: false,
+}
 
 function withI18n(ui: React.ReactElement, lang = 'en') {
   const inst = i18n.createInstance()
@@ -16,7 +30,7 @@ function withI18n(ui: React.ReactElement, lang = 'en') {
     resources: {
       en: {
         translation: {
-          common: { delete: 'Delete' },
+          common: { delete: 'Delete', show_amounts: 'Show amounts' },
           categories: { names: { Food: 'Food' } },
         },
       },
@@ -24,8 +38,16 @@ function withI18n(ui: React.ReactElement, lang = 'en') {
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
   })
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0, staleTime: 0 } },
+  })
+  client.setQueryData<UserSettings>(['settings'], SETTINGS_VISIBLE)
   function Wrapper({ children }: { children: ReactNode }) {
-    return <I18nextProvider i18n={inst}>{children}</I18nextProvider>
+    return (
+      <I18nextProvider i18n={inst}>
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      </I18nextProvider>
+    )
   }
   return render(ui, { wrapper: Wrapper })
 }

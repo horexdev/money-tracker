@@ -7,6 +7,7 @@ import { Star, Plus, MagnifyingGlass, X, Check, Bank, Scales } from '@phosphor-i
 import { accountsApi } from '../../shared/api/accounts'
 
 import { formatCents, parseCents } from '../../shared/lib/money'
+import { MoneyText } from '../../shared/ui/MoneyText'
 import { COLOR_SWATCHES, ACCOUNT_TYPES, ACCOUNT_TYPE_ICONS, POPULAR_CURRENCIES, ALL_CURRENCIES } from '../../shared/lib/constants'
 import { friendlyError } from '../../shared/lib/errors'
 import { Spinner } from '../../shared/ui/Spinner'
@@ -138,9 +139,11 @@ function AdjustBalanceSection({
       {/* Current balance pill */}
       <div className="flex items-center justify-between bg-bg rounded-2xl px-4 py-2.5">
         <span className="text-[12px] text-muted font-medium">{t('adjustment.current_balance')}</span>
-        <span className="text-[13px] font-bold text-text tabular-nums">
-          {formatCents(account.balance_cents, account.currency_code)}
-        </span>
+        <MoneyText
+          cents={account.balance_cents}
+          currency={account.currency_code}
+          className="text-[13px] font-bold text-text tabular-nums"
+        />
       </div>
 
       {/* Target balance input */}
@@ -441,9 +444,11 @@ function AccountRow({
               <TypeIcon size={11} weight="fill" />
               <span className="capitalize">{t(`accountTypes.${account.type}`)}</span>
               <span className="text-muted/40">·</span>
-              <span className="font-semibold text-text tabular-nums">
-                {formatCents(account.balance_cents, account.currency_code)}
-              </span>
+              <MoneyText
+                cents={account.balance_cents}
+                currency={account.currency_code}
+                className="font-semibold text-text tabular-nums"
+              />
             </div>
           </button>
 

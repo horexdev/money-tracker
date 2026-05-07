@@ -15,7 +15,8 @@
     "close": "Kapat",
     "done": "Tamam",
     "coming_soon": "Yakında",
-    "none": "Hiçbiri"
+    "none": "Hiçbiri",
+    "show_amounts": "Tutarları göster"
   },
   "tabs": {
     "home": "Ana Sayfa",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "%25, %50, %75, %100'de uyarı",
     "display": "Görünüm",
     "animate_numbers": "Sayıları canlandır",
-    "animate_numbers_desc": "Bakiye ve toplamlar değiştiğinde yay efekti"
+    "animate_numbers_desc": "Bakiye ve toplamlar değiştiğinde yay efekti",
+    "privacy": "Gizlilik",
+    "hide_amounts": "Tutarları gizle",
+    "hide_amounts_desc": "•••• olarak gösterilir; gizli bir tutara dokunarak gösterin."
   },
   "more": {
     "title": "Daha Fazla",

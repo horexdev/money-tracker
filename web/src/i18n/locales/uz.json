@@ -15,7 +15,8 @@
     "close": "Yopish",
     "done": "Tayyor",
     "coming_soon": "Tez kunda",
-    "none": "Yo'q"
+    "none": "Yo'q",
+    "show_amounts": "Summalarni koʻrsatish"
   },
   "tabs": {
     "home": "Bosh sahifa",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Maqsadning 25%, 50%, 75%, 100%'ida ogohlantirish",
     "display": "Koʻrsatish",
     "animate_numbers": "Raqamlar animatsiyasi",
-    "animate_numbers_desc": "Balans va jamilar oʻzgargandagi prujina effekti"
+    "animate_numbers_desc": "Balans va jamilar oʻzgargandagi prujina effekti",
+    "privacy": "Maxfiylik",
+    "hide_amounts": "Summalarni yashirish",
+    "hide_amounts_desc": "•••• koʻrinishida koʻrsatiladi; har qanday yashirin summani bosing."
   },
   "more": {
     "title": "Ko'proq",

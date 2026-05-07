@@ -8,12 +8,12 @@ import {
 } from '@phosphor-icons/react'
 import { transactionsApi } from '../../shared/api/transactions'
 import { accountsApi } from '../../shared/api/accounts'
-import { formatCents, formatDate } from '../../shared/lib/money'
+import { formatDate } from '../../shared/lib/money'
 import { CategoryIcon } from '../../shared/lib/categoryIcons'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
-import { AmountDisplay, EmptyState, EditTransactionSheet, ActionRow, AccountDropdown, BottomSheet, RangeDateModal, fmtDisplay } from '../../shared/ui'
+import { AmountDisplay, MoneyText, EmptyState, EditTransactionSheet, ActionRow, AccountDropdown, BottomSheet, RangeDateModal, fmtDisplay } from '../../shared/ui'
 import { useCategoryName } from '../../shared/hooks/useCategoryName'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
 import type { Transaction, TransactionType } from '../../shared/types'
@@ -96,9 +96,11 @@ function DateGroup({
     <div>
       <div className="flex items-center justify-between px-5 mb-1.5">
         <span className="text-[11px] font-bold text-muted uppercase tracking-wider">{label}</span>
-        <span className={`text-[11px] font-bold tabular-nums ${total >= 0 ? 'text-income' : 'text-expense'}`}>
-          {total >= 0 ? '+' : '−'}{formatCents(Math.abs(total), baseCurrency)}
-        </span>
+        <MoneyText
+          cents={total}
+          currency={baseCurrency}
+          className={`text-[11px] font-bold tabular-nums ${total >= 0 ? 'text-income' : 'text-expense'}`}
+        />
       </div>
       <div className="mx-4 card-elevated divide-y divide-border">
         {transactions.map((tx) => (

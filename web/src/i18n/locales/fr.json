@@ -15,7 +15,8 @@
     "close": "Fermer",
     "done": "Terminé",
     "coming_soon": "Bientôt",
-    "none": "Aucun"
+    "none": "Aucun",
+    "show_amounts": "Afficher les montants"
   },
   "tabs": {
     "home": "Accueil",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Alerte à 25%, 50%, 75%, 100% d'un objectif",
     "display": "Affichage",
     "animate_numbers": "Animer les nombres",
-    "animate_numbers_desc": "Effet ressort lors des changements de solde et totaux"
+    "animate_numbers_desc": "Effet ressort lors des changements de solde et totaux",
+    "privacy": "Confidentialité",
+    "hide_amounts": "Masquer les montants",
+    "hide_amounts_desc": "Affiché comme ••••; touchez un montant masqué pour le révéler."
   },
   "more": {
     "title": "Plus",

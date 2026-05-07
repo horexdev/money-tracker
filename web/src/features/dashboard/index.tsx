@@ -10,17 +10,30 @@ import { transactionsApi } from '../../shared/api/transactions'
 import { accountsApi } from '../../shared/api/accounts'
 import { useBaseCurrency } from '../../shared/hooks/useBaseCurrency'
 import { useAnimateNumbers } from '../../shared/hooks/useAnimateNumbers'
+import { useHideAmounts } from '../../shared/hooks/useHideAmounts'
 import { Spinner } from '../../shared/ui/Spinner'
 import { ErrorMessage } from '../../shared/ui/ErrorMessage'
 import { PageTransition } from '../../shared/ui/PageTransition'
-import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState } from '../../shared/ui'
+import { TransactionRow, EditTransactionSheet, AccountDropdown, EmptyState, MoneyText } from '../../shared/ui'
 import type { Transaction } from '../../shared/types'
 
 type MoneyProps = { cents: number; currency: string; className?: string }
 
-/** Picks between spring-animated and static rendering based on user preference. */
+/** Picks between spring-animated, static, or masked rendering based on user preferences. */
 function AnimatedMoney(props: MoneyProps) {
   const [animate] = useAnimateNumbers()
+  const { hidden, toggle } = useHideAmounts()
+  if (hidden) {
+    return (
+      <span
+        role="button"
+        onClick={(e) => { e.stopPropagation(); toggle() }}
+        className={`cursor-pointer ${props.className ?? ''}`}
+      >
+        ••••
+      </span>
+    )
+  }
   return animate ? <SpringMoney {...props} /> : <StaticMoney {...props} />
 }
 
@@ -106,12 +119,16 @@ export function DashboardPage() {
   const incomeCents = baseEntry?.income_cents ?? 0
   const expenseCents = baseEntry?.expense_cents ?? 0
 
+  const { hidden: amountsHidden } = useHideAmounts()
   const heroDisplay = useMemo(() => formatCents(heroCents, heroCurrency), [heroCents, heroCurrency])
-  const heroFontSize =
-    heroDisplay.length > 14 ? 'text-[22px]' :
-    heroDisplay.length > 11 ? 'text-[28px]' :
-    heroDisplay.length > 8  ? 'text-[34px]' :
-    'text-[42px]'
+  // When privacy mode is on, use a fixed size so the displayed mask does not
+  // leak the magnitude of the underlying balance through font-size heuristics.
+  const heroFontSize = amountsHidden
+    ? 'text-[34px]'
+    : heroDisplay.length > 14 ? 'text-[22px]' :
+      heroDisplay.length > 11 ? 'text-[28px]' :
+      heroDisplay.length > 8  ? 'text-[34px]' :
+      'text-[42px]'
 
   if (balanceQ.isPending) return (
     <div className="flex justify-center items-center pt-24"><Spinner /></div>
@@ -178,9 +195,11 @@ export function DashboardPage() {
                   {balance!.by_currency.map((b) => (
                     <div key={b.currency_code} className="flex justify-between text-xs">
                       <span className="text-white/50 font-semibold">{b.currency_code}</span>
-                      <span className={`font-bold tabular-nums ${b.net_cents >= 0 ? 'text-white/80' : 'text-expense/80'}`}>
-                        {formatCents(b.net_cents, b.currency_code)}
-                      </span>
+                      <MoneyText
+                        cents={b.net_cents}
+                        currency={b.currency_code}
+                        className={`font-bold tabular-nums ${b.net_cents >= 0 ? 'text-white/80' : 'text-expense/80'}`}
+                      />
                     </div>
                   ))}
                 </div>

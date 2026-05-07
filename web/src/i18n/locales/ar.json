@@ -15,7 +15,8 @@
     "close": "إغلاق",
     "done": "تم",
     "coming_soon": "قريباً",
-    "none": "لا شيء"
+    "none": "لا شيء",
+    "show_amounts": "إظهار المبالغ"
   },
   "tabs": {
     "home": "الرئيسية",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "تنبيه عند 25% و50% و75% و100%",
     "display": "العرض",
     "animate_numbers": "تحريك الأرقام",
-    "animate_numbers_desc": "تأثير نابض عند تغيّر الرصيد والمجاميع"
+    "animate_numbers_desc": "تأثير نابض عند تغيّر الرصيد والمجاميع",
+    "privacy": "الخصوصية",
+    "hide_amounts": "إخفاء المبالغ",
+    "hide_amounts_desc": "يُعرض كـ ••••؛ اضغط على أي مبلغ مخفي للكشف عنه."
   },
   "more": {
     "title": "المزيد",

@@ -15,7 +15,8 @@
     "close": "Fechar",
     "done": "Pronto",
     "coming_soon": "Em breve",
-    "none": "Nenhum"
+    "none": "Nenhum",
+    "show_amounts": "Mostrar valores"
   },
   "tabs": {
     "home": "Início",
@@ -229,7 +230,10 @@
     "notify_goal_milestones_desc": "Alerta a 25%, 50%, 75%, 100% de um objetivo",
     "display": "Exibição",
     "animate_numbers": "Animar números",
-    "animate_numbers_desc": "Efeito de mola ao alterar o saldo e os totais"
+    "animate_numbers_desc": "Efeito de mola ao alterar o saldo e os totais",
+    "privacy": "Privacidade",
+    "hide_amounts": "Ocultar valores",
+    "hide_amounts_desc": "Exibido como ••••; toque em qualquer valor oculto para revelá-lo."
   },
   "more": {
     "title": "Mais",
