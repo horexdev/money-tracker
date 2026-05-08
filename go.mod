@@ -1,6 +1,6 @@
 module github.com/horexdev/money-tracker
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1
