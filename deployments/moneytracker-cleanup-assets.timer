@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly cleanup of stale moneytracker web assets
+Requires=moneytracker-cleanup-assets.service
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target
