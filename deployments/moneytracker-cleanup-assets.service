@@ -1,0 +1,9 @@
+[Unit]
+Description=Remove stale hashed web assets no longer referenced by current bundle
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/moneytracker/cleanup-assets.sh
+StandardOutput=journal
+StandardError=journal

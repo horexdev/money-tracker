@@ -29,10 +29,25 @@ chmod +x "$DEPLOY_DIR/api"
 
 chmod +x "$DEPLOY_DIR/goose"
 
-echo "[deploy] deploying web assets..."
-rm -rf "$DEPLOY_DIR/web"
+echo "[deploy] deploying web assets (preserving old hashed chunks for active sessions)..."
+WEB_ROOT="$DEPLOY_DIR/web"
 if [ -d "$DEPLOY_DIR/web-dist" ]; then
-  mv "$DEPLOY_DIR/web-dist" "$DEPLOY_DIR/web"
+  mkdir -p "$WEB_ROOT/assets"
+
+  # Hashed assets are content-addressed: накатываем новые поверх старых.
+  # Старые продолжают отдаваться активным сессиям, ссылающимся на прежние chunk-имена.
+  # cleanup-assets.timer раз в неделю удаляет ассеты, на которые больше нет ссылок и которые старше 60 дней.
+  cp -a "$DEPLOY_DIR/web-dist/assets/." "$WEB_ROOT/assets/"
+
+  # Top-level non-versioned static (favicon, manifest, robots.txt): обновляем по имени.
+  find "$DEPLOY_DIR/web-dist" -maxdepth 1 -type f ! -name 'index.html' \
+    -exec cp -af {} "$WEB_ROOT/" \;
+
+  # index.html — атомарный swap через staging-файл в той же директории (POSIX rename).
+  cp -a "$DEPLOY_DIR/web-dist/index.html" "$WEB_ROOT/.index.html.new"
+  mv -f "$WEB_ROOT/.index.html.new" "$WEB_ROOT/index.html"
+
+  rm -rf "$DEPLOY_DIR/web-dist"
 fi
 
 echo "[deploy] saving nginx config..."
@@ -73,6 +88,20 @@ echo "[deploy] installing backup scripts..."
 [ -f "$DEPLOY_DIR/restore.sh.new" ] && mv "$DEPLOY_DIR/restore.sh.new" "$DEPLOY_DIR/restore.sh" && chmod +x "$DEPLOY_DIR/restore.sh"
 mkdir -p "$DEPLOY_DIR/backups"
 chmod 750 "$DEPLOY_DIR/backups"
+
+echo "[deploy] installing assets cleanup units..."
+[ -f /tmp/moneytracker-cleanup-assets.service ] && \
+  sudo mv /tmp/moneytracker-cleanup-assets.service /etc/systemd/system/moneytracker-cleanup-assets.service
+[ -f /tmp/moneytracker-cleanup-assets.timer ] && \
+  sudo mv /tmp/moneytracker-cleanup-assets.timer /etc/systemd/system/moneytracker-cleanup-assets.timer
+sudo systemctl daemon-reload
+sudo systemctl enable moneytracker-cleanup-assets.timer || true
+sudo systemctl start moneytracker-cleanup-assets.timer  || true
+
+echo "[deploy] installing cleanup-assets script..."
+[ -f "$DEPLOY_DIR/cleanup-assets.sh.new" ] && \
+  mv "$DEPLOY_DIR/cleanup-assets.sh.new" "$DEPLOY_DIR/cleanup-assets.sh" && \
+  chmod +x "$DEPLOY_DIR/cleanup-assets.sh"
 
 DOMAIN=money-tracker.hrxdev.cc
 CERT_PATH=/etc/letsencrypt/live/${DOMAIN}/fullchain.pem
