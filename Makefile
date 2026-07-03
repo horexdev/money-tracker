@@ -1,14 +1,16 @@
 BINARY     := bin/bot
 API_BINARY := bin/api
+EXPORTER_BINARY := bin/source-exporter
 CMD        := ./cmd/bot
 API_CMD    := ./cmd/api
+EXPORTER_CMD := ./cmd/source-exporter
 COMPOSE    := docker compose --env-file .env -f deployments/docker-compose.yml
 GOOSE_BIN  := $(shell which goose 2>/dev/null || echo "$(shell go env GOPATH)/bin/goose")
 DATABASE_URL := $(shell grep -v '^\#' .env | grep '^DATABASE_URL=' | cut -d'=' -f2-)
 GOOSE      := $(GOOSE_BIN) -dir db/migrations postgres "$(DATABASE_URL)"
 SQLC       := cd db && sqlc generate
 
-.PHONY: help up down migrate migrate-down migrate-status sqlc build build-api build-check run run-api web-dev web-build web-test test test-unit test-integration test-cover lint vet vuln tidy clean smoke-test rollback backup backup-status
+.PHONY: help up down migrate migrate-down migrate-status sqlc build build-api build-source-exporter build-check run run-api web-dev web-build web-test test test-unit test-integration test-cover lint vet vuln tidy clean smoke-test rollback backup backup-status
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
@@ -39,6 +41,10 @@ build: ## Build the bot binary to bin/bot
 build-api: ## Build the API server binary to bin/api
 	@mkdir -p bin
 	go build -o $(API_BINARY) $(API_CMD)
+
+build-source-exporter: ## Build the Postgres to MoneyTrackerBackup exporter
+	@mkdir -p bin
+	go build -o $(EXPORTER_BINARY) $(EXPORTER_CMD)
 
 build-check: ## Verify all packages compile and pass go vet
 	go build ./...

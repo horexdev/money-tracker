@@ -84,6 +84,7 @@ make up            # Start Docker services
 make migrate       # Apply goose migrations
 make sqlc          # Regenerate sqlc query code (after editing db/queries/)
 make build         # Build binary to bin/bot
+make build-source-exporter # Build Postgres -> MoneyTrackerBackup exporter
 make run           # Run bot locally
 make test          # Run all tests (unit + integration)
 make test-unit     # Run only unit tests (no Docker needed)
@@ -203,6 +204,16 @@ make build-check
 make test-cover
 cd web && npm ci && npm run build && npm run test:coverage
 ```
+
+### Android migration backup exporter
+
+The source-side PostgreSQL exporter writes `MoneyTrackerBackup` JSON v1 for the Android restore pipeline:
+
+```bash
+go run ./cmd/source-exporter --database-url "$DATABASE_URL" --output moneytracker.mtbackup.json
+```
+
+Use `--user-id` only as an operator filter. Telegram/source identity fields and source database IDs are not written to the output.
 
 ## License
 
